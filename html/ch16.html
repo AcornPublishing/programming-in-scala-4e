@@ -1,0 +1,703 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/2002/REC-xhtml1-20020801/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type"
+        content="text/html; charset=ISO-8859-1" />
+  <title>Code Examples for Programming in Scala, Fourth Edition</title>
+  <link rel="stylesheet" href="style.css" type="text/css"/>
+</head>
+<body>
+
+<div id="mainTitles"><h3>Code Examples for</h3><h2>Programming in Scala, Fourth Edition</h2></div>  <p><a href="../index.html">
+    Return to chapter index
+  </a></p>
+  <h2>16 Working with Lists</h2>
+
+  <p><a href="../working-with-lists/transcript.txt">
+    Sample run of chapter's interpreter examples
+  </a></p>
+
+  <ul>
+
+    <li>16.1 <a href="#sec1">List literals</a></li>
+    <li>16.2 <a href="#sec2">The <span class="mono">List</span> type</a></li>
+    <li>16.3 <a href="#sec3">Constructing lists</a></li>
+    <li>16.4 <a href="#sec4">Basic operations on lists</a></li>
+    <li>16.5 <a href="#sec5">List patterns</a></li>
+    <li>16.6 <a href="#sec6">First-order methods on class <span class="mono">List</span></a></li>
+    <li>16.7 <a href="#sec7">Higher-order methods on class <span class="mono">List</span></a></li>
+    <li>16.8 <a href="#sec8">Methods of the <span class="mono">List</span> object</a></li>
+    <li>16.9 <a href="#sec9">Processing multiple lists together</a></li>
+    <li>16.10 <a href="#sec10">Understanding Scala's type inference algorithm</a></li>
+    <li>16.11 <a href="#sec11">Exercises</a></li>
+    <li>16.12 <a href="#sec12">Conclusion</a></li>
+  </ul>
+
+  <h3><a name="sec1"></a>16.1 List literals</h3>
+
+  <pre><hr>
+// In file <a href="../working-with-lists/Misc.scala">working-with-lists/Misc.scala</a>
+
+  val fruit = List("apples", "oranges", "pears")
+  val nums = List(1, 2, 3, 4)
+  val diag3 =
+    List(
+      List(1, 0, 0),
+      List(0, 1, 0),
+      List(0, 0, 1)
+    )
+  val empty = List()
+
+<hr>
+  </pre>
+  <h3><a name="sec2"></a>16.2 The <span class="mono">List</span> type</h3>
+
+  <pre><hr>
+// In file <a href="../working-with-lists/Misc.scala">working-with-lists/Misc.scala</a>
+
+  val fruit: List[String] = List("apples", "oranges", "pears")
+  val nums: List[Int] = List(1, 2, 3, 4)
+  val diag3: List[List[Int]] =
+    List(
+      List(1, 0, 0),
+      List(0, 1, 0),
+      List(0, 0, 1)
+    )
+  val empty: List[Nothing] = List()
+
+<hr>
+// In file <a href="../working-with-lists/Misc.scala">working-with-lists/Misc.scala</a>
+
+  // List() is also of type List[String]!
+  val xs: List[String] = List()  
+
+<hr>
+  </pre>
+  <h3><a name="sec3"></a>16.3 Constructing lists</h3>
+
+  <pre><hr>
+// In file <a href="../working-with-lists/Misc.scala">working-with-lists/Misc.scala</a>
+
+  val fruit = "apples" :: ("oranges" :: ("pears" :: Nil))
+  val nums  = 1 :: (2 :: (3 :: (4 :: Nil)))
+  val diag3 = (1 :: (0 :: (0 :: Nil))) ::
+              (0 :: (1 :: (0 :: Nil))) ::
+              (0 :: (0 :: (1 :: Nil))) :: Nil
+  val empty = Nil
+
+<hr>
+// In file <a href="../working-with-lists/Misc.scala">working-with-lists/Misc.scala</a>
+
+  val nums = 1 :: 2 :: 3 :: 4 :: Nil
+
+<hr>
+  </pre>
+  <h3><a name="sec4"></a>16.4 Basic operations on lists</h3>
+
+  <pre><hr>
+  scala&gt; Nil.head
+<span class="output">  java.util.NoSuchElementException: head of empty list</span>
+
+<hr>
+// In file <a href="../working-with-lists/InsertionSort1.scala">working-with-lists/InsertionSort1.scala</a>
+
+  def isort(xs: List[Int]): List[Int] =
+    if (xs.isEmpty) Nil
+    else insert(xs.head, isort(xs.tail))
+
+  def insert(x: Int, xs: List[Int]): List[Int] = 
+    if (xs.isEmpty || x &lt;= xs.head) x :: xs
+    else xs.head :: insert(x, xs.tail)
+
+<hr>
+  </pre>
+  <h3><a name="sec5"></a>16.5 List patterns</h3>
+
+  <pre><hr>
+  scala&gt; val List(a, b, c) = fruit
+<span class="output">  a: String = apples</span>
+<span class="output">  b: String = oranges</span>
+<span class="output">  c: String = pears</span>
+
+<hr>
+  scala&gt; val a :: b :: rest = fruit
+<span class="output">  a: String = apples</span>
+<span class="output">  b: String = oranges</span>
+<span class="output">  rest: List[String] = List(pears)</span>
+
+<hr>
+// In file <a href="../working-with-lists/InsertionSort2.scala">working-with-lists/InsertionSort2.scala</a>
+
+  def isort(xs: List[Int]): List[Int] = xs match {
+    case List()   =&gt; List()
+    case x :: xs1 =&gt; insert(x, isort(xs1))
+  }
+
+  def insert(x: Int, xs: List[Int]): List[Int] = xs match {
+    case List()  =&gt; List(x)
+    case y :: ys =&gt; if (x &lt;= y) x :: xs 
+                    else y :: insert(x, ys)
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec6"></a>16.6 First-order methods on class <span class="mono">List</span></h3>
+
+  <pre><hr>
+  scala&gt; List(1, 2) ::: List(3, 4, 5)
+<span class="output">  res0: List[Int] = List(1, 2, 3, 4, 5)</span>
+
+  scala&gt; List() ::: List(1, 2, 3)
+<span class="output">  res1: List[Int] = List(1, 2, 3)</span>
+
+  scala&gt; List(1, 2, 3) ::: List(4)
+<span class="output">  res2: List[Int] = List(1, 2, 3, 4)</span>
+
+<hr>
+// In file <a href="../working-with-lists/Misc.scala">working-with-lists/Misc.scala</a>
+
+  xs ::: ys ::: zs
+
+<hr>
+// In file <a href="../working-with-lists/Misc.scala">working-with-lists/Misc.scala</a>
+
+  xs ::: (ys ::: zs)
+
+<hr>
+  def append[T](xs: List[T], ys: List[T]): List[T]
+
+<hr>
+  def append[T](xs: List[T], ys: List[T]): List[T] =
+    xs match { 
+      case List() =&gt; ???
+      case x :: xs1 =&gt; ???
+    }
+
+<hr>
+    case List() =&gt; ys
+
+<hr>
+// In file <a href="../working-with-lists/Misc.scala">working-with-lists/Misc.scala</a>
+
+  def append[T](xs: List[T], ys: List[T]): List[T] =
+    xs match { 
+      case List() =&gt; ys
+      case x :: xs1 =&gt; x :: append(xs1, ys)
+    }
+
+<hr>
+  scala&gt; List(1, 2, 3).length
+<span class="output">  res3: Int = 3</span>
+
+<hr>
+  scala&gt; val abcde = List('a', 'b', 'c', 'd', 'e')
+<span class="output">  abcde: List[Char] = List(a, b, c, d, e)</span>
+
+  scala&gt; abcde.last
+<span class="output">  res4: Char = e</span>
+
+  scala&gt; abcde.init
+<span class="output">  res5: List[Char] = List(a, b, c, d)</span>
+
+<hr>
+  scala&gt; List().init
+<span class="output">  java.lang.UnsupportedOperationException: Nil.init</span>
+<span class="output">  	at scala.List.init(List.scala:544)</span>
+<span class="output">  	at ...</span>
+
+  scala&gt; List().last
+<span class="output">  java.util.NoSuchElementException: Nil.last</span>
+<span class="output">  	at scala.List.last(List.scala:563)</span>
+<span class="output">  	at ...</span>
+
+<hr>
+  scala&gt; abcde.reverse 
+<span class="output">  res6: List[Char] = List(e, d, c, b, a)</span>
+
+<hr>
+  scala&gt; abcde
+<span class="output">  res7: List[Char] = List(a, b, c, d, e)</span>
+
+<hr>
+xs.reverse.reverse  <em>equals</em>  xs
+
+<hr>
+xs.reverse.init  <em>equals</em>  xs.tail.reverse
+xs.reverse.tail  <em>equals</em>  xs.init.reverse
+xs.reverse.head  <em>equals</em>  xs.last
+xs.reverse.last  <em>equals</em>  xs.head
+
+<hr>
+// In file <a href="../working-with-lists/Reverse1.scala">working-with-lists/Reverse1.scala</a>
+
+  def rev[T](xs: List[T]): List[T] = xs match {
+    case List() =&gt; xs
+    case x :: xs1 =&gt; rev(xs1) ::: List(x)
+  }
+
+<hr>
+  scala&gt; abcde take 2
+<span class="output">  res8: List[Char] = List(a, b)</span>
+
+  scala&gt; abcde drop 2
+<span class="output">  res9: List[Char] = List(c, d, e)</span>
+
+  scala&gt; abcde splitAt 2
+<span class="output">  res10: (List[Char], List[Char]) = (List(a, b),List(c, d, e))</span>
+
+<hr>
+  scala&gt; abcde apply 2 // rare in Scala
+<span class="output">  res11: Char = c</span>
+
+<hr>
+  scala&gt; abcde(2)      // rare in Scala
+<span class="output">  res12: Char = c</span>
+
+<hr>
+  scala&gt; abcde.indices
+<span class="output">  res13: scala.collection.immutable.Range</span>
+<span class="output">    = Range(0, 1, 2, 3, 4)</span>
+
+<hr>
+  scala&gt; List(List(1, 2), List(3), List(), List(4, 5)).flatten
+<span class="output">  res14: List[Int] = List(1, 2, 3, 4, 5)</span>
+  scala&gt; fruit.map(_.toCharArray).flatten
+<span class="output">  res15: List[Char] = List(a, p, p, l, e, s, o, r, a, n, g, e, </span>
+<span class="output">  s, p, e, a, r, s)</span>
+
+<hr>
+  scala&gt; List(1, 2, 3).flatten
+<span class="output">  &lt;console&gt;:8: error: No implicit view available from Int =&gt; </span>
+<span class="output">  scala.collection.IterableOnce[B].</span>
+<span class="output">                List(1, 2, 3).flatten</span>
+<span class="output">                              ^</span>
+
+<hr>
+  scala&gt; abcde.indices zip abcde
+<span class="output">  res17: scala.collection.immutable.IndexedSeq[(Int, Char)] = </span>
+<span class="output">  Vector((0,a), (1,b), (2,c), (3,d), (4,e))</span>
+
+<hr>
+  scala&gt; val zipped = abcde zip List(1, 2, 3)
+<span class="output">  zipped: List[(Char, Int)] = List((a,1), (b,2), (c,3))</span>
+
+<hr>
+  scala&gt; abcde.zipWithIndex
+<span class="output">  res18: List[(Char, Int)] = List((a,0), (b,1), (c,2), (d,3), </span>
+<span class="output">      (e,4))</span>
+
+<hr>
+  scala&gt; zipped.unzip
+<span class="output">  res19: (List[Char], List[Int])</span>
+<span class="output">    = (List(a, b, c),List(1, 2, 3))</span>
+
+<hr>
+  scala&gt; abcde.toString
+<span class="output">  res20: String = List(a, b, c, d, e)</span>
+
+<hr>
+  scala&gt; abcde.mkString("[", ",", "]")
+<span class="output">  res21: String = [a,b,c,d,e]</span>
+
+  scala&gt; abcde mkString ""
+<span class="output">  res22: String = abcde</span>
+
+  scala&gt; abcde.mkString
+<span class="output">  res23: String = abcde</span>
+
+  scala&gt; abcde.mkString("List(", ", ", ")")
+<span class="output">  res24: String = List(a, b, c, d, e)</span>
+
+<hr>
+  scala&gt; val buf = new StringBuilder
+<span class="output">  buf: StringBuilder =</span>
+
+  scala&gt; abcde.addString(buf, "(", ";", ")")
+<span class="output">  res25: StringBuilder = (a;b;c;d;e)</span>
+
+<hr>
+  scala&gt; val arr = abcde.toArray
+<span class="output">  arr: Array[Char] = Array(a, b, c, d, e)</span>
+
+  scala&gt; arr.toList
+<span class="output">  res26: List[Char] = List(a, b, c, d, e)</span>
+
+<hr>
+  xs.copyToArray(arr, start)
+
+<hr>
+  scala&gt; val arr2 = new Array[Int](10)
+<span class="output">  arr2: Array[Int] = Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)</span>
+
+  scala&gt; List(1, 2, 3).copyToArray(arr2, 3)
+
+  scala&gt; arr2
+<span class="output">  res28: Array[Int] = Array(0, 0, 0, 1, 2, 3, 0, 0, 0, 0)</span>
+
+<hr>
+  scala&gt; val it = abcde.iterator
+<span class="output">  it: Iterator[Char] = &lt;iterator&gt;</span>
+
+<hr>
+  scala&gt; it.next
+<span class="output">  res29: Char = a</span>
+
+  scala&gt; it.next
+<span class="output">  res30: Char = b</span>
+
+<hr>
+// In file <a href="../working-with-lists/Misc.scala">working-with-lists/Misc.scala</a>
+
+  def msort[T](less: (T, T) =&gt; Boolean)
+      (xs: List[T]): List[T] = {
+
+    def merge(xs: List[T], ys: List[T]): List[T] =
+      (xs, ys) match {
+        case (Nil, _) =&gt; ys
+        case (_, Nil) =&gt; xs
+        case (x :: xs1, y :: ys1) =&gt;
+          if (less(x, y)) x :: merge(xs1, ys)
+          else y :: merge(xs, ys1)
+      }
+
+    val n = xs.length / 2
+    if (n == 0) xs
+    else {
+      val (ys, zs) = xs splitAt n
+      merge(msort(less)(ys), msort(less)(zs))
+    }
+  }
+
+<hr>
+  scala&gt; msort((x: Int, y: Int) =&gt; x &lt; y)(List(5, 7, 1, 3))
+<span class="output">  res31: List[Int] = List(1, 3, 5, 7)</span>
+
+<hr>
+  scala&gt; val intSort = msort((x: Int, y: Int) =&gt; x &lt; y) _
+<span class="output">  intSort: List[Int] =&gt; List[Int] = &lt;function1&gt;</span>
+
+<hr>
+  scala&gt; val reverseIntSort = msort((x: Int, y: Int) =&gt; x &gt; y) _
+<span class="output">  reverseIntSort: (List[Int]) =&gt; List[Int] = &lt;function&gt;</span>
+
+<hr>
+  scala&gt; val mixedInts = List(4, 1, 9, 0, 5, 8, 3, 6, 2, 7)
+<span class="output">  mixedInts: List[Int] = List(4, 1, 9, 0, 5, 8, 3, 6, 2, 7)</span>
+
+  scala&gt; intSort(mixedInts)
+<span class="output">  res0: List[Int] = List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)</span>
+
+  scala&gt; reverseIntSort(mixedInts)
+<span class="output">  res1: List[Int] = List(9, 8, 7, 6, 5, 4, 3, 2, 1, 0)</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec7"></a>16.7 Higher-order methods on class <span class="mono">List</span></h3>
+
+  <pre><hr>
+  scala&gt; List(1, 2, 3) map (_ + 1)
+<span class="output">  res32: List[Int] = List(2, 3, 4)</span>
+
+  scala&gt; val words = List("the", "quick", "brown", "fox")
+<span class="output">  words: List[String] = List(the, quick, brown, fox)</span>
+ 
+  scala&gt; words map (_.length)
+<span class="output">  res33: List[Int] = List(3, 5, 5, 3)</span>
+
+  scala&gt; words map (_.toList.reverse.mkString)
+<span class="output">  res34: List[String] = List(eht, kciuq, nworb, xof)</span>
+
+<hr>
+  scala&gt; words map (_.toList)
+<span class="output">  res35: List[List[Char]] = List(List(t, h, e), List(q, u, i, </span>
+<span class="output">      c, k), List(b, r, o, w, n), List(f, o, x))</span>
+
+  scala&gt; words flatMap (_.toList)
+<span class="output">  res36: List[Char] = List(t, h, e, q, u, i, c, k, b, r, o, w, </span>
+<span class="output">      n, f, o, x)</span>
+
+<hr>
+  scala&gt; List.range(1, 5) flatMap (
+       |   i =&gt; List.range(1, i) map (j =&gt; (i, j))
+       | )
+<span class="output">  res37: List[(Int, Int)] = List((2,1), (3,1), (3,2), (4,1), </span>
+<span class="output">      (4,2), (4,3))</span>
+
+<hr>
+// In file <a href="../working-with-lists/Misc.scala">working-with-lists/Misc.scala</a>
+
+  for (i &lt;- List.range(1, 5); j &lt;- List.range(1, i)) yield (i, j)
+
+<hr>
+  scala&gt; var sum = 0
+<span class="output">  sum: Int = 0</span>
+
+  scala&gt; List(1, 2, 3, 4, 5) foreach (sum += _)
+
+  scala&gt; sum
+<span class="output">  res39: Int = 15</span>
+
+<hr>
+  scala&gt; List(1, 2, 3, 4, 5) filter (_ % 2 == 0)
+<span class="output">  res40: List[Int] = List(2, 4)</span>
+
+  scala&gt; words filter (_.length == 3)
+<span class="output">  res41: List[String] = List(the, fox)</span>
+
+<hr>
+  scala&gt; List(1, 2, 3, 4, 5) partition (_ % 2 == 0)
+<span class="output">  res42: (List[Int], List[Int]) = (List(2, 4),List(1, 3, 5))</span>
+
+<hr>
+  scala&gt;  List(1, 2, 3, 4, 5) find (_ % 2 == 0)
+<span class="output">  res43: Option[Int] = Some(2)</span>
+
+  scala&gt;  List(1, 2, 3, 4, 5) find (_ &lt;= 0)
+<span class="output">  res44: Option[Int] = None</span>
+
+<hr>
+  scala&gt; List(1, 2, 3, -4, 5) takeWhile (_ &gt; 0)
+<span class="output">  res45: List[Int] = List(1, 2, 3)</span>
+
+  scala&gt; words dropWhile (_ startsWith "t")
+<span class="output">  res46: List[String] = List(quick, brown, fox)</span>
+
+<hr>
+  scala&gt; List(1, 2, 3, -4, 5) span (_ &gt; 0)
+<span class="output">  res47: (List[Int], List[Int]) = (List(1, 2, 3),List(-4, 5))</span>
+
+<hr>
+  scala&gt; def hasZeroRow(m: List[List[Int]]) = 
+       |   m exists (row =&gt; row forall (_ == 0))
+<span class="output">  hasZeroRow: (m: List[List[Int]])Boolean</span>
+
+  scala&gt; hasZeroRow(diag3)
+<span class="output">  res48: Boolean = false</span>
+
+<hr>
+  scala&gt; def sum(xs: List[Int]): Int = xs.foldLeft(0)(_ + _) 
+<span class="output">  sum: (xs: List[Int])Int</span>
+
+<hr>
+  scala&gt; def product(xs: List[Int]): Int = xs.foldLeft(1)(_ * _) 
+<span class="output">  product: (xs: List[Int])Int</span>
+
+<hr>
+  scala&gt;  words.foldLeft("")(_ + " " + _)
+<span class="output">  res49: String = " the quick brown fox"</span>
+
+<hr>
+  scala&gt; words.tail.foldLeft(words.head)(_ + " " + _)
+<span class="output">  res50: String = the quick brown fox</span>
+
+<hr>
+  def flattenLeft[T](xss: List[List[T]]) =
+      xss.foldLeft(List[T]())(_ ::: _)
+
+  def flattenRight[T](xss: List[List[T]]) =
+      xss.foldRight(List[T]())(_ ::: _)
+
+<hr>
+  scala&gt; def flattenRight[T](xss: List[List[T]]) =
+       |     xss.foldRight(List())(_ ::: _)
+<span class="output">  &lt;console&gt;:8: error: type mismatch;</span>
+<span class="output">   found   : List[T]</span>
+<span class="output">   required: List[Nothing]</span>
+<span class="output">             xss.foldRight(List())(_ ::: _)</span>
+<span class="output">                                   ^</span>
+
+<hr>
+  def reverseLeft[T](xs: List[T]) =
+    xs.foldLeft(<em>\startValue</em>)(<em>\operation</em>)
+
+<hr>
+// In file <a href="../working-with-lists/Reverse2.scala">working-with-lists/Reverse2.scala</a>
+
+  def reverseLeft[T](xs: List[T]) =
+    xs.foldLeft(List[T]()) { (ys, y) =&gt; y :: ys }
+
+<hr>
+  scala&gt; List(1, -3, 4, 2, 6) sortWith (_ &lt; _)
+<span class="output">  res51: List[Int] = List(-3, 1, 2, 4, 6)</span>
+
+  scala&gt; words sortWith (_.length &gt; _.length)
+<span class="output">  res52: List[String] = List(quick, brown, the, fox)</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec8"></a>16.8 Methods of the <span class="mono">List</span> object</h3>
+
+  <pre><hr>
+  scala&gt; List.apply(1, 2, 3)
+<span class="output">  res53: List[Int] = List(1, 2, 3)</span>
+
+<hr>
+  scala&gt; List.range(1, 5)
+<span class="output">  res54: List[Int] = List(1, 2, 3, 4)</span>
+
+  scala&gt; List.range(1, 9, 2)
+<span class="output">  res55: List[Int] = List(1, 3, 5, 7)</span>
+
+  scala&gt; List.range(9, 1, -3)
+<span class="output">  res56: List[Int] = List(9, 6, 3)</span>
+
+<hr>
+  scala&gt; List.fill(5)('a')
+<span class="output">  res57: List[Char] = List(a, a, a, a, a)</span>
+
+  scala&gt; List.fill(3)("hello")
+<span class="output">  res58: List[String] = List(hello, hello, hello)</span>
+
+<hr>
+  scala&gt; List.fill(2, 3)('b')
+<span class="output">  res59: List[List[Char]] = List(List(b, b, b), List(b, b, b))</span>
+
+<hr>
+  scala&gt; val squares = List.tabulate(5)(n =&gt; n * n)
+<span class="output">  squares: List[Int] = List(0, 1, 4, 9, 16)</span>
+  scala&gt; val multiplication = List.tabulate(5,5)(_ * _)
+<span class="output">  multiplication: List[List[Int]] = List(List(0, 0, 0, 0, 0), </span>
+<span class="output">      List(0, 1, 2, 3, 4), List(0, 2, 4, 6, 8),</span>
+<span class="output">      List(0, 3, 6, 9, 12), List(0, 4, 8, 12, 16))</span>
+
+<hr>
+  scala&gt; List.concat(List('a', 'b'), List('c'))
+<span class="output">  res60: List[Char] = List(a, b, c)</span>
+
+  scala&gt; List.concat(List(), List('b'), List('c'))
+<span class="output">  res61: List[Char] = List(b, c)</span>
+  
+  scala&gt; List.concat()
+<span class="output">  res62: List[Nothing] = List()</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec9"></a>16.9 Processing multiple lists together</h3>
+
+  <pre><hr>
+  scala&gt; (List(10, 20) zip List(3, 4, 5)).
+           map { case (x, y) =&gt; x * y }
+<span class="output">  res63: List[Int] = List(30, 80)</span>
+
+<hr>
+  scala&gt; (List(10, 20) lazyZip List(3, 4, 5)).map(_ * _)
+<span class="output">  res63: List[Int] = List(30, 80)</span>
+
+<hr>
+  scala&gt; (List("abc", "de") lazyZip List(3, 2)).
+       |   forall(_.length == _)
+<span class="output">  res64: Boolean = true</span>
+  scala&gt; (List("abc", "de") lazyZip List(3, 2)).
+       |   exists(_.length != _)
+<span class="output">  res65: Boolean = false</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec10"></a>16.10 Understanding Scala's type inference algorithm</h3>
+
+  <pre><hr>
+  scala&gt; msort((x: Char, y: Char) =&gt; x &gt; y)(abcde)
+<span class="output">  res66: List[Char] = List(e, d, c, b, a)</span>
+
+<hr>
+  scala&gt; abcde sortWith (_ &gt; _)
+<span class="output">  res67: List[Char] = List(e, d, c, b, a)</span>
+
+<hr>
+  scala&gt; msort(_ &gt; _)(abcde)
+<span class="output">  &lt;console&gt;:12: error: missing parameter type for expanded </span>
+<span class="output">  function ((x$1, x$2) =&gt; x$1.$greater(x$2))</span>
+<span class="output">         msort(_ &gt; _)(abcde)</span>
+<span class="output">               ^</span>
+
+<hr>
+  scala&gt; msort[Char](_ &gt; _)(abcde)
+<span class="output">  res68: List[Char] = List(e, d, c, b, a)</span>
+
+<hr>
+  def msortSwapped[T](xs: List[T])(less:
+      (T, T) =&gt; Boolean): List[T] = {
+
+    // same implementation as msort,
+    // but with arguments swapped
+  }
+
+<hr>
+  scala&gt; msortSwapped(abcde)(_ &gt; _)
+<span class="output">  res69: List[Char] = List(e, d, c, b, a)</span>
+
+<hr>
+  xss.foldRight(List[T]())(_ ::: _)
+
+<hr>
+  xs.foldRight(z)(op)
+
+<hr>
+  xss.foldRight(List())(_ ::: _)  // this won't compile
+
+<hr>
+  (List[T], List[Nothing]) =&gt; List[Nothing]
+
+<hr>
+  </pre>
+  <h3><a name="sec11"></a>16.11 Exercises</h3>
+
+  <h3><a name="sec12"></a>16.12 Conclusion</h3>
+
+
+ <table>
+ <tr valign="top">
+ <td>
+ <div id="moreinfo">
+ <p>
+ For more information about <em>Programming in Scala, Fourth Edition</em> (the "Stairway Book"), please visit:
+ </p>
+ 
+ <p>
+ <a href="http://www.artima.com/shop/programming_in_scala_4ed">http://www.artima.com/shop/programming_in_scala_4ed</a>
+ </p>
+ 
+ <p>
+ and:
+ </p>
+ 
+ <p>
+ <a href="http://booksites.artima.com/programming_in_scala_4ed">http://booksites.artima.com/programming_in_scala_4ed</a>
+ </p>
+ </div>
+ </td>
+ <td>
+ <div id="license">
+ <p>
+   Copyright &copy; 2007-2019 Artima, Inc. All rights reserved.
+ </p>
+
+ <p>
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+ </p>
+
+ <p style="margin-left: 20px">
+   <a href="http://www.apache.org/licenses/LICENSE-2.0">
+     http://www.apache.org/licenses/LICENSE-2.0
+   </a>
+ </p>
+
+ <p>
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+   implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ </p>
+ </div>
+ </td>
+ </tr>
+ </table>
+
+</body>
+</html>

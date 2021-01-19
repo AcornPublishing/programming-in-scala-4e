@@ -1,0 +1,570 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/2002/REC-xhtml1-20020801/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type"
+        content="text/html; charset=ISO-8859-1" />
+  <title>Code Examples for Programming in Scala, Fourth Edition</title>
+  <link rel="stylesheet" href="style.css" type="text/css"/>
+</head>
+<body>
+
+<div id="mainTitles"><h3>Code Examples for</h3><h2>Programming in Scala, Fourth Edition</h2></div>  <p><a href="../index.html">
+    Return to chapter index
+  </a></p>
+  <h2>30 Object Equality</h2>
+
+  <p><a href="../object-equality/transcript.txt">
+    Sample run of chapter's interpreter examples
+  </a></p>
+
+  <ul>
+
+    <li>30.1 <a href="#sec1">Equality in Scala</a></li>
+    <li>30.2 <a href="#sec2">Writing an equality method</a></li>
+    <li>30.3 <a href="#sec3">Defining equality for parameterized types</a></li>
+    <li>30.4 <a href="#sec4">Recipes for <span class="mono">equals</span> and <span class="mono">hashCode</span></a></li>
+    <li>30.5 <a href="#sec5">Conclusion</a></li>
+  </ul>
+
+  <h3><a name="sec1"></a>30.1 Equality in Scala</h3>
+
+  <pre><hr>
+  final def == (that: Any): Boolean = 
+    if (null eq this) {null eq that} else {this equals that}
+
+<hr>
+  </pre>
+  <h3><a name="sec2"></a>30.2 Writing an equality method</h3>
+
+  <pre><hr>
+  var hashSet: Set[C] = new collection.immutable.HashSet
+  hashSet += elem1
+  hashSet contains elem2    // returns false!
+
+<hr>
+  class Point(val x: Int, val y: Int) { ... }
+
+<hr>
+// In file <a href="../object-equality/Points1.scala">object-equality/Points1.scala</a>
+
+  // An utterly wrong definition of equals
+  def equals(other: Point): Boolean =
+    this.x == other.x &amp;&amp; this.y == other.y
+
+<hr>
+  scala&gt; val p1, p2 = new Point(1, 2)
+<span class="output">  p1: Point = Point@37d7d90f</span>
+<span class="output">  p2: Point = Point@3beb846d</span>
+
+  scala&gt; val q = new Point(2, 3)
+<span class="output">  q: Point = Point@e0cf182</span>
+
+  scala&gt; p1 equals p2
+<span class="output">  res0: Boolean = true</span>
+
+  scala&gt; p1 equals q
+<span class="output">  res1: Boolean = false</span>
+
+<hr>
+  scala&gt; import scala.collection.mutable
+<span class="output">  import scala.collection.mutable</span>
+
+  scala&gt; val coll = mutable.HashSet(p1)
+<span class="output">  coll: scala.collection.mutable.HashSet[Point] = </span>
+<span class="output">  Set(Point@37d7d90f)</span>
+
+  scala&gt; coll contains p2
+<span class="output">  res2: Boolean = false</span>
+
+<hr>
+  scala&gt; val p2a: Any = p2
+<span class="output">  p2a: Any = Point@3beb846d</span>
+
+<hr>
+  scala&gt; p1 equals p2a
+<span class="output">  res3: Boolean = false</span>
+
+<hr>
+  def equals(other: Any): Boolean
+
+<hr>
+// In file <a href="../object-equality/Points2.scala">object-equality/Points2.scala</a>
+
+  // A better definition, but still not perfect
+  override def equals(other: Any) = other match {
+    case that: Point =&gt; this.x == that.x &amp;&amp; this.y == that.y
+    case _ =&gt; false
+  }
+
+<hr>
+  def ==(other: Point): Boolean = // Don't do this!
+
+<hr>
+  scala&gt; val p1, p2 = new Point(1, 2)
+<span class="output">  p1: Point = Point@122c1533</span>
+<span class="output">  p2: Point = Point@c23d097</span>
+
+  scala&gt; collection.mutable.HashSet(p1) contains p2
+<span class="output">  res4: Boolean = false</span>
+
+<hr>
+// In file <a href="../object-equality/Points3.scala">object-equality/Points3.scala</a>
+
+  class Point(val x: Int, val y: Int) {
+    override def hashCode = (x, y).##
+    override def equals(other: Any) = other match { 
+      case that: Point =&gt; this.x == that.x &amp;&amp; this.y == that.y 
+      case _ =&gt; false 
+    }
+  }
+
+<hr>
+// In file <a href="../object-equality/Points5.scala">object-equality/Points5.scala</a>
+
+  class Point(var x: Int, var y: Int) { // Problematic
+    override def hashCode = (x, y).##
+    override def equals(other: Any) = other match { 
+      case that: Point =&gt; this.x == that.x &amp;&amp; this.y == that.y 
+      case _ =&gt; false 
+    }
+  }
+
+<hr>
+  scala&gt; val p = new Point(1, 2)
+<span class="output">  p: Point = Point@5428bd62</span>
+
+  scala&gt; val coll = collection.mutable.HashSet(p)
+<span class="output">  coll: scala.collection.mutable.HashSet[Point] = </span>
+<span class="output">  Set(Point@5428bd62)</span>
+
+  scala&gt; coll contains p
+<span class="output">  res5: Boolean = true</span>
+
+<hr>
+  scala&gt; p.x += 1
+
+  scala&gt; coll contains p
+<span class="output">  res7: Boolean = false</span>
+
+<hr>
+  scala&gt; coll.iterator contains p
+<span class="output">  res8: Boolean = true</span>
+
+<hr>
+// In file <a href="../object-equality/Points8.scala">object-equality/Points8.scala</a>
+
+  object Color extends Enumeration {
+    val Red, Orange, Yellow, Green, Blue, Indigo, Violet = Value
+  }
+
+<hr>
+// In file <a href="../object-equality/Points5.scala">object-equality/Points5.scala</a>
+
+  class ColoredPoint(x: Int, y: Int, val color: Color.Value) 
+      extends Point(x, y) { // Problem: equals not symmetric
+
+    override def equals(other: Any) = other match {
+      case that: ColoredPoint =&gt; 
+        this.color == that.color &amp;&amp; super.equals(that)
+      case _ =&gt; false
+    }
+  }
+
+<hr>
+  scala&gt; val p = new Point(1, 2)
+<span class="output">  p: Point = Point@5428bd62</span>
+
+  scala&gt; val cp = new ColoredPoint(1, 2, Color.Red)
+<span class="output">  cp: ColoredPoint = ColoredPoint@5428bd62</span>
+
+  scala&gt; p equals cp
+<span class="output">  res9: Boolean = true</span>
+
+  scala&gt; cp equals p
+<span class="output">  res10: Boolean = false</span>
+
+<hr>
+  scala&gt; collection.mutable.HashSet[Point](p) contains cp
+<span class="output">  res11: Boolean = true</span>
+
+  scala&gt; collection.mutable.HashSet[Point](cp) contains p
+<span class="output">  res12: Boolean = false</span>
+
+<hr>
+// In file <a href="../object-equality/Points6.scala">object-equality/Points6.scala</a>
+
+  class ColoredPoint(x: Int, y: Int, val color: Color.Value) 
+      extends Point(x, y) { // Problem: equals not transitive
+
+    override def equals(other: Any) = other match {
+      case that: ColoredPoint =&gt;
+        (this.color == that.color) &amp;&amp; super.equals(that)
+      case that: Point =&gt;
+        that equals this
+      case _ =&gt;
+        false
+    }
+  }
+
+<hr>
+  scala&gt; val redp = new ColoredPoint(1, 2, Color.Red)
+<span class="output">  redp: ColoredPoint = ColoredPoint@5428bd62</span>
+
+  scala&gt; val bluep = new ColoredPoint(1, 2, Color.Blue)
+<span class="output">  bluep: ColoredPoint = ColoredPoint@5428bd62</span>
+
+<hr>
+  scala&gt; redp == p
+<span class="output">  res13: Boolean = true</span>
+
+  scala&gt; p == bluep
+<span class="output">  res14: Boolean = true</span>
+
+<hr>
+  scala&gt; redp == bluep
+<span class="output">  res15: Boolean = false</span>
+
+<hr>
+// In file <a href="../object-equality/Points7.scala">object-equality/Points7.scala</a>
+
+  // A technically valid, but unsatisfying, equals method
+  class Point(val x: Int, val y: Int) {
+    override def hashCode = (x, y).##
+    override def equals(other: Any) = other match {
+      case that: Point =&gt; 
+        this.x == that.x &amp;&amp; this.y == that.y &amp;&amp; 
+        this.getClass == that.getClass
+      case _ =&gt; false
+    }
+  }
+
+<hr>
+// In file <a href="../object-equality/Points7.scala">object-equality/Points7.scala</a>
+
+  class ColoredPoint(x: Int, y: Int, val color: Color.Value) 
+      extends Point(x, y) {
+
+    override def equals(other: Any) = other match {
+      case that: ColoredPoint =&gt;
+        (this.color == that.color) &amp;&amp; super.equals(that)
+      case _ =&gt; false
+    }
+  }
+
+<hr>
+  scala&gt; val pAnon = new Point(1, 1) { override val y = 2 }
+<span class="output">  pAnon: Point = $anon$1@5428bd62</span>
+
+<hr>
+  def canEqual(other: Any): Boolean
+
+<hr>
+// In file <a href="../object-equality/Points8.scala">object-equality/Points8.scala</a>
+
+  class Point(val x: Int, val y: Int) {
+    override def hashCode = (x, y).##
+    override def equals(other: Any) = other match {
+      case that: Point =&gt;
+        (that canEqual this) &amp;&amp;
+        (this.x == that.x) &amp;&amp; (this.y == that.y)
+      case _ =&gt;
+        false
+    }
+    def canEqual(other: Any) = other.isInstanceOf[Point]
+  }
+
+<hr>
+// In file <a href="../object-equality/Points8.scala">object-equality/Points8.scala</a>
+
+  class ColoredPoint(x: Int, y: Int, val color: Color.Value) 
+      extends Point(x, y) {
+
+    override def hashCode = (super.hashCode, color).##
+    override def equals(other: Any) = other match {
+      case that: ColoredPoint =&gt;
+        (that canEqual this) &amp;&amp;
+        super.equals(that) &amp;&amp; this.color == that.color
+      case _ =&gt;
+        false
+    }
+    override def canEqual(other: Any) =
+      other.isInstanceOf[ColoredPoint]
+  }
+
+<hr>
+  scala&gt; val p = new Point(1, 2)
+<span class="output">  p: Point = Point@5428bd62</span>
+
+  scala&gt; val cp = new ColoredPoint(1, 2, Color.Indigo)
+<span class="output">  cp: ColoredPoint = ColoredPoint@e6230d8f</span>
+
+  scala&gt; val pAnon = new Point(1, 1) { override val y = 2 }
+<span class="output">  pAnon: Point = $anon$1@5428bd62</span>
+
+  scala&gt; val coll = List(p)
+<span class="output">  coll: List[Point] = List(Point@5428bd62)</span>
+
+  scala&gt; coll contains p 
+<span class="output">  res16: Boolean = true</span>
+
+  scala&gt; coll contains cp
+<span class="output">  res17: Boolean = false</span>
+
+  scala&gt; coll contains pAnon
+<span class="output">  res18: Boolean = true</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec3"></a>30.3 Defining equality for parameterized types</h3>
+
+  <pre><hr>
+// In file <a href="../object-equality/Tree1.scala">object-equality/Tree1.scala</a>
+
+  trait Tree[+T] {
+    def elem: T
+    def left: Tree[T]
+    def right: Tree[T]
+  }
+
+  object EmptyTree extends Tree[Nothing] {
+    def elem =
+      throw new NoSuchElementException("EmptyTree.elem")
+    def left =
+      throw new NoSuchElementException("EmptyTree.left")
+    def right =
+      throw new NoSuchElementException("EmptyTree.right")
+  }
+
+  class Branch[+T](
+    val elem: T,
+    val left: Tree[T],
+    val right: Tree[T]
+  ) extends Tree[T]
+
+<hr>
+// In file <a href="../object-equality/Tree3.scala">object-equality/Tree3.scala</a>
+
+  class Branch[T](
+    val elem: T,
+    val left: Tree[T],
+    val right: Tree[T]
+  ) extends Tree[T] {
+
+    override def equals(other: Any) = other match {
+      case that: Branch[T] =&gt; this.elem == that.elem &amp;&amp; 
+                              this.left == that.left &amp;&amp;
+                              this.right == that.right
+      case _ =&gt; false
+    }
+  }
+
+<hr>
+   $ fsc -unchecked Tree.scala
+<span class="output">  Tree.scala:14: warning: non variable type-argument T in type </span>
+<span class="output">  pattern is unchecked since it is eliminated by erasure</span>
+<span class="output">      case that: Branch[T] =&gt; this.elem == that.elem &amp;&amp; </span>
+<span class="output">                 ^</span>
+
+<hr>
+  scala&gt; val b1 = new Branch[List[String]](Nil,
+      |      EmptyTree, EmptyTree)
+<span class="output">  b1: Branch[List[String]] = Branch@9d5fa4f</span>
+
+  scala&gt; val b2 = new Branch[List[Int]](Nil,
+      |      EmptyTree, EmptyTree)
+<span class="output">  b2: Branch[List[Int]] = Branch@56cdfc29</span>
+
+  scala&gt; b1 == b2
+<span class="output">  res19: Boolean = true</span>
+
+<hr>
+// In file <a href="../object-equality/Tree3.scala">object-equality/Tree3.scala</a>
+
+  case that: Branch[t] =&gt; this.elem == that.elem &amp;&amp; 
+                          this.left == that.left &amp;&amp;
+                          this.right == that.right
+
+<hr>
+  case that: Branch[t] =&gt; 
+
+<hr>
+  case that: Branch[_] =&gt;
+
+<hr>
+// In file <a href="../object-equality/Tree3.scala">object-equality/Tree3.scala</a>
+
+  override def hashCode: Int = (elem, left, right).##
+
+<hr>
+// In file <a href="../object-equality/Tree3.scala">object-equality/Tree3.scala</a>
+
+  def canEqual(other: Any) = other match {
+    case that: Branch[_] =&gt; true
+    case _ =&gt; false
+  }
+
+<hr>
+// In file <a href="../object-equality/Tree3.scala">object-equality/Tree3.scala</a>
+
+    def canEqual(other: Any) = other.isInstanceOf[Branch[_]]
+
+<hr>
+// In file <a href="../object-equality/Tree4.scala">object-equality/Tree4.scala</a>
+
+  class Branch[T](
+    val elem: T,
+    val left: Tree[T],
+    val right: Tree[T]
+  ) extends Tree[T] {
+
+    override def equals(other: Any) = other match {
+      case that: Branch[_] =&gt; (that canEqual this) &amp;&amp; 
+                              this.elem == that.elem &amp;&amp; 
+                              this.left == that.left &amp;&amp;
+                              this.right == that.right
+      case _ =&gt; false
+    }
+
+    def canEqual(other: Any) = other.isInstanceOf[Branch[_]]
+
+    override def hashCode: Int = (elem, left, right).##
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec4"></a>30.4 Recipes for <span class="mono">equals</span> and <span class="mono">hashCode</span></h3>
+
+  <pre><hr>
+    def canEqual(other: Any): Boolean =
+
+<hr>
+      other.isInstanceOf[Rational]
+
+<hr>
+    override def equals(other: Any): Boolean =
+
+<hr>
+  other match {
+    // ...
+  }
+
+<hr>
+        case that: Rational =&gt;
+
+<hr>
+          super.equals(that) &amp;&amp;
+
+<hr>
+          (that canEqual this) &amp;&amp;
+
+<hr>
+          numer == that.numer &amp;&amp;
+          denom == that.denom
+
+<hr>
+  case _ =&gt; false
+
+<hr>
+// In file <a href="../object-equality/Rational.scala">object-equality/Rational.scala</a>
+
+  class Rational(n: Int, d: Int) {
+  
+    require(d != 0)
+  
+    private val g = gcd(n.abs, d.abs)
+    val numer = (if (d &lt; 0) -n else n) / g
+    val denom = d.abs / g
+  
+    private def gcd(a: Int, b: Int): Int =
+      if (b == 0) a else gcd(b, a % b)
+  
+    override def equals(other: Any): Boolean =
+      other match {
+  
+        case that: Rational =&gt;
+          (that canEqual this) &amp;&amp;
+          numer == that.numer &amp;&amp;
+          denom == that.denom
+
+        case _ =&gt; false
+      }
+
+    def canEqual(other: Any): Boolean =
+      other.isInstanceOf[Rational]
+
+    override def hashCode: Int = (numer, denom).##
+  
+    override def toString =
+      if (denom == 1) numer.toString else s"<em>numer/</em>denom"
+  }
+
+<hr>
+  override def hashCode: Int = (a, b, c, d, e).##
+
+<hr>
+  override def hashCode: Int = (super.hashCode, numer, denom).##
+
+<hr>
+  override val hashCode: Int = (numer, denom).##
+
+<hr>
+  </pre>
+  <h3><a name="sec5"></a>30.5 Conclusion</h3>
+
+
+ <table>
+ <tr valign="top">
+ <td>
+ <div id="moreinfo">
+ <p>
+ For more information about <em>Programming in Scala, Fourth Edition</em> (the "Stairway Book"), please visit:
+ </p>
+ 
+ <p>
+ <a href="http://www.artima.com/shop/programming_in_scala_4ed">http://www.artima.com/shop/programming_in_scala_4ed</a>
+ </p>
+ 
+ <p>
+ and:
+ </p>
+ 
+ <p>
+ <a href="http://booksites.artima.com/programming_in_scala_4ed">http://booksites.artima.com/programming_in_scala_4ed</a>
+ </p>
+ </div>
+ </td>
+ <td>
+ <div id="license">
+ <p>
+   Copyright &copy; 2007-2019 Artima, Inc. All rights reserved.
+ </p>
+
+ <p>
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+ </p>
+
+ <p style="margin-left: 20px">
+   <a href="http://www.apache.org/licenses/LICENSE-2.0">
+     http://www.apache.org/licenses/LICENSE-2.0
+   </a>
+ </p>
+
+ <p>
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+   implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ </p>
+ </div>
+ </td>
+ </tr>
+ </table>
+
+</body>
+</html>

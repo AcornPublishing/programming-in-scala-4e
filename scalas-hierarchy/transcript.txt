@@ -1,0 +1,163 @@
+/*
+ * Copyright (C) 2007-2019 Artima, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Automatically generated Scala interpreter transcript from:
+ *
+ * Programming in Scala (Fourth Edition)
+ * by Martin Odersky, Lex Spoon, Bill Venners
+ *
+ * http://booksites.artima.com/programming_in_scala_4ed
+ */
+
+
+scala> new Int
+       ^
+       error: class Int is abstract; cannot be instantiated
+
+scala> 42.toString
+res1: String = 42
+
+scala> 42.hashCode
+res2: Int = 42
+
+scala> 42 equals 42
+res3: Boolean = true
+
+scala> 42 max 43
+res4: Int = 43
+
+scala> 42 min 43
+res5: Int = 42
+
+scala> 1 until 5
+res6: scala.collection.immutable.Range = Range 1 until 5
+
+scala> 1 to 5
+res7: scala.collection.immutable.Range.Inclusive = Range 1 to 5
+
+scala> 3.abs
+res8: Int = 3
+
+scala> (-3).abs
+res9: Int = 3
+
+scala> def isEqual(x: Int, y: Int) = x == y
+isEqual: (x: Int, y: Int)Boolean
+
+scala> isEqual(421, 421)
+res10: Boolean = true
+
+scala> def isEqual(x: Any, y: Any) = x == y
+isEqual: (x: Any, y: Any)Boolean
+
+scala> isEqual(421, 421)
+res11: Boolean = true
+
+scala> val x = "abcd".substring(2)
+x: String = cd
+
+scala> val y = "abcd".substring(2)
+y: String = cd
+
+scala> x == y
+res12: Boolean = true
+
+scala> val x = new String("abc")
+x: String = abc
+
+scala> val y = new String("abc")
+y: String = abc
+
+scala> x == y
+res13: Boolean = true
+
+scala> x eq y
+res14: Boolean = false
+
+scala> x ne y
+res15: Boolean = true
+
+scala> val i: Int = null
+                    ^
+       error: an expression of type Null is ineligible for implicit conversion
+
+scala>    class Dollars(val amount: Int) extends AnyVal {
+           override def toString() = "\$" + amount
+         }
+
+defined class Dollars
+
+scala> val money = new Dollars(1000000)
+money: Dollars = $1000000
+
+scala> money.amount
+res16: Int = 1000000
+
+scala>   class SwissFrancs(val amount: Int) extends AnyVal {
+           override def toString() = s"$amount CHF"
+         }
+
+defined class SwissFrancs
+
+scala> val dollars = new Dollars(1000)
+dollars: Dollars = $1000
+
+scala> val francs = new SwissFrancs(1000)
+francs: SwissFrancs = 1000 CHF
+
+scala>   def title(text: String, anchor: String, style: String): String =
+           s"<a id='\$anchor'><h1 class='\$style'>\$text</h1></a>"
+
+title: (text: String, anchor: String, style: String)String
+
+scala> title("chap:vcls", "bold", "Value Classes")
+res17: String = <a id='bold'><h1 class='Value Classes'>chap:vcls</h1></a>
+
+scala>   class Anchor(val value: String) extends AnyVal
+         class Style(val value: String) extends AnyVal
+         class Text(val value: String) extends AnyVal
+         class Html(val value: String) extends AnyVal
+
+defined class Anchor
+defined class Style
+defined class Text
+defined class Html
+
+scala>   def title(text: Text, anchor: Anchor, style: Style): Html =
+           new Html(
+             s"<a id='\${anchor.value}'>" +
+                 s"<h1 class='\${style.value}'>" +
+                 text.value +
+                 "</h1></a>"
+           )
+
+title: (text: Text, anchor: Anchor, style: Style)Html
+
+scala> title(new Anchor("chap:vcls"), new Style("bold"),
+           new Text("Value Classes"))
+             ^
+       error: type mismatch;
+        found   : Anchor
+        required: Text
+                                      ^
+       error: type mismatch;
+        found   : Style
+        required: Anchor
+           new Text("Value Classes"))
+           ^
+On line 2: error: type mismatch;
+        found   : Text
+        required: Style
+

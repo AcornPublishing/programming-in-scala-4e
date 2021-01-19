@@ -1,0 +1,170 @@
+/*
+ * Copyright (C) 2007-2019 Artima, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Automatically generated Scala interpreter transcript from:
+ *
+ * Programming in Scala (Fourth Edition)
+ * by Martin Odersky, Lex Spoon, Bill Venners
+ *
+ * http://booksites.artima.com/programming_in_scala_4ed
+ */
+
+
+scala>   object EMail {
+       
+           // The injection method (optional)
+           def apply(user: String, domain: String) = user + "@" + domain
+       
+           // The extraction method (mandatory)
+           def unapply(str: String): Option[(String, String)] = {
+             val parts = str split "@"
+             if (parts.length == 2) Some(parts(0), parts(1)) else None
+           }
+         }
+
+defined object EMail
+
+scala>   object Twice {
+           def apply(s: String): String = s + s
+           def unapply(s: String): Option[String] = {
+             val length = s.length / 2
+             val half = s.substring(0, length)
+             if (half == s.substring(length)) Some(half) else None
+           }
+         }
+
+defined object Twice
+
+scala>   object UpperCase {
+           def unapply(s: String): Boolean = s.toUpperCase == s
+         }
+
+defined object UpperCase
+
+scala>   def userTwiceUpper(s: String) = s match {
+           case EMail(Twice(x @ UpperCase()), domain) =>
+             "match: " + x + " in domain " + domain
+           case _ => 
+             "no match"
+         }
+
+userTwiceUpper: (s: String)String
+
+scala> userTwiceUpper("DIDI@hotmail.com")
+res0: String = match: DI in domain hotmail.com
+
+scala> userTwiceUpper("DIDO@hotmail.com")
+res1: String = no match
+
+scala> userTwiceUpper("didi@hotmail.com")
+res2: String = no match
+
+scala>   object Domain {
+       
+           // The injection method (optional)
+           def apply(parts: String*): String = 
+             parts.reverse.mkString(".")
+       
+           // The extraction method (mandatory)
+           def unapplySeq(whole: String): Option[Seq[String]] = 
+             Some(whole.split("\\.").reverse.toSeq)
+         }
+
+defined object Domain
+
+scala>   def isTomInDotCom(s: String): Boolean = s match {
+           case EMail("tom", Domain("com", _*)) => true
+           case _ => false
+         }
+
+isTomInDotCom: (s: String)Boolean
+
+scala> isTomInDotCom("tom@sun.com")
+res3: Boolean = true
+
+scala> isTomInDotCom("peter@sun.com")
+res4: Boolean = false
+
+scala> isTomInDotCom("tom@acm.org")
+res5: Boolean = false
+
+scala>   object ExpandedEMail {
+           def unapplySeq(email: String)
+               : Option[(String, Seq[String])] = {
+             val parts = email split "@"
+             if (parts.length == 2) 
+               Some(parts(0), parts(1).split("\\.").reverse.toSeq)
+             else 
+               None
+           }
+         }
+
+defined object ExpandedEMail
+
+scala> val s = "tom@support.epfl.ch"
+s: String = tom@support.epfl.ch
+
+scala> val ExpandedEMail(name, topdom, subdoms @ _*) = s
+name: String = tom
+topdom: String = ch
+subdoms: Seq[String] = ArraySeq(epfl, support)
+
+scala> import scala.util.matching.Regex
+import scala.util.matching.Regex
+
+scala> val Decimal = new Regex("(-)?(\\d+)(\\.\\d*)?")
+Decimal: scala.util.matching.Regex = (-)?(\d+)(\.\d*)?
+
+scala> val Decimal = new Regex("""(-)?(\d+)(\.\d*)?""")
+Decimal: scala.util.matching.Regex = (-)?(\d+)(\.\d*)?
+
+scala> val Decimal = """(-)?(\d+)(\.\d*)?""".r
+Decimal: scala.util.matching.Regex = (-)?(\d+)(\.\d*)?
+
+scala> val Decimal = """(-)?(\d+)(\.\d*)?""".r
+Decimal: scala.util.matching.Regex = (-)?(\d+)(\.\d*)?
+
+scala> val input = "for -1.0 to 99 by 3"      
+input: String = for -1.0 to 99 by 3
+
+scala> for (s <- Decimal findAllIn input)
+       println(s)
+-1.0
+99
+3
+
+scala> Decimal findFirstIn input
+res7: Option[String] = Some(-1.0)
+
+scala> Decimal findPrefixOf input
+res8: Option[String] = None
+
+scala> val Decimal(sign, integerpart, decimalpart) = "-1.23"  
+sign: String = -
+integerpart: String = 1
+decimalpart: String = .23
+
+scala> val Decimal(sign, integerpart, decimalpart) = "1.0"
+sign: String = null
+integerpart: String = 1
+decimalpart: String = .0
+
+scala> for (Decimal(s, i, d) <- Decimal findAllIn input)
+         println("sign: " + s + ", integer: " +
+             i + ", decimal: " + d)
+sign: -, integer: 1, decimal: .0
+sign: null, integer: 99, decimal: null
+sign: null, integer: 3, decimal: null
+

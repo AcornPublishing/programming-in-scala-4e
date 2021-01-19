@@ -1,0 +1,340 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/2002/REC-xhtml1-20020801/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type"
+        content="text/html; charset=ISO-8859-1" />
+  <title>Code Examples for Programming in Scala, Fourth Edition</title>
+  <link rel="stylesheet" href="style.css" type="text/css"/>
+</head>
+<body>
+
+<div id="mainTitles"><h3>Code Examples for</h3><h2>Programming in Scala, Fourth Edition</h2></div>  <p><a href="../index.html">
+    Return to chapter index
+  </a></p>
+  <h2>23 For Expressions Revisited</h2>
+
+  <p><a href="../for-expressions-revisited/transcript.txt">
+    Sample run of chapter's interpreter examples
+  </a></p>
+
+  <ul>
+
+    <li>23.1 <a href="#sec1">For expressions</a></li>
+    <li>23.2 <a href="#sec2">The n-queens problem</a></li>
+    <li>23.3 <a href="#sec3">Querying with <span class="mono">for</span> expressions</a></li>
+    <li>23.4 <a href="#sec4">Translation of <span class="mono">for</span> expressions</a></li>
+    <li>23.5 <a href="#sec5">Going the other way</a></li>
+    <li>23.6 <a href="#sec6">Generalizing <span class="mono">for</span></a></li>
+    <li>23.7 <a href="#sec7">Conclusion</a></li>
+  </ul>
+
+  <pre><hr>
+  scala&gt; case class Person(name: String, 
+                           isMale: Boolean, 
+                           children: Person*)
+
+<hr>
+// In file <a href="../for-expressions-revisited/Misc.scala">for-expressions-revisited/Misc.scala</a>
+
+  val lara = Person("Lara", false)
+  val bob = Person("Bob", true)
+  val julie = Person("Julie", false, lara, bob)
+  val persons = List(lara, bob, julie)
+
+<hr>
+  scala&gt; persons filter (p =&gt; !p.isMale) flatMap (p =&gt;
+       |     (p.children map (c =&gt; (p.name, c.name))))
+<span class="output">  res0: List[(String, String)] = List((Julie,Lara), </span>
+<span class="output">      (Julie,Bob))</span>
+
+<hr>
+  scala&gt; persons withFilter (p =&gt; !p.isMale) flatMap (p =&gt;
+       |     (p.children map (c =&gt; (p.name, c.name))))
+<span class="output">  res1: List[(String, String)] = List((Julie,Lara), </span>
+<span class="output">      (Julie,Bob))</span>
+
+<hr>
+  scala&gt; for (p &lt;- persons; if !p.isMale; c &lt;- p.children) 
+       | yield (p.name, c.name)
+<span class="output">  res2: List[(String, String)] = List((Julie,Lara), </span>
+<span class="output">      (Julie,Bob))</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec1"></a>23.1 For expressions</h3>
+
+  <pre><hr>
+  for ( <em>seq</em> ) yield <em>expr</em>
+
+<hr>
+// In file <a href="../for-expressions-revisited/Misc.scala">for-expressions-revisited/Misc.scala</a>
+
+  for (p &lt;- persons; n = p.name; if (n startsWith "To")) 
+  yield n
+
+<hr>
+// In file <a href="../for-expressions-revisited/Misc.scala">for-expressions-revisited/Misc.scala</a>
+
+  for {
+    p &lt;- persons              // a generator
+    n = p.name                // a definition
+    if (n startsWith "To")    // a filter
+  } yield n
+
+<hr>
+  <em>pat</em> &lt;- <em>expr</em>
+
+<hr>
+  <em>pat</em> = <em>expr</em>
+
+<hr>
+  val <em>x</em> = <em>expr</em>
+
+<hr>
+  if <em>expr</em>
+
+<hr>
+  scala&gt; for (x &lt;- List(1, 2); y &lt;- List("one", "two")) 
+       | yield (x, y)
+<span class="output">  res3: List[(Int, String)] =</span>
+<span class="output">    List((1,one), (1,two), (2,one), (2,two))</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec2"></a>23.2 The n-queens problem</h3>
+
+  <pre><hr>
+// In file <a href="../for-expressions-revisited/Misc.scala">for-expressions-revisited/Misc.scala</a>
+
+  def queens(n: Int): List[List[(Int, Int)]] = {
+    def placeQueens(k: Int): List[List[(Int, Int)]] =
+      if (k == 0) 
+        List(List())
+      else 
+        for {
+          queens &lt;- placeQueens(k - 1)
+          column &lt;- 1 to n
+          queen = (k, column)
+          if isSafe(queen, queens) 
+        } yield queen :: queens
+
+    placeQueens(n)
+  }
+
+<hr>
+// In file <a href="../for-expressions-revisited/Misc.scala">for-expressions-revisited/Misc.scala</a>
+
+  def isSafe(queen: (Int, Int), queens: List[(Int, Int)]) = 
+    queens forall (q =&gt; !inCheck(queen, q))
+
+  def inCheck(q1: (Int, Int), q2: (Int, Int)) = 
+    q1._1 == q2._1 ||  // same row
+    q1._2 == q2._2 ||  // same column
+    (q1._1 - q2._1).abs == (q1._2 - q2._2).abs // on diagonal
+
+<hr>
+  </pre>
+  <h3><a name="sec3"></a>23.3 Querying with <span class="mono">for</span> expressions</h3>
+
+  <pre><hr>
+  case class Book(title: String, authors: String*)
+
+<hr>
+  val books: List[Book] =
+    List(
+      Book(
+        "Structure and Interpretation of Computer Programs",
+        "Abelson, Harold", "Sussman, Gerald J."
+      ),
+      Book(
+        "Principles of Compiler Design",
+        "Aho, Alfred", "Ullman, Jeffrey"
+      ),
+      Book(
+        "Programming in Modula-2",
+        "Wirth, Niklaus"
+      ),
+      Book(
+        "Elements of ML Programming",
+        "Ullman, Jeffrey"
+      ),
+      Book(
+        "The Java Language Specification", "Gosling, James",
+        "Joy, Bill", "Steele, Guy", "Bracha, Gilad"
+      )
+    )
+
+<hr>
+  scala&gt; for (b &lt;- books; a &lt;- b.authors
+       |      if a startsWith "Gosling")
+       | yield b.title
+<span class="output">  res4: List[String] = List(The Java Language Specification)</span>
+
+<hr>
+  scala&gt; for (b &lt;- books if (b.title indexOf "Program") &gt;= 0)
+       | yield b.title
+<span class="output">  res5: List[String] = List(Structure and Interpretation of </span>
+<span class="output">    Computer Programs, Programming in Modula-2, Elements of ML </span>
+<span class="output">      Programming)</span>
+
+<hr>
+  scala&gt; for (b1 &lt;- books; b2 &lt;- books if b1 != b2;
+       |     a1 &lt;- b1.authors; a2 &lt;- b2.authors if a1 == a2)
+       | yield a1
+<span class="output">  res6: List[String] = List(Ullman, Jeffrey, Ullman, Jeffrey)</span>
+
+<hr>
+  scala&gt; def removeDuplicates[A](xs: List[A]): List[A] = {
+       |   if (xs.isEmpty) xs
+       |   else
+       |     xs.head :: removeDuplicates(
+       |       xs.tail filter (x =&gt; x != xs.head)
+       |     )
+       | }
+<span class="output">  removeDuplicates: [A](xs: List[A])List[A]</span>
+
+  scala&gt; removeDuplicates(res6)
+<span class="output">  res7: List[String] = List(Ullman, Jeffrey)</span>
+
+<hr>
+// In file <a href="../for-expressions-revisited/Misc.scala">for-expressions-revisited/Misc.scala</a>
+
+   xs.head :: removeDuplicates(
+     for (x &lt;- xs.tail if x != xs.head) yield x
+   )
+
+<hr>
+  </pre>
+  <h3><a name="sec4"></a>23.4 Translation of <span class="mono">for</span> expressions</h3>
+
+  <pre><hr>
+for (b1 &lt;- books; b2 &lt;- books if b1 != b2;
+     a1 &lt;- b1.authors; a2 &lt;- b2.authors if a1 == a2)
+yield a1
+
+<hr>
+books flatMap (b1 =&gt;
+  books withFilter (b2 =&gt; b1 != b2) flatMap (b2 =&gt;
+    b1.authors flatMap (a1 =&gt;
+      b2.authors withFilter (a2 =&gt; a1 == a2) map (a2 =&gt;
+        a1))))
+
+<hr>
+// In file <a href="../for-expressions-revisited/Misc.scala">for-expressions-revisited/Misc.scala</a>
+
+  for (x &lt;- 1 to 1000; y = expensiveComputationNotInvolvingX)
+  yield x * y
+
+<hr>
+// In file <a href="../for-expressions-revisited/Misc.scala">for-expressions-revisited/Misc.scala</a>
+
+  val y = expensiveComputationNotInvolvingX
+  for (x &lt;- 1 to 1000) yield x * y
+
+<hr>
+// In file <a href="../for-expressions-revisited/Misc.scala">for-expressions-revisited/Misc.scala</a>
+
+  var sum = 0
+  for (xs &lt;- xss; x &lt;- xs) sum += x
+
+<hr>
+// In file <a href="../for-expressions-revisited/Misc.scala">for-expressions-revisited/Misc.scala</a>
+
+  var sum = 0
+  xss foreach (xs =&gt; 
+    xs foreach (x =&gt;
+      sum += x))
+
+<hr>
+  </pre>
+  <h3><a name="sec5"></a>23.5 Going the other way</h3>
+
+  <pre><hr>
+// In file <a href="../for-expressions-revisited/Misc.scala">for-expressions-revisited/Misc.scala</a>
+
+  object Demo {
+    def map[A, B](xs: List[A], f: A =&gt; B): List[B] =
+      for (x &lt;- xs) yield f(x)
+
+    def flatMap[A, B](xs: List[A], f: A =&gt; List[B]): List[B] =
+      for (x &lt;- xs; y &lt;- f(x)) yield y
+
+    def filter[A](xs: List[A], p: A =&gt; Boolean): List[A] =
+      for (x &lt;- xs if p(x)) yield x
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec6"></a>23.6 Generalizing <span class="mono">for</span></h3>
+
+  <pre><hr>
+// In file <a href="../for-expressions-revisited/Misc.scala">for-expressions-revisited/Misc.scala</a>
+
+  abstract class C[A] {
+    def map[B](f: A =&gt; B): C[B]
+    def flatMap[B](f: A =&gt; C[B]): C[B]
+    def withFilter(p: A =&gt; Boolean): C[A]
+    def foreach(b: A =&gt; Unit): Unit
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec7"></a>23.7 Conclusion</h3>
+
+
+ <table>
+ <tr valign="top">
+ <td>
+ <div id="moreinfo">
+ <p>
+ For more information about <em>Programming in Scala, Fourth Edition</em> (the "Stairway Book"), please visit:
+ </p>
+ 
+ <p>
+ <a href="http://www.artima.com/shop/programming_in_scala_4ed">http://www.artima.com/shop/programming_in_scala_4ed</a>
+ </p>
+ 
+ <p>
+ and:
+ </p>
+ 
+ <p>
+ <a href="http://booksites.artima.com/programming_in_scala_4ed">http://booksites.artima.com/programming_in_scala_4ed</a>
+ </p>
+ </div>
+ </td>
+ <td>
+ <div id="license">
+ <p>
+   Copyright &copy; 2007-2019 Artima, Inc. All rights reserved.
+ </p>
+
+ <p>
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+ </p>
+
+ <p style="margin-left: 20px">
+   <a href="http://www.apache.org/licenses/LICENSE-2.0">
+     http://www.apache.org/licenses/LICENSE-2.0
+   </a>
+ </p>
+
+ <p>
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+   implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ </p>
+ </div>
+ </td>
+ </tr>
+ </table>
+
+</body>
+</html>

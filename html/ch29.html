@@ -1,0 +1,413 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/2002/REC-xhtml1-20020801/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type"
+        content="text/html; charset=ISO-8859-1" />
+  <title>Code Examples for Programming in Scala, Fourth Edition</title>
+  <link rel="stylesheet" href="style.css" type="text/css"/>
+</head>
+<body>
+
+<div id="mainTitles"><h3>Code Examples for</h3><h2>Programming in Scala, Fourth Edition</h2></div>  <p><a href="../index.html">
+    Return to chapter index
+  </a></p>
+  <h2>29 Modular Programming Using Objects</h2>
+
+  <p><a href="../modular-programming-using-objects/transcript.txt">
+    Sample run of chapter's interpreter examples
+  </a></p>
+
+  <ul>
+
+    <li>29.1 <a href="#sec1">The problem</a></li>
+    <li>29.2 <a href="#sec2">A recipe application</a></li>
+    <li>29.3 <a href="#sec3">Abstraction</a></li>
+    <li>29.4 <a href="#sec4">Splitting modules into traits</a></li>
+    <li>29.5 <a href="#sec5">Runtime linking</a></li>
+    <li>29.6 <a href="#sec6">Tracking module instances</a></li>
+    <li>29.7 <a href="#sec7">Conclusion</a></li>
+  </ul>
+
+  <h3><a name="sec1"></a>29.1 The problem</h3>
+
+  <h3><a name="sec2"></a>29.2 A recipe application</h3>
+
+  <pre><hr>
+// In file <a href="../modular-programming-using-objects/Food.scala">modular-programming-using-objects/Food.scala</a>
+
+  package org.stairwaybook.recipe
+
+  abstract class Food(val name: String) {
+    override def toString = name
+  }
+
+<hr>
+// In file <a href="../modular-programming-using-objects/Ex4.scala">modular-programming-using-objects/Ex4.scala</a>
+
+  package org.stairwaybook.recipe
+
+  class Recipe(
+    val name: String,
+    val ingredients: List[Food],
+    val instructions: String
+  ) {
+    override def toString = name
+  }
+
+<hr>
+// In file <a href="../modular-programming-using-objects/Foods.scala">modular-programming-using-objects/Foods.scala</a>
+
+  package org.stairwaybook.recipe
+
+  object Apple extends Food("Apple")
+  object Orange extends Food("Orange")
+  object Cream extends Food("Cream")
+  object Sugar extends Food("Sugar")
+
+  object FruitSalad extends Recipe(
+    "fruit salad",
+    List(Apple, Orange, Cream, Sugar),
+    "Stir it all together."
+  )
+
+<hr>
+// In file <a href="../modular-programming-using-objects/Ex1.scala">modular-programming-using-objects/Ex1.scala</a>
+
+  package org.stairwaybook.recipe
+
+  object SimpleDatabase {
+    def allFoods = List(Apple, Orange, Cream, Sugar)
+
+    def foodNamed(name: String): Option[Food] =
+      allFoods.find(_.name == name)
+
+    def allRecipes: List[Recipe] = List(FruitSalad)
+  }
+
+  object SimpleBrowser {
+    def recipesUsing(food: Food) =
+      SimpleDatabase.allRecipes.filter(recipe =&gt;
+        recipe.ingredients.contains(food))
+  }
+
+<hr>
+  scala&gt; val apple = SimpleDatabase.foodNamed("Apple").get
+<span class="output">  apple: Food = Apple</span>
+
+  scala&gt; SimpleBrowser.recipesUsing(apple)
+<span class="output">  res0: List[Recipe] = List(fruit salad)</span>
+
+<hr>
+// In file <a href="../modular-programming-using-objects/Ex2.scala">modular-programming-using-objects/Ex2.scala</a>
+
+  package org.stairwaybook.recipe
+
+  object SimpleDatabase {
+    def allFoods = List(Apple, Orange, Cream, Sugar)
+
+    def foodNamed(name: String): Option[Food] =
+      allFoods.find(_.name == name)
+
+    def allRecipes: List[Recipe] = List(FruitSalad)
+
+    case class FoodCategory(name: String, foods: List[Food])
+
+    private var categories = List(
+      FoodCategory("fruits", List(Apple, Orange)),
+      FoodCategory("misc", List(Cream, Sugar)))
+
+    def allCategories = categories
+  }
+
+  object SimpleBrowser {
+    def recipesUsing(food: Food) =
+      SimpleDatabase.allRecipes.filter(recipe =&gt;
+        recipe.ingredients.contains(food))
+
+    def displayCategory(category: SimpleDatabase.FoodCategory) = {
+      println(category)
+    }
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec3"></a>29.3 Abstraction</h3>
+
+  <pre><hr>
+  SimpleDatabase.allRecipes.filter(recipe =&gt; ...
+
+<hr>
+// In file <a href="../modular-programming-using-objects/Browser.scala">modular-programming-using-objects/Browser.scala</a>
+
+  abstract class Browser {
+    val database: Database
+
+    def recipesUsing(food: Food) =
+      database.allRecipes.filter(recipe =&gt;
+        recipe.ingredients.contains(food))
+
+    def displayCategory(category: database.FoodCategory) = { 
+      println(category)
+    }
+  }
+
+<hr>
+// In file <a href="../modular-programming-using-objects/Ex3.scala">modular-programming-using-objects/Ex3.scala</a>
+
+  abstract class Database {
+    def allFoods: List[Food]
+    def allRecipes: List[Recipe]
+ 
+    def foodNamed(name: String) =
+      allFoods.find(f =&gt; f.name == name)
+
+    case class FoodCategory(name: String, foods: List[Food])
+    def allCategories: List[FoodCategory]
+  }
+
+<hr>
+// In file <a href="../modular-programming-using-objects/Ex4.scala">modular-programming-using-objects/Ex4.scala</a>
+
+  object SimpleDatabase extends Database {
+    def allFoods = List(Apple, Orange, Cream, Sugar)
+
+    def allRecipes: List[Recipe] = List(FruitSalad)
+
+    private var categories = List(
+      FoodCategory("fruits", List(Apple, Orange)),
+      FoodCategory("misc", List(Cream, Sugar)))
+
+    def allCategories = categories
+  }
+
+<hr>
+// In file <a href="../modular-programming-using-objects/SimpleBrowser.scala">modular-programming-using-objects/SimpleBrowser.scala</a>
+
+  object SimpleBrowser extends Browser {
+    val database = SimpleDatabase
+  }
+
+<hr>
+  scala&gt; val apple = SimpleDatabase.foodNamed("Apple").get
+<span class="output">  apple: Food = Apple</span>
+
+  scala&gt; SimpleBrowser.recipesUsing(apple)
+<span class="output">  res1: List[Recipe] = List(fruit salad)</span>
+
+<hr>
+// In file <a href="../modular-programming-using-objects/StudentDatabase.scala">modular-programming-using-objects/StudentDatabase.scala</a>
+
+  object StudentDatabase extends Database {
+    object FrozenFood extends Food("FrozenFood")
+
+    object HeatItUp extends Recipe(
+      "heat it up",
+      List(FrozenFood),
+      "Microwave the 'food' for 10 minutes.")
+
+    def allFoods = List(FrozenFood)
+    def allRecipes = List(HeatItUp)
+    def allCategories = List(
+      FoodCategory("edible", List(FrozenFood)))
+  }
+
+  object StudentBrowser extends Browser {
+    val database = StudentDatabase
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec4"></a>29.4 Splitting modules into traits</h3>
+
+  <pre><hr>
+// In file <a href="../modular-programming-using-objects/FoodCategories.scala">modular-programming-using-objects/FoodCategories.scala</a>
+
+  trait FoodCategories {
+    case class FoodCategory(name: String, foods: List[Food])
+    def allCategories: List[FoodCategory]
+  }
+
+<hr>
+// In file <a href="../modular-programming-using-objects/Database.scala">modular-programming-using-objects/Database.scala</a>
+
+  abstract class Database extends FoodCategories {
+    def allFoods: List[Food]
+    def allRecipes: List[Recipe]
+    def foodNamed(name: String) =
+      allFoods.find(f =&gt; f.name == name)
+  }
+
+<hr>
+// In file <a href="../modular-programming-using-objects/Ex5.scala">modular-programming-using-objects/Ex5.scala</a>
+
+  object SimpleDatabase extends Database
+      with SimpleFoods with SimpleRecipes
+
+<hr>
+// In file <a href="../modular-programming-using-objects/Ex5.scala">modular-programming-using-objects/Ex5.scala</a>
+
+  trait SimpleFoods {
+    object Pear extends Food("Pear")
+    def allFoods = List(Apple, Pear)
+    def allCategories = Nil
+  }
+
+<hr>
+  trait SimpleRecipes { // Does not compile
+    object FruitSalad extends Recipe(
+      "fruit salad",
+      List(Apple, Pear),  // Uh oh
+      "Mix it all together."
+    )
+    def allRecipes = List(FruitSalad)
+  }
+
+<hr>
+// In file <a href="../modular-programming-using-objects/SimpleRecipes.scala">modular-programming-using-objects/SimpleRecipes.scala</a>
+
+  trait SimpleRecipes {
+    this: SimpleFoods =&gt;
+
+    object FruitSalad extends Recipe(
+      "fruit salad",
+      List(Apple, Pear),   // Now Pear is in scope
+      "Mix it all together."
+    )
+    def allRecipes = List(FruitSalad)
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec5"></a>29.5 Runtime linking</h3>
+
+  <pre><hr>
+// In file <a href="../modular-programming-using-objects/GotApples.scala">modular-programming-using-objects/GotApples.scala</a>
+
+  object GotApples {
+    def main(args: Array[String]) = {
+      val db: Database =
+        if(args(0) == "student")
+          StudentDatabase
+        else
+          SimpleDatabase
+
+      object browser extends Browser {
+        val database = db
+      }
+
+      val apple = SimpleDatabase.foodNamed("Apple").get
+
+      for(recipe &lt;- browser.recipesUsing(apple))
+        println(recipe)
+    } 
+  }
+
+<hr>
+  $ scala GotApples simple
+<span class="output">  fruit salad</span>
+  $ scala GotApples student
+  $
+
+<hr>
+  </pre>
+  <h3><a name="sec6"></a>29.6 Tracking module instances</h3>
+
+  <pre><hr>
+  scala&gt; val category = StudentDatabase.allCategories.head
+<span class="output">  category: StudentDatabase.FoodCategory = </span>
+<span class="output">  FoodCategory(edible,List(FrozenFood))</span>
+
+  scala&gt; SimpleBrowser.displayCategory(category)
+<span class="output">                                       ^</span>
+<span class="output">         error: type mismatch;</span>
+<span class="output">          found   : StudentDatabase.FoodCategory</span>
+<span class="output">          required: SimpleBrowser.database.FoodCategory</span>
+<span class="output"></span>
+
+<hr>
+// In file <a href="../modular-programming-using-objects/GotApples2.scala">modular-programming-using-objects/GotApples2.scala</a>
+
+  object GotApples {
+    // same definitions...
+  
+    for (category &lt;- db.allCategories)
+      browser.displayCategory(category)
+  
+    // ...
+  }
+  
+<span class="output">  GotApples2.scala:14: error: type mismatch;</span>
+<span class="output">   found   : db.FoodCategory</span>
+<span class="output">   required: browser.database.FoodCategory</span>
+<span class="output">          browser.displayCategory(category)</span>
+<span class="output">                                  ^</span>
+<span class="output">  one error found</span>
+
+<hr>
+// In file <a href="../modular-programming-using-objects/GotApples2.scala">modular-programming-using-objects/GotApples2.scala</a>
+
+  object browser extends Browser {
+    val database: db.type = db
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec7"></a>29.7 Conclusion</h3>
+
+
+ <table>
+ <tr valign="top">
+ <td>
+ <div id="moreinfo">
+ <p>
+ For more information about <em>Programming in Scala, Fourth Edition</em> (the "Stairway Book"), please visit:
+ </p>
+ 
+ <p>
+ <a href="http://www.artima.com/shop/programming_in_scala_4ed">http://www.artima.com/shop/programming_in_scala_4ed</a>
+ </p>
+ 
+ <p>
+ and:
+ </p>
+ 
+ <p>
+ <a href="http://booksites.artima.com/programming_in_scala_4ed">http://booksites.artima.com/programming_in_scala_4ed</a>
+ </p>
+ </div>
+ </td>
+ <td>
+ <div id="license">
+ <p>
+   Copyright &copy; 2007-2019 Artima, Inc. All rights reserved.
+ </p>
+
+ <p>
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+ </p>
+
+ <p style="margin-left: 20px">
+   <a href="http://www.apache.org/licenses/LICENSE-2.0">
+     http://www.apache.org/licenses/LICENSE-2.0
+   </a>
+ </p>
+
+ <p>
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+   implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ </p>
+ </div>
+ </td>
+ </tr>
+ </table>
+
+</body>
+</html>

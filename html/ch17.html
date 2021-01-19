@@ -1,0 +1,482 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/2002/REC-xhtml1-20020801/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type"
+        content="text/html; charset=ISO-8859-1" />
+  <title>Code Examples for Programming in Scala, Fourth Edition</title>
+  <link rel="stylesheet" href="style.css" type="text/css"/>
+</head>
+<body>
+
+<div id="mainTitles"><h3>Code Examples for</h3><h2>Programming in Scala, Fourth Edition</h2></div>  <p><a href="../index.html">
+    Return to chapter index
+  </a></p>
+  <h2>17 Working with Other Collections</h2>
+
+  <p><a href="../working-with-other-collections/transcript.txt">
+    Sample run of chapter's interpreter examples
+  </a></p>
+
+  <ul>
+
+    <li>17.1 <a href="#sec1">Sequences</a></li>
+    <li>17.2 <a href="#sec2">Sets and maps</a></li>
+    <li>17.3 <a href="#sec3">Selecting mutable versus immutable collections</a></li>
+    <li>17.4 <a href="#sec4">Initializing collections</a></li>
+    <li>17.5 <a href="#sec5">Tuples</a></li>
+    <li>17.6 <a href="#sec6">Conclusion</a></li>
+  </ul>
+
+  <h3><a name="sec1"></a>17.1 Sequences</h3>
+
+  <pre><hr>
+  scala&gt; val colors = List("red", "blue", "green")
+<span class="output">  colors: List[String] = List(red, blue, green)</span>
+
+  scala&gt; colors.head
+<span class="output">  res0: String = red</span>
+
+  scala&gt; colors.tail
+<span class="output">  res1: List[String] = List(blue, green)</span>
+
+<hr>
+  scala&gt; val fiveInts = new Array[Int](5)
+<span class="output">  fiveInts: Array[Int] = Array(0, 0, 0, 0, 0)</span>
+
+<hr>
+  scala&gt; val fiveToOne = Array(5, 4, 3, 2, 1)
+<span class="output">  fiveToOne: Array[Int] = Array(5, 4, 3, 2, 1)</span>
+
+<hr>
+  scala&gt; fiveInts(0) = fiveToOne(4)
+
+  scala&gt; fiveInts
+<span class="output">  res3: Array[Int] = Array(1, 0, 0, 0, 0)</span>
+
+<hr>
+  scala&gt; import scala.collection.mutable.ListBuffer
+<span class="output">  import scala.collection.mutable.ListBuffer</span>
+
+  scala&gt; val buf = new ListBuffer[Int]             
+<span class="output">  buf: scala.collection.mutable.ListBuffer[Int] = ListBuffer()</span>
+
+  scala&gt; buf += 1                                  
+<span class="output">  res4: buf.type = ListBuffer(1)</span>
+
+  scala&gt; buf += 2                                  
+<span class="output">  res5: buf.type = ListBuffer(1, 2)</span>
+
+  scala&gt; buf     
+<span class="output">  res6: scala.collection.mutable.ListBuffer[Int] =</span>
+<span class="output">      ListBuffer(1, 2)</span>
+
+  scala&gt; 3 +=: buf                                  
+<span class="output">  res7: buf.type = ListBuffer(3, 1, 2)</span>
+
+  scala&gt; buf.toList
+<span class="output">  res8: List[Int] = List(3, 1, 2)</span>
+
+<hr>
+  scala&gt; import scala.collection.mutable.ArrayBuffer
+<span class="output">  import scala.collection.mutable.ArrayBuffer</span>
+
+<hr>
+  scala&gt; val buf = new ArrayBuffer[Int]()
+<span class="output">  buf: scala.collection.mutable.ArrayBuffer[Int] = </span>
+<span class="output">  ArrayBuffer()</span>
+
+<hr>
+  scala&gt; buf += 12
+<span class="output">  res9: buf.type = ArrayBuffer(12)</span>
+
+  scala&gt; buf += 15
+<span class="output">  res10: buf.type = ArrayBuffer(12, 15)</span>
+
+  scala&gt; buf
+<span class="output">  res11: scala.collection.mutable.ArrayBuffer[Int] = </span>
+<span class="output">      ArrayBuffer(12, 15)</span>
+
+<hr>
+  scala&gt; buf.length
+<span class="output">  res12: Int = 2</span>
+
+  scala&gt; buf(0)
+<span class="output">  res13: Int = 12</span>
+
+<hr>
+  scala&gt; def hasUpperCase(s: String) = s.exists(_.isUpper)
+<span class="output">  hasUpperCase: (s: String)Boolean</span>
+
+  scala&gt; hasUpperCase("Robert Frost")
+<span class="output">  res14: Boolean = true</span>
+
+  scala&gt; hasUpperCase("e e cummings")
+<span class="output">  res15: Boolean = false</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec2"></a>17.2 Sets and maps</h3>
+
+  <pre><hr>
+  object Predef {
+    type Map[A, +B] = collection.immutable.Map[A, B]
+    type Set[A] = collection.immutable.Set[A]
+    val Map = collection.immutable.Map
+    val Set = collection.immutable.Set
+    // ...
+  }
+
+<hr>
+  scala&gt; import scala.collection.mutable
+<span class="output">  import scala.collection.mutable</span>
+
+<hr>
+  scala&gt; val mutaSet = mutable.Set(1, 2, 3)          
+<span class="output">  mutaSet: scala.collection.mutable.Set[Int] = Set(1, 2, 3)</span>
+
+<hr>
+  scala&gt; val text = "See Spot run. Run, Spot. Run!"
+<span class="output">  text: String = See Spot run. Run, Spot. Run!</span>
+
+  scala&gt; val wordsArray = text.split("[ !,.]+")    
+<span class="output">  wordsArray: Array[String]</span>
+<span class="output">    = Array(See, Spot, run, Run, Spot, Run)</span>
+
+<hr>
+  scala&gt;  val words = mutable.Set.empty[String]
+<span class="output">  words: scala.collection.mutable.Set[String] = Set()</span>
+
+<hr>
+  scala&gt; for (word &lt;- wordsArray)
+       |   words += word.toLowerCase
+
+  scala&gt; words
+<span class="output">  res17: scala.collection.mutable.Set[String] =</span>
+<span class="output">      Set(see, run, spot)</span>
+
+<hr>
+  scala&gt; val map = mutable.Map.empty[String, Int]
+<span class="output">  map: scala.collection.mutable.Map[String,Int] = Map()</span>
+
+<hr>
+  scala&gt; val map = mutable.Map.empty[String, Int]
+<span class="output">  map: scala.collection.mutable.Map[String,Int] = Map()</span>
+
+<hr>
+  scala&gt; map("hello") = 1
+
+  scala&gt; map("there") = 2
+
+  scala&gt; map
+<span class="output">  res20: scala.collection.mutable.Map[String,Int] =</span>
+<span class="output">      Map(hello -&gt; 1, there -&gt; 2)</span>
+
+<hr>
+  scala&gt; map("hello")
+<span class="output">  res21: Int = 1</span>
+
+<hr>
+  scala&gt; def countWords(text: String) = {
+       |   val counts = mutable.Map.empty[String, Int]
+       |   for (rawWord &lt;- text.split("[ ,!.]+")) {
+       |     val word = rawWord.toLowerCase
+       |     val oldCount = 
+       |       if (counts.contains(word)) counts(word)
+       |       else 0
+       |     counts += (word -&gt; (oldCount + 1))
+       |   }
+       |   counts
+       | }
+<span class="output">  countWords: (text: </span>
+<span class="output">  String)scala.collection.mutable.Map[String,Int]</span>
+
+  scala&gt; countWords("See Spot run! Run, Spot. Run!")
+<span class="output">  res22: scala.collection.mutable.Map[String,Int] =</span>
+<span class="output">      Map(spot -&gt; 2, see -&gt; 1, run -&gt; 3)</span>
+
+<hr>
+  scala&gt; import scala.collection.immutable.TreeSet
+<span class="output">  import scala.collection.immutable.TreeSet</span>
+
+  scala&gt; val ts = TreeSet(9, 3, 1, 8, 0, 2, 7, 4, 6, 5)
+<span class="output">  ts: scala.collection.immutable.TreeSet[Int] =</span>
+<span class="output">      TreeSet(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)</span>
+
+  scala&gt; val cs = TreeSet('f', 'u', 'n')
+<span class="output">  cs: scala.collection.immutable.TreeSet[Char] =</span>
+<span class="output">      TreeSet(f, n, u)</span>
+
+<hr>
+  scala&gt; import scala.collection.immutable.TreeMap
+<span class="output">  import scala.collection.immutable.TreeMap</span>
+
+  scala&gt; var tm = TreeMap(3 -&gt; 'x', 1 -&gt; 'x', 4 -&gt; 'x')
+<span class="output">  tm: scala.collection.immutable.TreeMap[Int,Char] =</span>
+<span class="output">      Map(1 -&gt; x, 3 -&gt; x, 4 -&gt; x)</span>
+
+  scala&gt; tm += (2 -&gt; 'x')
+
+  scala&gt; tm
+<span class="output">  res30: scala.collection.immutable.TreeMap[Int,Char] =</span>
+<span class="output">      Map(1 -&gt; x, 2 -&gt; x, 3 -&gt; x, 4 -&gt; x)</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec3"></a>17.3 Selecting mutable versus immutable collections</h3>
+
+  <pre><hr>
+  scala&gt; val people = Set("Nancy", "Jane")
+<span class="output">  people: scala.collection.immutable.Set[String] =</span>
+<span class="output">      Set(Nancy, Jane)</span>
+
+  scala&gt; people += "Bob"
+<span class="output">  &lt;console&gt;:14: error: value += is not a member of </span>
+<span class="output">  scala.collection.immutable.Set[String]</span>
+<span class="output">                people += "Bob"</span>
+<span class="output">                       ^</span>
+
+<hr>
+  scala&gt; var people = Set("Nancy", "Jane")
+<span class="output">  people: scala.collection.immutable.Set[String] =</span>
+<span class="output">      Set(Nancy, Jane)</span>
+ 
+  scala&gt; people += "Bob"
+
+  scala&gt; people
+<span class="output">  res34: scala.collection.immutable.Set[String] =</span>
+<span class="output">      Set(Nancy, Jane, Bob)</span>
+
+<hr>
+  scala&gt; people -= "Jane"
+
+  scala&gt; people ++= List("Tom", "Harry")
+
+  scala&gt; people
+<span class="output">  res37: scala.collection.immutable.Set[String] =</span>
+<span class="output">      Set(Nancy, Bob, Tom, Harry)</span>
+
+<hr>
+// In file <a href="../working-with-other-collections/Capitals.scala">working-with-other-collections/Capitals.scala</a>
+
+  var capital = Map("US" -&gt; "Washington", "France" -&gt; "Paris")
+  capital += ("Japan" -&gt; "Tokyo")
+  println(capital("France")) 
+
+<hr>
+// In file <a href="../working-with-other-collections/Capitals.scala">working-with-other-collections/Capitals.scala</a>
+
+  import scala.collection.mutable.Map  // only change needed!
+  var capital = Map("US" -&gt; "Washington", "France" -&gt; "Paris")
+  capital += ("Japan" -&gt; "Tokyo")
+  println(capital("France")) 
+
+<hr>
+  scala&gt; var roughlyPi = 3.0
+<span class="output">  roughlyPi: Double = 3.0</span>
+
+  scala&gt; roughlyPi += 0.1
+
+  scala&gt; roughlyPi += 0.04
+
+  scala&gt; roughlyPi
+<span class="output">  res40: Double = 3.14</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec4"></a>17.4 Initializing collections</h3>
+
+  <pre><hr>
+  scala&gt; List(1, 2, 3)
+<span class="output">  res41: List[Int] = List(1, 2, 3)</span>
+
+  scala&gt; Set('a', 'b', 'c')
+<span class="output">  res42: scala.collection.immutable.Set[Char] = Set(a, b, c)</span>
+
+  scala&gt; import scala.collection.mutable
+<span class="output">  import scala.collection.mutable</span>
+
+
+  scala&gt; mutable.Map("hi" -&gt; 2, "there" -&gt; 5)
+<span class="output">  res43: scala.collection.mutable.Map[String,Int] =</span>
+<span class="output">      Map(hi -&gt; 2, there -&gt; 5)</span>
+
+  scala&gt; Array(1.0, 2.0, 3.0)
+<span class="output">  res44: Array[Double] = Array(1.0, 2.0, 3.0)</span>
+
+<hr>
+  scala&gt; import scala.collection.mutable
+<span class="output">  import scala.collection.mutable</span>
+
+  scala&gt; val stuff = mutable.Set(42)
+<span class="output">  stuff: scala.collection.mutable.Set[Int] = Set(42)</span>
+
+  scala&gt; stuff += "abracadabra"
+<span class="output">  &lt;console&gt;:16: error: type mismatch;</span>
+<span class="output">   found   : String("abracadabra")</span>
+<span class="output">   required: Int</span>
+<span class="output">                stuff += "abracadabra"</span>
+<span class="output">                         ^</span>
+
+<hr>
+  scala&gt; val stuff = mutable.Set[Any](42)
+<span class="output">  stuff: scala.collection.mutable.Set[Any] = Set(42)</span>
+
+<hr>
+  scala&gt; val colors = List("blue", "yellow", "red", "green")
+<span class="output">  colors: List[String] = List(blue, yellow, red, green)</span>
+
+<hr>
+  scala&gt; import scala.collection.immutable.TreeSet
+<span class="output">  import scala.collection.immutable.TreeSet</span>
+
+  scala&gt; val treeSet = TreeSet(colors)                 
+<span class="output">  &lt;console&gt;:16: error: No implicit Ordering defined for </span>
+<span class="output">  List[String].</span>
+<span class="output">         val treeSet = TreeSet(colors)</span>
+<span class="output">                              ^</span>
+
+<hr>
+  scala&gt; val treeSet = colors to TreeSet
+<span class="output">  treeSet: scala.collection.immutable.TreeSet[String] = </span>
+<span class="output">      TreeSet(blue, green, red, yellow)</span>
+
+<hr>
+  scala&gt; treeSet.toList
+<span class="output">  res50: List[String] = List(blue, green, red, yellow)</span>
+
+<hr>
+  scala&gt; treeSet.toArray
+<span class="output">  res51: Array[String] = Array(blue, green, red, yellow)</span>
+
+<hr>
+  scala&gt; import scala.collection.mutable
+<span class="output">  import scala.collection.mutable</span>
+
+  scala&gt; treeSet
+<span class="output">  res52: scala.collection.immutable.TreeSet[String] = </span>
+<span class="output">      TreeSet(blue, green, red, yellow)</span>
+
+  scala&gt; val mutaSet = treeSet to mutable.Set
+<span class="output">  mutaSet: scala.collection.mutable.Set[String] =</span>
+<span class="output">      Set(red, blue, green, yellow)</span>
+
+  scala&gt; val immutaSet = mutaSet to Set
+<span class="output">  immutaSet: scala.collection.immutable.Set[String] =</span>
+<span class="output">      Set(red, blue, green, yellow)</span>
+
+<hr>
+  scala&gt; val muta = mutable.Map("i" -&gt; 1, "ii" -&gt; 2)
+<span class="output">  muta: scala.collection.mutable.Map[String,Int] =</span>
+<span class="output">      Map(ii -&gt; 2,i -&gt; 1)</span>
+
+  scala&gt; val immu = muta to Map
+<span class="output">  immu: scala.collection.immutable.Map[String,Int] =</span>
+<span class="output">      Map(ii -&gt; 2, i -&gt; 1)</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec5"></a>17.5 Tuples</h3>
+
+  <pre><hr>
+// In file <a href="../working-with-other-collections/Misc.scala">working-with-other-collections/Misc.scala</a>
+
+  (1, "hello", Console)
+
+<hr>
+  def longestWord(words: Array[String]): (String, Int) = {
+    var word = words(0)
+    var idx = 0
+    for (i &lt;- 1 until words.length)
+      if (words(i).length &gt; word.length) {
+        word = words(i)
+        idx = i
+      }
+    (word, idx)
+  }
+
+<hr>
+  scala&gt; val longest = 
+       |   longestWord("The quick brown fox".split(" "))
+<span class="output">  longest: (String, Int) = (quick,1)</span>
+
+<hr>
+  scala&gt; longest._1
+<span class="output">  res53: String = quick</span>
+
+  scala&gt; longest._2
+<span class="output">  res54: Int = 1</span>
+
+<hr>
+  scala&gt; val (word, idx) = longest
+<span class="output">  word: String = quick</span>
+<span class="output">  idx: Int = 1</span>
+
+  scala&gt; word
+<span class="output">  res55: String = quick</span>
+
+<hr>
+  scala&gt; val word, idx = longest
+<span class="output">  word: (String, Int) = (quick,1)</span>
+<span class="output">  idx: (String, Int) = (quick,1)</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec6"></a>17.6 Conclusion</h3>
+
+
+ <table>
+ <tr valign="top">
+ <td>
+ <div id="moreinfo">
+ <p>
+ For more information about <em>Programming in Scala, Fourth Edition</em> (the "Stairway Book"), please visit:
+ </p>
+ 
+ <p>
+ <a href="http://www.artima.com/shop/programming_in_scala_4ed">http://www.artima.com/shop/programming_in_scala_4ed</a>
+ </p>
+ 
+ <p>
+ and:
+ </p>
+ 
+ <p>
+ <a href="http://booksites.artima.com/programming_in_scala_4ed">http://booksites.artima.com/programming_in_scala_4ed</a>
+ </p>
+ </div>
+ </td>
+ <td>
+ <div id="license">
+ <p>
+   Copyright &copy; 2007-2019 Artima, Inc. All rights reserved.
+ </p>
+
+ <p>
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+ </p>
+
+ <p style="margin-left: 20px">
+   <a href="http://www.apache.org/licenses/LICENSE-2.0">
+     http://www.apache.org/licenses/LICENSE-2.0
+   </a>
+ </p>
+
+ <p>
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+   implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ </p>
+ </div>
+ </td>
+ </tr>
+ </table>
+
+</body>
+</html>

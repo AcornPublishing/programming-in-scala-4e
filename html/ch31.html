@@ -1,0 +1,384 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/2002/REC-xhtml1-20020801/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type"
+        content="text/html; charset=ISO-8859-1" />
+  <title>Code Examples for Programming in Scala, Fourth Edition</title>
+  <link rel="stylesheet" href="style.css" type="text/css"/>
+</head>
+<body>
+
+<div id="mainTitles"><h3>Code Examples for</h3><h2>Programming in Scala, Fourth Edition</h2></div>  <p><a href="../index.html">
+    Return to chapter index
+  </a></p>
+  <h2>31 Combining Scala and Java</h2>
+
+  <p><a href="../combining-scala-and-java/transcript.txt">
+    Sample run of chapter's interpreter examples
+  </a></p>
+
+  <ul>
+
+    <li>31.1 <a href="#sec1">Using Scala from Java</a></li>
+    <li>31.2 <a href="#sec2">Annotations</a></li>
+    <li>31.3 <a href="#sec3">Wildcard types</a></li>
+    <li>31.4 <a href="#sec4">Compiling Scala and Java together</a></li>
+    <li>31.5 <a href="#sec5">Java 8 integration</a></li>
+    <li>31.6 <a href="#sec6">Conclusion</a></li>
+  </ul>
+
+  <h3><a name="sec1"></a>31.1 Using Scala from Java</h3>
+
+  <pre><hr>
+// In file <a href="../combining-scala-and-java/App.scala">combining-scala-and-java/App.scala</a>
+
+  object App {
+    def main(args: Array[String]) = {
+      println("Hello, world!")
+    }
+  }
+
+<hr>
+  $ javap App$
+<span class="output">  Compiled from "App.scala"</span>
+<span class="output">  public final class App$ {</span>
+<span class="output">      public static final App$ MODULE$;</span>
+<span class="output">      public static {};</span>
+<span class="output">      public void main(java.lang.String[]);</span>
+<span class="output">  }</span>
+
+<hr>
+  $ javap App
+<span class="output">  Compiled from "App.scala"</span>
+<span class="output">  public class App {</span>
+<span class="output">      public static void main(java.lang.String[]);</span>
+<span class="output">      public App();</span>
+<span class="output">  }</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec2"></a>31.2 Annotations</h3>
+
+  <pre><hr>
+  // Java serial version marker
+  private final static long SerialVersionUID = 1234L
+
+<hr>
+// In file <a href="../combining-scala-and-java/Reader.scala">combining-scala-and-java/Reader.scala</a>
+
+  import java.io._
+  class Reader(fname: String) {
+    private val in =
+      new BufferedReader(new FileReader(fname))
+ 
+    @throws(classOf[IOException])
+    def read() = in.read()
+  }
+
+<hr>
+  $ javap Reader
+<span class="output">  Compiled from "Reader.scala"</span>
+<span class="output">  public class Reader {</span>
+<span class="output">    public int read() throws java.io.IOException;</span>
+<span class="output">    public Reader(java.lang.String);</span>
+<span class="output">  }</span>
+
+<hr>
+// In file <a href="../combining-scala-and-java/SetTest.scala">combining-scala-and-java/SetTest.scala</a>
+
+  import org.junit.Test
+  import org.junit.Assert.assertEquals
+
+  class SetTest {
+
+    @Test
+    def testMultiAdd = {
+      val set = Set() + 1 + 2 + 3 + 1 + 2 + 3
+      assertEquals(3, set.size)
+    }
+  }
+
+<hr>
+  $ scala -cp junit-4.3.1.jar:. org.junit.runner.JUnitCore SetTest
+<span class="output">  JUnit version 4.3.1</span>
+<span class="output">  .</span>
+<span class="output">  Time: 0.023</span>
+<span class="output"> </span>
+<span class="output">  OK (1 test)</span>
+
+<hr>
+// In file <a href="../combining-scala-and-java/Ignore.java">combining-scala-and-java/Ignore.java</a>
+
+  import java.lang.annotation.*; // This is Java
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target(ElementType.METHOD)
+  public @interface Ignore { }
+
+<hr>
+// In file <a href="../combining-scala-and-java/Tests.scala">combining-scala-and-java/Tests.scala</a>
+
+  object Tests {
+    @Ignore
+    def testData = List(0, 1, -1, 5, -5)
+
+    def test1 = {
+      assert(testData == (testData.head :: testData.tail))
+    }
+
+    def test2 = {
+      assert(testData.contains(testData.head))
+    }
+  }
+
+<hr>
+// In file <a href="../combining-scala-and-java/FindTests.scala">combining-scala-and-java/FindTests.scala</a>
+
+  for {
+    method &lt;- Tests.getClass.getMethods
+    if method.getName.startsWith("test")
+    if method.getAnnotation(classOf[Ignore]) == null
+  } {
+    println("found a test method: " + method)
+  }
+
+<hr>
+  $ javac Ignore.java
+  $ scalac Tests.scala
+  $ scalac FindTests.scala
+  $ scala FindTests
+<span class="output">  found a test method: public void Tests$.test2()</span>
+<span class="output">  found a test method: public void Tests$.test1()</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec3"></a>31.3 Wildcard types</h3>
+
+  <pre><hr>
+// In file <a href="../combining-scala-and-java/Wild.java">combining-scala-and-java/Wild.java</a>
+
+  // This is a Java class with wildcards
+  import java.util.*;
+  public class Wild {
+    public Collection&lt;?&gt; contents() {
+      Collection&lt;String&gt; stuff = new Vector&lt;String&gt;();
+      stuff.add("a");
+      stuff.add("b");
+      stuff.add("see");
+      return stuff;
+    }
+  }
+
+<hr>
+  scala&gt; val contents = (new Wild).contents
+<span class="output">  contents: java.util.Collection[_] = [a, b, see]</span>
+
+<hr>
+  scala&gt; contents.size()
+<span class="output">  res0: Int = 3</span>
+
+<hr>
+  import scala.collection.mutable
+  val iter = (new Wild).contents.iterator
+  val set = mutable.Set.empty[???]     // what type goes here?
+  while (iter.hasMore)
+    set += iter.next()
+
+<hr>
+// In file <a href="../combining-scala-and-java/UseWild.scala">combining-scala-and-java/UseWild.scala</a>
+
+  import scala.collection.mutable
+  import java.util.Collection
+
+  abstract class SetAndType {
+    type Elem
+    val set: mutable.Set[Elem]
+  }
+
+  def javaSet2ScalaSet[T](jset: Collection[T]): SetAndType = {
+    val sset = mutable.Set.empty[T]  // now T can be named!
+
+    val iter = jset.iterator
+    while (iter.hasNext)
+      sset += iter.next()
+
+    new SetAndType {
+      type Elem = T
+      val set = sset
+    }
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec4"></a>31.4 Compiling Scala and Java together</h3>
+
+  <pre><hr>
+  $ scalac -d bin InventoryAnalysis.scala InventoryItem.java \
+         Inventory.java
+  $ javac -cp bin -d bin Inventory.java InventoryItem.java \
+         InventoryManagement.java 
+  $ scala -cp bin InventoryManagement
+<span class="output">  Most expensive item = sprocket($4.99)</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec5"></a>31.5 Java 8 integration</h3>
+
+  <pre><hr>
+  JButton button = new JButton(); // This is Java
+  button.addActionListener(
+    new ActionListener() {
+      public void actionPerformed(ActionEvent event) {
+        System.out.println("pressed!");
+      }
+    }
+  );
+
+<hr>
+  JButton button = new JButton(); // This is Java 8
+  button.addActionListener(
+    event -&gt; System.out.println("pressed!")
+  );
+
+<hr>
+  val button = new JButton
+  button.addActionListener( 
+    _ =&gt; println("pressed!")
+  )
+
+<hr>
+  scala&gt; trait Increaser {
+           def increase(i: Int): Int
+         }
+<span class="output">  defined trait Increaser</span>
+
+<hr>
+  scala&gt; def increaseOne(increaser: Increaser): Int =
+           increaser.increase(1)
+<span class="output">  increaseOne: (increaser: Increaser)Int</span>
+
+<hr>
+  scala&gt; increaseOne(
+           new Increaser {
+             def increase(i: Int): Int = i + 7
+           }
+         )
+<span class="output">  res0: Int = 8</span>
+
+<hr>
+  scala&gt; increaseOne(i =&gt; i + 7) // Scala 2.12
+<span class="output">  res1: Int = 8</span>
+
+<hr>
+  scala&gt; import java.util.function.IntUnaryOperator
+<span class="output">  import java.util.function.IntUnaryOperator</span>
+
+  scala&gt; import java.util.Arrays
+<span class="output">  import java.util.Arrays</span>
+
+  scala&gt; val stream = Arrays.stream(Array(1, 2, 3))
+<span class="output">  stream: java.util.stream.IntStream = ...</span>
+
+  scala&gt; stream.map(
+           new IntUnaryOperator {
+             def applyAsInt(i: Int): Int = i + 1
+           }
+         ).toArray
+<span class="output">  res3: Array[Int] = Array(2, 3, 4)</span>
+
+<hr>
+  scala&gt; val stream = Arrays.stream(Array(1, 2, 3))
+<span class="output">  stream: java.util.stream.IntStream = ...</span>
+
+  scala&gt; stream.map(i =&gt; i + 1).toArray // Scala 2.12
+<span class="output">  res4: Array[Int] = Array(2, 3, 4)</span>
+
+<hr>
+  scala&gt; val f = (i: Int) =&gt; i + 1
+<span class="output">  f: Int =&gt; Int = ...</span>
+
+<hr>
+  scala&gt; val stream = Arrays.stream(Array(1, 2, 3))
+<span class="output">  stream: java.util.stream.IntStream = ...</span>
+
+  scala&gt; stream.map(f).toArray
+<span class="output">  &lt;console&gt;:16: error: type mismatch;</span>
+<span class="output">   found   : Int =&gt; Int</span>
+<span class="output">   required: java.util.function.IntUnaryOperator</span>
+<span class="output">         stream.map(f).toArray</span>
+<span class="output">                    ^</span>
+
+<hr>
+  scala&gt; stream.map(i =&gt; f(i)).toArray
+<span class="output">  res5: Array[Int] = Array(2, 3, 4)</span>
+
+<hr>
+  scala&gt; val f: IntUnaryOperator = i =&gt; i + 1
+<span class="output">  f: java.util.function.IntUnaryOperator = ...</span>
+
+  scala&gt; val stream = Arrays.stream(Array(1, 2, 3))
+<span class="output">  stream: java.util.stream.IntStream = ...</span>
+
+  scala&gt; stream.map(f).toArray
+<span class="output">  res6: Array[Int] = Array(2, 3, 4)</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec6"></a>31.6 Conclusion</h3>
+
+
+ <table>
+ <tr valign="top">
+ <td>
+ <div id="moreinfo">
+ <p>
+ For more information about <em>Programming in Scala, Fourth Edition</em> (the "Stairway Book"), please visit:
+ </p>
+ 
+ <p>
+ <a href="http://www.artima.com/shop/programming_in_scala_4ed">http://www.artima.com/shop/programming_in_scala_4ed</a>
+ </p>
+ 
+ <p>
+ and:
+ </p>
+ 
+ <p>
+ <a href="http://booksites.artima.com/programming_in_scala_4ed">http://booksites.artima.com/programming_in_scala_4ed</a>
+ </p>
+ </div>
+ </td>
+ <td>
+ <div id="license">
+ <p>
+   Copyright &copy; 2007-2019 Artima, Inc. All rights reserved.
+ </p>
+
+ <p>
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+ </p>
+
+ <p style="margin-left: 20px">
+   <a href="http://www.apache.org/licenses/LICENSE-2.0">
+     http://www.apache.org/licenses/LICENSE-2.0
+   </a>
+ </p>
+
+ <p>
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+   implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ </p>
+ </div>
+ </td>
+ </tr>
+ </table>
+
+</body>
+</html>

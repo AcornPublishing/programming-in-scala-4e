@@ -1,0 +1,295 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/2002/REC-xhtml1-20020801/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type"
+        content="text/html; charset=ISO-8859-1" />
+  <title>Code Examples for Programming in Scala, Fourth Edition</title>
+  <link rel="stylesheet" href="style.css" type="text/css"/>
+</head>
+<body>
+
+<div id="mainTitles"><h3>Code Examples for</h3><h2>Programming in Scala, Fourth Edition</h2></div>  <p><a href="../index.html">
+    Return to chapter index
+  </a></p>
+  <h2>14 Assertions and Tests</h2>
+
+    <li>14.1 <a href="#sec1">Assertions</a></li>
+    <li>14.2 <a href="#sec2">Testing in Scala</a></li>
+    <li>14.3 <a href="#sec3">Informative failure reports</a></li>
+    <li>14.4 <a href="#sec4">Tests as specifications</a></li>
+    <li>14.5 <a href="#sec5">Property-based testing</a></li>
+    <li>14.6 <a href="#sec6">Organizing and running tests</a></li>
+    <li>14.7 <a href="#sec7">Conclusion</a></li>
+  </ul>
+
+  <h3><a name="sec1"></a>14.1 Assertions</h3>
+
+  <pre><hr>
+  def above(that: Element): Element = { 
+    val this1 = this widen that.width 
+    val that1 = that widen this.width 
+    assert(this1.width == that1.width)
+    elem(this1.contents ++ that1.contents) 
+  }
+
+<hr>
+  private def widen(w: Int): Element =
+    if (w &lt;= width) 
+      this 
+    else { 
+      val left = elem(' ', (w - width) / 2, height) 
+      var right = elem(' ', w - width - left.width, height) 
+      left beside this beside right 
+    } ensuring (w &lt;= _.width)
+
+<hr>
+  </pre>
+  <h3><a name="sec2"></a>14.2 Testing in Scala</h3>
+
+  <pre><hr>
+// In file <a href="../assertions-and-tests/ElementSuite.scala">assertions-and-tests/ElementSuite.scala</a>
+
+  import org.scalatest.funsuite.AnyFunSuite
+  import Element.elem
+
+  class ElementSuite extends AnyFunSuite {
+
+    test("elem result should have passed width") {
+      val ele = elem('x', 2, 3)
+      assert(ele.width == 2)
+    }
+  }
+
+<hr>
+  scala&gt; (new ElementSuite).execute()
+<span class="output">  ElementSuite:</span>
+<span class="output">  - elem result should have passed width</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec3"></a>14.3 Informative failure reports</h3>
+
+  <pre><hr>
+  scala&gt; val width = 3
+<span class="output">  width: Int = 3</span>
+
+  scala&gt; assert(width == 2)
+<span class="output">  org.scalatest.exceptions.TestFailedException:</span>
+<span class="output">      3 did not equal 2</span>
+
+<hr>
+  scala&gt; assert(List(1, 2, 3).contains(4))
+<span class="output">  org.scalatest.exceptions.TestFailedException:</span>
+
+    assert(List(1, 2, 3).contains(4))
+<span class="output">           |    |  |  |  |        |</span>
+<span class="output">           |    1  2  3  false    4</span>
+<span class="output">           List(1, 2, 3)</span>
+
+<hr>
+  assertResult(2) {
+    ele.width
+  }
+
+<hr>
+  assertThrows[IllegalArgumentException] {
+    elem('x', -2, 3)
+  }
+
+<hr>
+  Expected IllegalArgumentException to be thrown,
+    but NegativeArraySizeException was thrown.
+
+<hr>
+  val caught =
+    intercept[ArithmeticException] {
+      1 / 0
+    }
+
+  assert(caught.getMessage == "/ by zero")
+
+<hr>
+  </pre>
+  <h3><a name="sec4"></a>14.4 Tests as specifications</h3>
+
+  <pre><hr>
+// In file <a href="../assertions-and-tests/ElementSpec.scala">assertions-and-tests/ElementSpec.scala</a>
+
+  import org.scalatest.flatspec.AnyFlatSpec
+  import org.scalatest.matchers.should.Matchers
+  import Element.elem
+
+  class ElementSpec extends AnyFlatSpec with Matchers {
+
+    "A UniformElement" should
+        "have a width equal to the passed value" in {
+      val ele = elem('x', 2, 3)
+      ele.width should be (2)
+    }
+
+    it should "have a height equal to the passed value" in {
+      val ele = elem('x', 2, 3)
+      ele.height should be (3)
+    }
+
+    it should "throw an IAE if passed a negative width" in {
+      an [IllegalArgumentException] should be thrownBy {
+        elem('x', -2, 3)
+      }
+    }
+  }
+
+<hr>
+  scala&gt; (new ElementSpec).execute()
+<span class="output">  A UniformElement</span>
+<span class="output">  - should have a width equal to the passed value</span>
+<span class="output">  - should have a height equal to the passed value</span>
+<span class="output">  - should throw an IAE if passed a negative width</span>
+
+<hr>
+result must be &gt;= 0
+map must contain key 'c'
+
+<hr>
+Map('a' -&gt; 1, 'b' -&gt; 2) did not contain key 'c'
+
+<hr>
+  import org.specs2._
+  import Element.elem
+
+  object ElementSpecification extends Specification {
+    "A UniformElement" should {
+      "have a width equal to the passed value" in {
+        val ele = elem('x', 2, 3)
+        ele.width must be_==(2)
+      }
+      "have a height equal to the passed value" in {
+        val ele = elem('x', 2, 3)
+        ele.height must be_==(3)
+      }
+      "throw an IAE if passed a negative width" in {
+        elem('x', -2, 3) must
+          throwA[IllegalArgumentException]
+      }
+    }
+  }
+
+<hr>
+// In file <a href="../assertions-and-tests/TVSetSpec.scala">assertions-and-tests/TVSetSpec.scala</a>
+
+import org.scalatest._
+import org.scalatest.featurespec.AnyFeatureSpec
+
+class TVSetSpec extends AnyFeatureSpec with GivenWhenThen {
+
+  Feature("TV power button") {
+    Scenario("User presses power button when TV is off") {
+      Given("a TV set that is switched off")
+      When("the power button is pressed")
+      Then("the TV should switch on")
+      pending
+    }
+  }
+}
+
+<hr>
+  </pre>
+  <h3><a name="sec5"></a>14.5 Property-based testing</h3>
+
+  <pre><hr>
+// In file <a href="../assertions-and-tests/ElementSpec2.scala">assertions-and-tests/ElementSpec2.scala</a>
+
+  import org.scalatest.wordspec.AnyWordSpec
+  import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+  import org.scalatest.matchers.must.Matchers._
+  import Element.elem
+
+  class ElementSpec extends AnyWordSpec
+          with ScalaCheckPropertyChecks {
+    "elem result" must {
+      "have passed width" in {
+        forAll { (w: Int) =&gt;
+          whenever (w &gt; 0) {
+            elem('x', w % 100, 3).width must equal (w % 100)
+          }
+        }
+      }
+    } 
+  }
+
+<hr>
+  whenever (w &gt; 0) {
+    elem('x', w % 100, 3).width must equal (w % 100)
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec6"></a>14.6 Organizing and running tests</h3>
+
+  <pre><hr>
+$ scalac -cp scalatest-app.jar:scala-xml.jar TVSetSpec.scala
+
+<hr>
+$ scala -cp scalatest-app.jar:scala-xml.jar org.scalatest.run TVSetSpec
+
+<hr>
+  </pre>
+  <h3><a name="sec7"></a>14.7 Conclusion</h3>
+
+
+ <table>
+ <tr valign="top">
+ <td>
+ <div id="moreinfo">
+ <p>
+ For more information about <em>Programming in Scala, Fourth Edition</em> (the "Stairway Book"), please visit:
+ </p>
+ 
+ <p>
+ <a href="http://www.artima.com/shop/programming_in_scala_4ed">http://www.artima.com/shop/programming_in_scala_4ed</a>
+ </p>
+ 
+ <p>
+ and:
+ </p>
+ 
+ <p>
+ <a href="http://booksites.artima.com/programming_in_scala_4ed">http://booksites.artima.com/programming_in_scala_4ed</a>
+ </p>
+ </div>
+ </td>
+ <td>
+ <div id="license">
+ <p>
+   Copyright &copy; 2007-2019 Artima, Inc. All rights reserved.
+ </p>
+
+ <p>
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+ </p>
+
+ <p style="margin-left: 20px">
+   <a href="http://www.apache.org/licenses/LICENSE-2.0">
+     http://www.apache.org/licenses/LICENSE-2.0
+   </a>
+ </p>
+
+ <p>
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+   implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ </p>
+ </div>
+ </td>
+ </tr>
+ </table>
+
+</body>
+</html>

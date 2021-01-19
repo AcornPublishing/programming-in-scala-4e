@@ -1,0 +1,130 @@
+/*
+ * Copyright (C) 2007-2019 Artima, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Automatically generated Scala interpreter transcript from:
+ *
+ * Programming in Scala (Fourth Edition)
+ * by Martin Odersky, Lex Spoon, Bill Venners
+ *
+ * http://booksites.artima.com/programming_in_scala_4ed
+ */
+
+
+scala>   abstract class Element {
+           def contents: Array[String]
+           val height = contents.length
+           val width = 
+             if (height == 0) 0 else contents(0).length
+         }
+
+defined class Element
+
+scala>   class ArrayElement(conts: Array[String]) extends Element {
+           def contents: Array[String] = conts
+         }
+
+defined class ArrayElement
+
+scala> val ae = new ArrayElement(Array("hello", "world"))
+ae: ArrayElement = ArrayElement@7d8b66d9
+
+scala> ae.width
+res0: Int = 5
+
+scala>   abstract class Element {
+           def demo() = {
+             println("Element's implementation invoked")
+           }
+         }
+       
+         class ArrayElement extends Element {
+           override def demo() = {
+             println("ArrayElement's implementation invoked")
+           }
+         }
+       
+
+          class LineElement extends ArrayElement {
+           override def demo() = {
+             println("LineElement's implementation invoked")
+           }
+         }
+       
+
+          // UniformElement inherits Element's demo
+         class UniformElement extends Element 
+
+defined class Element
+defined class ArrayElement
+defined class LineElement
+defined class UniformElement
+
+scala>   def invokeDemo(e: Element) = {
+           e.demo()
+         }
+
+invokeDemo: (e: Element)Unit
+
+scala> invokeDemo(new ArrayElement)
+ArrayElement's implementation invoked
+
+scala> invokeDemo(new LineElement)
+LineElement's implementation invoked
+
+scala> invokeDemo(new UniformElement)
+Element's implementation invoked
+
+scala>   class ArrayElement extends Element {
+           final override def demo() = {
+             println("ArrayElement's implementation invoked")
+           }
+         }
+
+defined class ArrayElement
+
+scala>   class LineElement extends ArrayElement {
+           override def demo() = {
+             println("LineElement's implementation invoked")
+           }
+         }
+       
+
+                  override def demo() = {
+                               ^
+On line 2: error: cannot override final member:
+       final override def demo(): Unit (defined in class ArrayElement)
+
+scala>   final class ArrayElement extends Element {
+           override def demo() = {
+             println("ArrayElement's implementation invoked")
+           }
+         }
+
+defined class ArrayElement
+
+scala>   class LineElement extends ArrayElement {
+           override def demo() = {
+             println("LineElement's implementation invoked")
+           }
+         }
+       
+
+                                   ^
+       error: illegal inheritance from final class ArrayElement
+
+scala>   Array(1, 2, 3) zip Array("a", "b")
+
+res4: Array[(Int, String)] = Array((1,a), (2,b))
+

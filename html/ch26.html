@@ -1,0 +1,375 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/2002/REC-xhtml1-20020801/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type"
+        content="text/html; charset=ISO-8859-1" />
+  <title>Code Examples for Programming in Scala, Fourth Edition</title>
+  <link rel="stylesheet" href="style.css" type="text/css"/>
+</head>
+<body>
+
+<div id="mainTitles"><h3>Code Examples for</h3><h2>Programming in Scala, Fourth Edition</h2></div>  <p><a href="../index.html">
+    Return to chapter index
+  </a></p>
+  <h2>26 Extractors</h2>
+
+  <p><a href="../extractors/transcript.txt">
+    Sample run of chapter's interpreter examples
+  </a></p>
+
+  <ul>
+
+    <li>26.1 <a href="#sec1">An example: extracting email addresses</a></li>
+    <li>26.2 <a href="#sec2">Extractors</a></li>
+    <li>26.3 <a href="#sec3">Patterns with zero or one variables</a></li>
+    <li>26.4 <a href="#sec4">Variable argument extractors</a></li>
+    <li>26.5 <a href="#sec5">Extractors and sequence patterns</a></li>
+    <li>26.6 <a href="#sec6">Extractors versus case classes</a></li>
+    <li>26.7 <a href="#sec7">Regular expressions</a></li>
+    <li>26.8 <a href="#sec8">Conclusion</a></li>
+  </ul>
+
+  <h3><a name="sec1"></a>26.1 An example: extracting email addresses</h3>
+
+  <pre><hr>
+  def isEMail(s: String): Boolean
+  def domain(s: String): String
+  def user(s: String): String
+
+<hr>
+  if (isEMail(s)) println(user(s) + " AT " + domain(s))
+  else println("not an email address")
+
+<hr>
+  EMail(user, domain)
+
+<hr>
+// In file <a href="../extractors/IsEmail.scala">extractors/IsEmail.scala</a>
+
+  s match {
+    case EMail(user, domain) =&gt; println(user + " AT " + domain)
+    case _ =&gt; println("not an email address")
+  }
+
+<hr>
+  ss match {
+    case EMail(u1, d1) :: EMail(u2, d2) :: _ if (u1 == u2) =&gt; ...
+    ...
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec2"></a>26.2 Extractors</h3>
+
+  <pre><hr>
+// In file <a href="../extractors/EMail.scala">extractors/EMail.scala</a>
+
+  object EMail {
+
+    // The injection method (optional)
+    def apply(user: String, domain: String) = user + "@" + domain
+
+    // The extraction method (mandatory)
+    def unapply(str: String): Option[(String, String)] = {
+      val parts = str split "@"
+      if (parts.length == 2) Some(parts(0), parts(1)) else None
+    }
+  }
+
+<hr>
+  object EMail extends ((String, String) =&gt; String) { ... }
+
+<hr>
+  unapply("John@epfl.ch")  <em>equals</em>  Some("John", "epfl.ch")
+  unapply("John Doe")  <em>equals</em>  None
+
+<hr>
+  selectorString match { case EMail(user, domain) =&gt; ... }
+
+<hr>
+  EMail.unapply(selectorString)
+
+<hr>
+  val x: Any = ...
+  x match { case EMail(user, domain) =&gt; ... }
+
+<hr>
+// In file <a href="../extractors/Misc.scala">extractors/Misc.scala</a>
+
+  EMail.unapply(EMail.apply(user, domain))
+
+<hr>
+  Some(user, domain)
+
+<hr>
+  EMail.unapply(obj) match { 
+    case Some(u, d) =&gt; EMail.apply(u, d) 
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec3"></a>26.3 Patterns with zero or one variables</h3>
+
+  <pre><hr>
+// In file <a href="../extractors/Twice.scala">extractors/Twice.scala</a>
+
+  object Twice {
+    def apply(s: String): String = s + s
+    def unapply(s: String): Option[String] = {
+      val length = s.length / 2
+      val half = s.substring(0, length)
+      if (half == s.substring(length)) Some(half) else None
+    }
+  }
+
+<hr>
+// In file <a href="../extractors/UpperCase.scala">extractors/UpperCase.scala</a>
+
+  object UpperCase {
+    def unapply(s: String): Boolean = s.toUpperCase == s
+  }
+
+<hr>
+// In file <a href="../extractors/Test2.scala">extractors/Test2.scala</a>
+
+  def userTwiceUpper(s: String) = s match {
+    case EMail(Twice(x @ UpperCase()), domain) =&gt;
+      "match: " + x + " in domain " + domain
+    case _ =&gt; 
+      "no match"
+  }
+
+<hr>
+  scala&gt; userTwiceUpper("DIDI@hotmail.com")
+<span class="output">  res0: String = match: DI in domain hotmail.com</span>
+
+  scala&gt; userTwiceUpper("DIDO@hotmail.com")
+<span class="output">  res1: String = no match</span>
+
+  scala&gt; userTwiceUpper("didi@hotmail.com")
+<span class="output">  res2: String = no match</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec4"></a>26.4 Variable argument extractors</h3>
+
+  <pre><hr>
+// In file <a href="../extractors/DomainTest.scala">extractors/DomainTest.scala</a>
+
+  dom match {
+    case Domain("org", "acm") =&gt; println("acm.org")
+    case Domain("com", "sun", "java") =&gt; println("java.sun.com")
+    case Domain("net", _*) =&gt; println("a .net domain")
+  }
+
+<hr>
+// In file <a href="../extractors/Domain.scala">extractors/Domain.scala</a>
+
+  object Domain {
+
+    // The injection method (optional)
+    def apply(parts: String*): String = 
+      parts.reverse.mkString(".")
+
+    // The extraction method (mandatory)
+    def unapplySeq(whole: String): Option[Seq[String]] = 
+      Some(whole.split("\\.").reverse.toSeq)
+  }
+
+<hr>
+// In file <a href="../extractors/DomainTest.scala">extractors/DomainTest.scala</a>
+
+  def isTomInDotCom(s: String): Boolean = s match {
+    case EMail("tom", Domain("com", _*)) =&gt; true
+    case _ =&gt; false
+  }
+
+<hr>
+  scala&gt; isTomInDotCom("tom@sun.com")
+<span class="output">  res3: Boolean = true</span>
+
+  scala&gt; isTomInDotCom("peter@sun.com")
+<span class="output">  res4: Boolean = false</span>
+
+  scala&gt; isTomInDotCom("tom@acm.org")
+<span class="output">  res5: Boolean = false</span>
+
+<hr>
+// In file <a href="../extractors/ExpandedEMail.scala">extractors/ExpandedEMail.scala</a>
+
+  object ExpandedEMail {
+    def unapplySeq(email: String)
+        : Option[(String, Seq[String])] = {
+      val parts = email split "@"
+      if (parts.length == 2) 
+        Some(parts(0), parts(1).split("\\.").reverse.toSeq)
+      else 
+        None
+    }
+  }
+
+<hr>
+  scala&gt; val s = "tom@support.epfl.ch"
+<span class="output">  s: String = tom@support.epfl.ch</span>
+
+  scala&gt; val ExpandedEMail(name, topdom, subdoms @ _*) = s
+<span class="output">  name: String = tom</span>
+<span class="output">  topdom: String = ch</span>
+<span class="output">  subdoms: Seq[String] = WrappedArray(epfl, support)</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec5"></a>26.5 Extractors and sequence patterns</h3>
+
+  <pre><hr>
+  List()
+  List(x, y, _*)
+  Array(x, 0, 0, _)
+
+<hr>
+  package scala
+  object List {
+    def apply[T](elems: T*) = elems.toList
+    def unapplySeq[T](x: List[T]): Option[Seq[T]] = Some(x)
+    ... 
+  }
+
+<hr>
+  List()
+  List(1, 2, 3)
+
+<hr>
+  </pre>
+  <h3><a name="sec6"></a>26.6 Extractors versus case classes</h3>
+
+  <pre><hr>
+  case C(...)
+
+<hr>
+  </pre>
+  <h3><a name="sec7"></a>26.7 Regular expressions</h3>
+
+  <pre><hr>
+  scala&gt; import scala.util.matching.Regex
+
+<hr>
+  scala&gt; val Decimal = new Regex("(-)?(\\d+)(\\.\\d*)?")
+<span class="output">  Decimal: scala.util.matching.Regex = (-)?(\d+)(\.\d*)?</span>
+
+<hr>
+  scala&gt; val Decimal = new Regex("""(-)?(\d+)(\.\d*)?""")
+<span class="output">  Decimal: scala.util.matching.Regex = (-)?(\d+)(\.\d*)?</span>
+
+<hr>
+  scala&gt; val Decimal = """(-)?(\d+)(\.\d*)?""".r
+<span class="output">  Decimal: scala.util.matching.Regex = (-)?(\d+)(\.\d*)?</span>
+
+<hr>
+  package scala.runtime
+  import scala.util.matching.Regex
+
+  class StringOps(self: String) ... {
+    ...
+    def r = new Regex(self)
+  }
+
+<hr>
+  scala&gt; val Decimal = """(-)?(\d+)(\.\d*)?""".r
+<span class="output">  Decimal: scala.util.matching.Regex = (-)?(\d+)(\.\d*)?</span>
+
+  scala&gt; val input = "for -1.0 to 99 by 3"      
+<span class="output">  input: String = for -1.0 to 99 by 3</span>
+
+  scala&gt; for (s &lt;- Decimal findAllIn input)
+       | println(s)
+<span class="output">  -1.0</span>
+<span class="output">  99</span>
+<span class="output">  3</span>
+
+  scala&gt; Decimal findFirstIn input
+<span class="output">  res7: Option[String] = Some(-1.0)</span>
+
+  scala&gt; Decimal findPrefixOf input
+<span class="output">  res8: Option[String] = None</span>
+
+<hr>
+  scala&gt; val Decimal(sign, integerpart, decimalpart) = "-1.23"  
+<span class="output">  sign: String = -</span>
+<span class="output">  integerpart: String = 1</span>
+<span class="output">  decimalpart: String = .23</span>
+
+<hr>
+  scala&gt; val Decimal(sign, integerpart, decimalpart) = "1.0"
+<span class="output">  sign: String = null</span>
+<span class="output">  integerpart: String = 1</span>
+<span class="output">  decimalpart: String = .0</span>
+
+<hr>
+  scala&gt; for (Decimal(s, i, d) &lt;- Decimal findAllIn input)
+       |   println("sign: " + s + ", integer: " +
+       |       i + ", decimal: " + d)
+<span class="output">  sign: -, integer: 1, decimal: .0</span>
+<span class="output">  sign: null, integer: 99, decimal: null</span>
+<span class="output">  sign: null, integer: 3, decimal: null</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec8"></a>26.8 Conclusion</h3>
+
+
+ <table>
+ <tr valign="top">
+ <td>
+ <div id="moreinfo">
+ <p>
+ For more information about <em>Programming in Scala, Fourth Edition</em> (the "Stairway Book"), please visit:
+ </p>
+ 
+ <p>
+ <a href="http://www.artima.com/shop/programming_in_scala_4ed">http://www.artima.com/shop/programming_in_scala_4ed</a>
+ </p>
+ 
+ <p>
+ and:
+ </p>
+ 
+ <p>
+ <a href="http://booksites.artima.com/programming_in_scala_4ed">http://booksites.artima.com/programming_in_scala_4ed</a>
+ </p>
+ </div>
+ </td>
+ <td>
+ <div id="license">
+ <p>
+   Copyright &copy; 2007-2019 Artima, Inc. All rights reserved.
+ </p>
+
+ <p>
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+ </p>
+
+ <p style="margin-left: 20px">
+   <a href="http://www.apache.org/licenses/LICENSE-2.0">
+     http://www.apache.org/licenses/LICENSE-2.0
+   </a>
+ </p>
+
+ <p>
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+   implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ </p>
+ </div>
+ </td>
+ </tr>
+ </table>
+
+</body>
+</html>

@@ -1,0 +1,305 @@
+/*
+ * Copyright (C) 2007-2019 Artima, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Automatically generated Scala interpreter transcript from:
+ *
+ * Programming in Scala (Fourth Edition)
+ * by Martin Odersky, Lex Spoon, Bill Venners
+ *
+ * http://booksites.artima.com/programming_in_scala_4ed
+ */
+
+
+scala> List(1, 2, 3) map (_ + 1)
+res0: List[Int] = List(2, 3, 4)
+
+scala> Set(1, 2, 3) map (_ * 2)
+res1: scala.collection.immutable.Set[Int] = Set(2, 4, 6)
+
+scala> val xs = List(1, 2, 3, 4, 5)
+xs: List[Int] = List(1, 2, 3, 4, 5)
+
+scala> val git = xs grouped 3
+git: Iterator[List[Int]] = <iterator>
+
+scala> git.next()
+res2: List[Int] = List(1, 2, 3)
+
+scala> git.next()
+res3: List[Int] = List(4, 5)
+
+scala> val sit = xs sliding 3
+sit: Iterator[List[Int]] = <iterator>
+
+scala> sit.next()
+res4: List[Int] = List(1, 2, 3)
+
+scala> sit.next()
+res5: List[Int] = List(2, 3, 4)
+
+scala> sit.next()
+res6: List[Int] = List(3, 4, 5)
+
+scala> val fruit = Set("apple", "orange", "peach",
+         "banana")
+fruit: scala.collection.immutable.Set[String] = Set(apple, orange, peach, banana)
+
+scala> fruit("peach")
+res7: Boolean = true
+
+scala> fruit("potato")
+res8: Boolean = false
+
+scala> var s = Set(1, 2, 3)
+s: scala.collection.immutable.Set[Int] = Set(1, 2, 3)
+
+scala> s += 4; s -= 2
+
+scala> s
+res10: scala.collection.immutable.Set[Int] = Set(1, 3, 4)
+
+scala> val s = collection.mutable.Set(1, 2, 3)
+s: scala.collection.mutable.Set[Int] = HashSet(1, 2, 3)
+
+scala> s += 4
+res11: s.type = HashSet(1, 2, 3, 4)
+
+scala> s -= 2
+res12: s.type = HashSet(1, 3, 4)
+
+scala> def f(x: String) = { 
+       println("taking my time."); Thread.sleep(100)
+       x.reverse }
+f: (x: String)String
+
+scala> val cache = collection.mutable.Map[String, String]()
+cache: scala.collection.mutable.Map[String,String] = HashMap()
+
+scala> def cachedF(s: String) = cache.getOrElseUpdate(s, f(s))
+cachedF: (s: String)String
+
+scala> cachedF("abc")
+taking my time.
+res13: String = cba
+
+scala> cachedF("abc")
+res14: String = cba
+
+scala> val str = 1 #:: 2 #:: 3 #:: LazyList.empty
+str: scala.collection.immutable.LazyList[Int] = LazyList(<not computed>)
+
+scala> def fibFrom(a: Int, b: Int): LazyList[Int] =
+         a #:: fibFrom(b, a + b)
+fibFrom: (a: Int, b: Int)LazyList[Int]
+
+scala> val fibs = fibFrom(1, 1).take(7)
+fibs: scala.collection.immutable.LazyList[Int] = LazyList(<not computed>)
+
+scala> fibs.toList
+res15: List[Int] = List(1, 1, 2, 3, 5, 8, 13)
+
+scala> val vec = scala.collection.immutable.Vector.empty
+vec: scala.collection.immutable.Vector[Nothing] = Vector()
+
+scala> val vec2 = vec :+ 1 :+ 2
+vec2: scala.collection.immutable.Vector[Int] = Vector(1, 2)
+
+scala> val vec3 = 100 +: vec2
+vec3: scala.collection.immutable.Vector[Int] = Vector(100, 1, 2)
+
+scala> vec3(0)
+res16: Int = 100
+
+scala> val vec = Vector(1, 2, 3)
+vec: scala.collection.immutable.Vector[Int] = Vector(1, 2, 3)
+
+scala> vec updated (2, 4)
+res17: scala.collection.immutable.Vector[Int] = Vector(1, 2, 4)
+
+scala> vec
+res18: scala.collection.immutable.Vector[Int] = Vector(1, 2, 3)
+
+scala> collection.immutable.IndexedSeq(1, 2, 3)
+res19: IndexedSeq[Int] = Vector(1, 2, 3)
+
+scala> val empty = scala.collection.immutable.Queue[Int]()
+empty: scala.collection.immutable.Queue[Int] = Queue()
+
+scala> val has1 = empty.enqueue(1)
+has1: scala.collection.immutable.Queue[Int] = Queue(1)
+
+scala> val has123 = has1.enqueueAll(List(2, 3))
+has123: scala.collection.immutable.Queue[Int] = Queue(1, 2, 3)
+
+scala> val (element, has23) = has123.dequeue
+element: Int = 1
+has23: scala.collection.immutable.Queue[Int] = Queue(2, 3)
+
+scala> 1 to 3
+res20: scala.collection.immutable.Range.Inclusive = Range 1 to 3
+
+scala> 5 to 14 by 3
+res21: scala.collection.immutable.Range = Range 5 to 14 by 3
+
+scala> 1 until 3
+res22: scala.collection.immutable.Range = Range 1 until 3
+
+scala> val set = collection.immutable.TreeSet.empty[Int]
+set: scala.collection.immutable.TreeSet[Int] = TreeSet()
+
+scala> set + 1 + 3 + 3
+res23: scala.collection.immutable.TreeSet[Int] = TreeSet(1, 3)
+
+scala> val bits = scala.collection.immutable.BitSet.empty
+bits: scala.collection.immutable.BitSet = BitSet()
+
+scala> val moreBits = bits + 3 + 4 + 4
+moreBits: scala.collection.immutable.BitSet = BitSet(3, 4)
+
+scala> moreBits(3)
+res24: Boolean = true
+
+scala> moreBits(0)
+res25: Boolean = false
+
+scala> val vm = scala.collection.immutable.VectorMap.
+
+scala> val vm1 = vm + (1 -> "one")
+                 ^
+       error: not found: value vm
+
+scala> val vm2 = vm1 + (2 -> "two")
+                 ^
+       error: not found: value vm1
+
+scala> vm2 == Map(2 -> "two", 1 -> "one")
+       ^
+       error: not found: value vm2
+
+scala> val map = collection.immutable.ListMap(
+         1 -> "one", 2 -> "two")
+map: scala.collection.immutable.ListMap[Int,String] = ListMap(1 -> one, 2 -> two)
+
+scala> map(2)
+res27: String = two
+
+scala> val buf = collection.mutable.ArrayBuffer.empty[Int]
+buf: scala.collection.mutable.ArrayBuffer[Int] = ArrayBuffer()
+
+scala> buf += 1
+res28: buf.type = ArrayBuffer(1)
+
+scala> buf += 10
+res29: buf.type = ArrayBuffer(1, 10)
+
+scala> buf.toArray
+res30: Array[Int] = Array(1, 10)
+
+scala> val buf = collection.mutable.ListBuffer.empty[Int]
+buf: scala.collection.mutable.ListBuffer[Int] = ListBuffer()
+
+scala> buf += 1
+res31: buf.type = ListBuffer(1)
+
+scala> buf += 10
+res32: buf.type = ListBuffer(1, 10)
+
+scala> buf.toList
+res33: List[Int] = List(1, 10)
+
+scala> val buf = new StringBuilder
+buf: StringBuilder =
+
+scala> buf += 'a'
+res34: buf.type = a
+
+scala> buf ++= "bcdef"
+res35: buf.type = abcdef
+
+scala> buf.toString
+res36: String = abcdef
+
+scala> val queue = new scala.collection.mutable.Queue[String]
+queue: scala.collection.mutable.Queue[String] = Queue()
+
+scala> queue += "a"
+res37: queue.type = Queue(a)
+
+scala> queue ++= List("b", "c")
+res38: queue.type = Queue(a, b, c)
+
+scala> queue
+res39: scala.collection.mutable.Queue[String] = Queue(a, b, c)
+
+scala> queue.dequeue
+res40: String = a
+
+scala> queue
+res41: scala.collection.mutable.Queue[String] = Queue(b, c)
+
+scala> val stack = new scala.collection.mutable.Stack[Int]           
+stack: scala.collection.mutable.Stack[Int] = Stack()
+
+scala> stack.push(1)
+res42: stack.type = Stack(1)
+
+scala> stack
+res43: scala.collection.mutable.Stack[Int] = Stack(1)
+
+scala> stack.push(2)
+res44: stack.type = Stack(2, 1)
+
+scala> stack
+res45: scala.collection.mutable.Stack[Int] = Stack(2, 1)
+
+scala> stack.top
+res46: Int = 2
+
+scala> stack
+res47: scala.collection.mutable.Stack[Int] = Stack(2, 1)
+
+scala> stack.pop
+res48: Int = 2
+
+scala> stack    
+res49: scala.collection.mutable.Stack[Int] = Stack(1)
+
+scala> val map = collection.mutable.HashMap.empty[Int,String]
+map: scala.collection.mutable.HashMap[Int,String] = HashMap()
+
+scala> map += (1 -> "make a web site")
+res50: map.type = HashMap(1 -> make a web site)
+
+scala> map += (3 -> "profit!")
+res51: map.type = HashMap(1 -> make a web site, 3 -> profit!)
+
+scala> map(1)
+res52: String = make a web site
+
+scala> map contains 2
+res53: Boolean = false
+
+scala> val bits = scala.collection.mutable.BitSet.empty
+bits: scala.collection.mutable.BitSet = BitSet()
+
+scala> bits += 1
+res54: bits.type = BitSet(1)
+
+scala> bits += 3
+res55: bits.type = BitSet(1, 3)
+
+scala> bits
+res56: scala.collection.mutable.BitSet = BitSet(1, 3)
+

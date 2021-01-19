@@ -1,0 +1,438 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/2002/REC-xhtml1-20020801/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type"
+        content="text/html; charset=ISO-8859-1" />
+  <title>Code Examples for Programming in Scala, Fourth Edition</title>
+  <link rel="stylesheet" href="style.css" type="text/css"/>
+</head>
+<body>
+
+<div id="mainTitles"><h3>Code Examples for</h3><h2>Programming in Scala, Fourth Edition</h2></div>  <p><a href="../index.html">
+    Return to chapter index
+  </a></p>
+  <h2>12 Traits</h2>
+
+  <p><a href="../traits/transcript.txt">
+    Sample run of chapter's interpreter examples
+  </a></p>
+
+  <ul>
+
+    <li>12.1 <a href="#sec1">How traits work</a></li>
+    <li>12.2 <a href="#sec2">Thin versus rich interfaces</a></li>
+    <li>12.3 <a href="#sec3">Example: Rectangular objects</a></li>
+    <li>12.4 <a href="#sec4">The <span class="mono">Ordered</span> trait</a></li>
+    <li>12.5 <a href="#sec5">Traits as stackable modifications</a></li>
+    <li>12.6 <a href="#sec6">Why not multiple inheritance?</a></li>
+    <li>12.7 <a href="#sec7">To trait or not to trait?</a></li>
+    <li>12.8 <a href="#sec8">Conclusion</a></li>
+  </ul>
+
+  <h3><a name="sec1"></a>12.1 How traits work</h3>
+
+  <pre><hr>
+// In file <a href="../traits/Philosophical.scala">traits/Philosophical.scala</a>
+
+  trait Philosophical {
+    def philosophize() = {
+      println("I consume memory, therefore I am!")
+    }
+  }
+
+<hr>
+  class Frog extends Philosophical {
+    override def toString = "green"
+  }
+
+<hr>
+  scala&gt; val frog = new Frog
+<span class="output">  frog: Frog = green</span>
+
+  scala&gt; frog.philosophize()
+<span class="output">  I consume memory, therefore I am!</span>
+
+<hr>
+  scala&gt; val phil: Philosophical = frog  
+<span class="output">  phil: Philosophical = green</span>
+
+  scala&gt; phil.philosophize()
+<span class="output">  I consume memory, therefore I am!</span>
+
+<hr>
+// In file <a href="../traits/Ex1.scala">traits/Ex1.scala</a>
+
+  class Animal
+
+  class Frog extends Animal with Philosophical {
+    override def toString = "green"
+  }
+
+<hr>
+// In file <a href="../traits/Frog.scala">traits/Frog.scala</a>
+
+  class Animal
+  trait HasLegs
+
+  class Frog extends Animal with Philosophical with HasLegs {
+    override def toString = "green"
+  }
+
+<hr>
+// In file <a href="../traits/Ex2.scala">traits/Ex2.scala</a>
+
+  class Animal
+
+  class Frog extends Animal with Philosophical {
+    override def toString = "green"
+    override def philosophize() = {
+      println("It ain't easy being " + toString + "!")
+    }
+  }
+
+<hr>
+  scala&gt; val phrog: Philosophical = new Frog
+<span class="output">  phrog: Philosophical = green</span>
+
+  scala&gt; phrog.philosophize()
+<span class="output">  It ain't easy being green!</span>
+
+<hr>
+// In file <a href="../traits/Ex2.scala">traits/Ex2.scala</a>
+
+  class Point(x: Int, y: Int)
+
+<hr>
+  trait NoPoint(x: Int, y: Int) // Does not compile
+
+<hr>
+  </pre>
+  <h3><a name="sec2"></a>12.2 Thin versus rich interfaces</h3>
+
+  <pre><hr>
+// In file <a href="../traits/Ex2.scala">traits/Ex2.scala</a>
+
+  trait CharSequence {
+    def charAt(index: Int): Char
+    def length: Int
+    def subSequence(start: Int, end: Int): CharSequence
+    def toString(): String
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec3"></a>12.3 Example: Rectangular objects</h3>
+
+  <pre><hr>
+// In file <a href="../traits/Point.scala">traits/Point.scala</a>
+
+  class Point(val x: Int, val y: Int)
+
+  class Rectangle(val topLeft: Point, val bottomRight: Point) {
+    def left = topLeft.x
+    def right = bottomRight.x
+    def width = right - left
+    // and many more geometric methods...
+  }
+
+<hr>
+  abstract class Component {
+    def topLeft: Point
+    def bottomRight: Point
+
+    def left = topLeft.x
+    def right = bottomRight.x
+    def width = right - left
+    // and many more geometric methods...
+  }
+
+<hr>
+// In file <a href="../traits/Rectangular.scala">traits/Rectangular.scala</a>
+
+  trait Rectangular {
+    def topLeft: Point
+    def bottomRight: Point
+
+    def left = topLeft.x
+    def right = bottomRight.x
+    def width = right - left
+    // and many more geometric methods...
+  }
+
+<hr>
+  abstract class Component extends Rectangular {
+    // other methods...
+  }
+
+<hr>
+// In file <a href="../traits/Rectangle.scala">traits/Rectangle.scala</a>
+
+  class Rectangle(val topLeft: Point, val bottomRight: Point)
+      extends Rectangular {
+
+    // other methods...
+  }
+
+<hr>
+  scala&gt; val rect = new Rectangle(new Point(1, 1),
+       |     new Point(10, 10))
+<span class="output">  rect: Rectangle = Rectangle@5f5da68c</span>
+
+  scala&gt; rect.left
+<span class="output">  res2: Int = 1</span>
+
+  scala&gt; rect.right
+<span class="output">  res3: Int = 10</span>
+
+  scala&gt; rect.width
+<span class="output">  res4: Int = 9</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec4"></a>12.4 The <span class="mono">Ordered</span> trait</h3>
+
+  <pre><hr>
+  class Rational(n: Int, d: Int) {
+    // ...
+    def &lt; (that: Rational) = 
+      this.numer * that.denom &lt; that.numer * this.denom
+    def &gt; (that: Rational) = that &lt; this
+    def &lt;= (that: Rational) = (this &lt; that) || (this == that)
+    def &gt;= (that: Rational) = (this &gt; that) || (this == that)
+  }
+
+<hr>
+// In file <a href="../traits/Rational.scala">traits/Rational.scala</a>
+
+  class Rational(n: Int, d: Int) extends Ordered[Rational] {
+    // ...
+    def compare(that: Rational) =
+      (this.numer * that.denom) - (that.numer * this.denom)
+  }
+
+<hr>
+  scala&gt; val half = new Rational(1, 2)
+<span class="output">  half: Rational = 1/2</span>
+
+  scala&gt; val third = new Rational(1, 3)
+<span class="output">  third: Rational = 1/3</span>
+
+  scala&gt; half &lt; third
+<span class="output">  res5: Boolean = false</span>
+
+  scala&gt; half &gt; third
+<span class="output">  res6: Boolean = true</span>
+
+<hr>
+// In file <a href="../traits/Ex2.scala">traits/Ex2.scala</a>
+
+  trait Ordered[T] {
+    def compare(that: T): Int
+
+    def &lt;(that: T): Boolean = (this compare that) &lt; 0
+    def &gt;(that: T): Boolean = (this compare that) &gt; 0
+    def &lt;=(that: T): Boolean = (this compare that) &lt;= 0
+    def &gt;=(that: T): Boolean = (this compare that) &gt;= 0
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec5"></a>12.5 Traits as stackable modifications</h3>
+
+  <pre><hr>
+// In file <a href="../traits/IntQueue.scala">traits/IntQueue.scala</a>
+
+  abstract class IntQueue {
+    def get(): Int
+    def put(x: Int): Unit
+  }
+
+<hr>
+// In file <a href="../traits/BasicIntQueue.scala">traits/BasicIntQueue.scala</a>
+
+  import scala.collection.mutable.ArrayBuffer
+
+  class BasicIntQueue extends IntQueue {
+    private val buf = new ArrayBuffer[Int]
+    def get() = buf.remove(0)
+    def put(x: Int) = { buf += x }
+  }
+
+<hr>
+  scala&gt; val queue = new BasicIntQueue
+<span class="output">  queue: BasicIntQueue = BasicIntQueue@23164256</span>
+
+  scala&gt; queue.put(10)
+
+  scala&gt; queue.put(20)
+
+  scala&gt; queue.get()
+<span class="output">  res9: Int = 10</span>
+
+  scala&gt; queue.get()
+<span class="output">  res10: Int = 20</span>
+
+<hr>
+// In file <a href="../traits/Ex2.scala">traits/Ex2.scala</a>
+
+  trait Doubling extends IntQueue {
+    abstract override def put(x: Int) = { super.put(2 * x) }
+  }
+
+<hr>
+  scala&gt; class MyQueue extends BasicIntQueue with Doubling
+<span class="output">  defined class MyQueue</span>
+
+  scala&gt; val queue = new MyQueue
+<span class="output">  queue: MyQueue = MyQueue@44bbf788</span>
+
+  scala&gt; queue.put(10)
+
+  scala&gt; queue.get()
+<span class="output">  res12: Int = 20</span>
+
+<hr>
+  scala&gt; val queue = new BasicIntQueue with Doubling
+<span class="output">  queue: BasicIntQueue with Doubling = $anon$1@141f05bf</span>
+
+  scala&gt; queue.put(10)
+
+  scala&gt; queue.get()
+<span class="output">  res14: Int = 20</span>
+
+<hr>
+// In file <a href="../traits/Incrementing.scala">traits/Incrementing.scala</a>
+
+  trait Incrementing extends IntQueue {
+    abstract override def put(x: Int) = { super.put(x + 1) }
+  }
+  trait Filtering extends IntQueue {
+    abstract override def put(x: Int) = {
+      if (x &gt;= 0) super.put(x)
+    }
+  }
+
+<hr>
+  scala&gt; val queue = (new BasicIntQueue
+       |     with Incrementing with Filtering)
+<span class="output">  queue: BasicIntQueue with Incrementing with Filtering...</span>
+
+  scala&gt; queue.put(-1); queue.put(0); queue.put(1)
+
+  scala&gt; queue.get()
+<span class="output">  res16: Int = 1</span>
+
+<hr>
+  scala&gt; queue.get()
+<span class="output">  res17: Int = 2</span>
+
+<hr>
+  scala&gt; val queue = (new BasicIntQueue
+       |     with Filtering with Incrementing)
+<span class="output">  queue: BasicIntQueue with Filtering with Incrementing...</span>
+
+  scala&gt; queue.put(-1); queue.put(0); queue.put(1)
+
+  scala&gt; queue.get()
+<span class="output">  res19: Int = 0</span>
+
+  scala&gt; queue.get()
+<span class="output">  res20: Int = 1</span>
+
+  scala&gt; queue.get()
+<span class="output">  res21: Int = 2</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec6"></a>12.6 Why not multiple inheritance?</h3>
+
+  <pre><hr>
+// In file <a href="../traits/Ex2.scala">traits/Ex2.scala</a>
+
+  // Multiple inheritance thought experiment
+  val q = new BasicIntQueue with Incrementing with Doubling
+  q.put(42)  // which put would be called?
+
+<hr>
+  // Multiple inheritance thought experiment
+  trait MyQueue extends BasicIntQueue
+      with Incrementing with Doubling {
+
+    def put(x: Int) = {
+      Incrementing.super.put(x) // (Not real Scala)
+      Doubling.super.put(x)
+    }
+  }
+
+<hr>
+// In file <a href="../traits/Ex3.scala">traits/Ex3.scala</a>
+
+  class Animal 
+  trait Furry extends Animal
+  trait HasLegs extends Animal
+  trait FourLegged extends HasLegs
+  class Cat extends Animal with Furry with FourLegged
+
+<hr>
+  </pre>
+  <h3><a name="sec7"></a>12.7 To trait or not to trait?</h3>
+
+  <h3><a name="sec8"></a>12.8 Conclusion</h3>
+
+
+ <table>
+ <tr valign="top">
+ <td>
+ <div id="moreinfo">
+ <p>
+ For more information about <em>Programming in Scala, Fourth Edition</em> (the "Stairway Book"), please visit:
+ </p>
+ 
+ <p>
+ <a href="http://www.artima.com/shop/programming_in_scala_4ed">http://www.artima.com/shop/programming_in_scala_4ed</a>
+ </p>
+ 
+ <p>
+ and:
+ </p>
+ 
+ <p>
+ <a href="http://booksites.artima.com/programming_in_scala_4ed">http://booksites.artima.com/programming_in_scala_4ed</a>
+ </p>
+ </div>
+ </td>
+ <td>
+ <div id="license">
+ <p>
+   Copyright &copy; 2007-2019 Artima, Inc. All rights reserved.
+ </p>
+
+ <p>
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+ </p>
+
+ <p style="margin-left: 20px">
+   <a href="http://www.apache.org/licenses/LICENSE-2.0">
+     http://www.apache.org/licenses/LICENSE-2.0
+   </a>
+ </p>
+
+ <p>
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+   implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ </p>
+ </div>
+ </td>
+ </tr>
+ </table>
+
+</body>
+</html>

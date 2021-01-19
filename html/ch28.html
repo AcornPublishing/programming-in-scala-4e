@@ -1,0 +1,436 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/2002/REC-xhtml1-20020801/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type"
+        content="text/html; charset=ISO-8859-1" />
+  <title>Code Examples for Programming in Scala, Fourth Edition</title>
+  <link rel="stylesheet" href="style.css" type="text/css"/>
+</head>
+<body>
+
+<div id="mainTitles"><h3>Code Examples for</h3><h2>Programming in Scala, Fourth Edition</h2></div>  <p><a href="../index.html">
+    Return to chapter index
+  </a></p>
+  <h2>28 Working with XML</h2>
+
+  <p><a href="../working-with-xml/transcript.txt">
+    Sample run of chapter's interpreter examples
+  </a></p>
+
+  <ul>
+
+    <li>28.1 <a href="#sec1">Semi-structured data</a></li>
+    <li>28.2 <a href="#sec2">XML overview</a></li>
+    <li>28.3 <a href="#sec3">XML literals</a></li>
+    <li>28.4 <a href="#sec4">Serialization</a></li>
+    <li>28.5 <a href="#sec5">Taking XML apart</a></li>
+    <li>28.6 <a href="#sec6">Deserialization</a></li>
+    <li>28.7 <a href="#sec7">Loading and saving</a></li>
+    <li>28.8 <a href="#sec8">Pattern matching on XML</a></li>
+    <li>28.9 <a href="#sec9">Conclusion</a></li>
+  </ul>
+
+  <h3><a name="sec1"></a>28.1 Semi-structured data</h3>
+
+  <h3><a name="sec2"></a>28.2 XML overview</h3>
+
+  <pre><hr>
+  // Illegal XML
+  One &lt;pod&gt;, two &lt;pod&gt;, three &lt;pod&gt; zoo
+
+<hr>
+  // Also illegal
+  &lt;pod&gt;Three &lt;peas&gt; in the &lt;/pod&gt;&lt;/peas&gt;
+
+<hr>
+  &lt;pod&gt;Three &lt;peas&gt;&lt;/peas&gt; in the &lt;/pod&gt;
+
+<hr>
+  &lt;pod&gt;Three &lt;peas/&gt; in the &lt;/pod&gt;
+
+<hr>
+  &lt;pod peas="3" strings="true"/&gt;
+
+<hr>
+  </pre>
+  <h3><a name="sec3"></a>28.3 XML literals</h3>
+
+  <pre><hr>
+  scala&gt; &lt;a&gt;
+       |   This is some XML.
+       |   Here is a tag: &lt;atag/&gt;
+       | &lt;/a&gt;
+<span class="output">  res0: scala.xml.Elem =</span>
+<span class="output">  &lt;a&gt;</span>
+<span class="output">    This is some XML.</span>
+<span class="output">    Here is a tag: &lt;atag/&gt;</span>
+<span class="output">  &lt;/a&gt;</span>
+
+<hr>
+  scala&gt; &lt;a&gt; {"hello" + ", world"} &lt;/a&gt;
+<span class="output">  res1: scala.xml.Elem = &lt;a&gt; hello, world &lt;/a&gt;</span>
+
+<hr>
+  scala&gt; val yearMade = 1955
+<span class="output">  yearMade: Int = 1955</span>
+
+  scala&gt;  &lt;a&gt; { if (yearMade &lt; 2000) &lt;old&gt;{yearMade}&lt;/old&gt;
+       |        else xml.NodeSeq.Empty }
+       |  &lt;/a&gt;
+<span class="output">  res2: scala.xml.Elem =</span>
+<span class="output">  &lt;a&gt; &lt;old&gt;1955&lt;/old&gt;</span>
+<span class="output">   &lt;/a&gt;</span>
+
+<hr>
+  scala&gt; &lt;a&gt; {3 + 4} &lt;/a&gt;
+<span class="output">  res3: scala.xml.Elem = &lt;a&gt; 7 &lt;/a&gt;</span>
+
+<hr>
+  scala&gt; &lt;a&gt; {"&lt;/a&gt;potential security hole&lt;a&gt;"} &lt;/a&gt;
+<span class="output">  res4: scala.xml.Elem = &lt;a&gt; &amp;lt;/a&amp;gt;potential security </span>
+<span class="output">  hole&amp;lt;a&amp;gt; &lt;/a&gt;</span>
+
+<hr>
+  scala&gt; "&lt;a&gt;" + "&lt;/a&gt;potential security hole&lt;a&gt;" + "&lt;/a&gt;"
+<span class="output">  res5: String = &lt;a&gt;&lt;/a&gt;potential security hole&lt;a&gt;&lt;/a&gt;</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec4"></a>28.4 Serialization</h3>
+
+  <pre><hr>
+// In file <a href="../working-with-xml/CCTherm.scala">working-with-xml/CCTherm.scala</a>
+
+  abstract class CCTherm {
+    val description: String
+    val yearMade: Int
+    val dateObtained: String
+    val bookPrice: Int      // in US cents
+    val purchasePrice: Int  // in US cents
+    val condition: Int      // 1 to 10
+
+    override def toString = description
+  }
+
+<hr>
+// In file <a href="../working-with-xml/CCTherm.scala">working-with-xml/CCTherm.scala</a>
+
+  abstract class CCTherm {
+    ...
+    def toXML =
+      &lt;cctherm&gt;
+        &lt;description&gt;{description}&lt;/description&gt;
+        &lt;yearMade&gt;{yearMade}&lt;/yearMade&gt;
+        &lt;dateObtained&gt;{dateObtained}&lt;/dateObtained&gt;
+        &lt;bookPrice&gt;{bookPrice}&lt;/bookPrice&gt;
+        &lt;purchasePrice&gt;{purchasePrice}&lt;/purchasePrice&gt;
+        &lt;condition&gt;{condition}&lt;/condition&gt;
+      &lt;/cctherm&gt;
+  }
+
+<hr>
+// In file <a href="../working-with-xml/Misc.scala">working-with-xml/Misc.scala</a>
+
+  val therm = new CCTherm {
+    val description = "hot dog #5"
+    val yearMade = 1952
+    val dateObtained = "March 14, 2006"
+    val bookPrice = 2199
+    val purchasePrice = 500
+    val condition = 9
+  }
+
+<hr>
+  scala&gt; val therm = new CCTherm {
+       |   val description = "hot dog #5"
+       |   val yearMade = 1952
+       |   val dateObtained = "March 14, 2006"
+       |   val bookPrice = 2199
+       |   val purchasePrice = 500
+       |   val condition = 9
+       | }
+<span class="output">  therm: CCTherm = hot dog #5</span>
+
+  scala&gt; therm.toXML
+<span class="output">  res6: scala.xml.Elem =</span>
+<span class="output">  &lt;cctherm&gt;</span>
+<span class="output">                 &lt;description&gt;hot dog #5&lt;/description&gt;</span>
+<span class="output">                 &lt;yearMade&gt;1952&lt;/yearMade&gt;</span>
+<span class="output">                 &lt;dateObtained&gt;March 14, 2006&lt;/dateObtained&gt;</span>
+<span class="output">                 &lt;bookPrice&gt;2199&lt;/bookPrice&gt;</span>
+<span class="output">                 &lt;purchasePrice&gt;500&lt;/purchasePrice&gt;</span>
+<span class="output">                 &lt;condition&gt;9&lt;/condition&gt;</span>
+<span class="output">               &lt;/cctherm&gt;</span>
+
+<hr>
+  scala&gt; &lt;a&gt; {{{{brace yourself!}}}} &lt;/a&gt;
+<span class="output">  res7: scala.xml.Elem = &lt;a&gt; {{brace yourself!}} &lt;/a&gt;</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec5"></a>28.5 Taking XML apart</h3>
+
+  <pre><hr>
+  scala&gt; &lt;a&gt;Sounds &lt;tag/&gt; good&lt;/a&gt;.text
+<span class="output">  res8: String = Sounds  good</span>
+
+<hr>
+  scala&gt; &lt;a&gt; input ---&amp;gt; output &lt;/a&gt;.text
+<span class="output">  res9: String = " input ---&gt; output "</span>
+
+<hr>
+  scala&gt; &lt;a&gt;&lt;b&gt;&lt;c&gt;hello&lt;/c&gt;&lt;/b&gt;&lt;/a&gt; \ "b"
+<span class="output">  res10: scala.xml.NodeSeq = NodeSeq(&lt;b&gt;&lt;c&gt;hello&lt;/c&gt;&lt;/b&gt;)</span>
+
+<hr>
+  scala&gt;  &lt;a&gt;&lt;b&gt;&lt;c&gt;hello&lt;/c&gt;&lt;/b&gt;&lt;/a&gt; \ "c"
+<span class="output">  res11: scala.xml.NodeSeq = NodeSeq()</span>
+
+  scala&gt;  &lt;a&gt;&lt;b&gt;&lt;c&gt;hello&lt;/c&gt;&lt;/b&gt;&lt;/a&gt; \\ "c"
+<span class="output">  res12: scala.xml.NodeSeq = NodeSeq(&lt;c&gt;hello&lt;/c&gt;)</span>
+
+  scala&gt;  &lt;a&gt;&lt;b&gt;&lt;c&gt;hello&lt;/c&gt;&lt;/b&gt;&lt;/a&gt; \ "a"
+<span class="output">  res13: scala.xml.NodeSeq = NodeSeq()</span>
+
+  scala&gt;  &lt;a&gt;&lt;b&gt;&lt;c&gt;hello&lt;/c&gt;&lt;/b&gt;&lt;/a&gt; \\ "a"
+<span class="output">  res14: scala.xml.NodeSeq = </span>
+<span class="output">  NodeSeq(&lt;a&gt;&lt;b&gt;&lt;c&gt;hello&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;)</span>
+
+<hr>
+  scala&gt; val joe = &lt;employee
+       |    name="Joe"
+       |    rank="code monkey"
+       |    serial="123"/&gt;
+<span class="output">  joe: scala.xml.Elem = &lt;employee name="Joe" rank="code monkey"</span>
+<span class="output">   serial="123"/&gt;</span>
+
+  scala&gt;  joe \ "@name"
+<span class="output">  res15: scala.xml.NodeSeq = Joe</span>
+
+  scala&gt;  joe \ "@serial"
+<span class="output">  res16: scala.xml.NodeSeq = 123</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec6"></a>28.6 Deserialization</h3>
+
+  <pre><hr>
+// In file <a href="../working-with-xml/CCTherm.scala">working-with-xml/CCTherm.scala</a>
+
+  def fromXML(node: scala.xml.Node): CCTherm =
+    new CCTherm {
+      val description   = (node \ "description").text
+      val yearMade      = (node \ "yearMade").text.toInt
+      val dateObtained  = (node \ "dateObtained").text
+      val bookPrice     = (node \ "bookPrice").text.toInt
+      val purchasePrice = (node \ "purchasePrice").text.toInt
+      val condition     = (node \ "condition").text.toInt
+    }
+
+<hr>
+  scala&gt; val node = therm.toXML
+<span class="output">  node: scala.xml.Elem =</span>
+<span class="output">  &lt;cctherm&gt;</span>
+<span class="output">                 &lt;description&gt;hot dog #5&lt;/description&gt;</span>
+<span class="output">                 &lt;yearMade&gt;1952&lt;/yearMade&gt;</span>
+<span class="output">                 &lt;dateObtained&gt;March 14, 2006&lt;/dateObtained&gt;</span>
+<span class="output">                 &lt;bookPrice&gt;2199&lt;/bookPrice&gt;</span>
+<span class="output">                 &lt;purchasePrice&gt;500&lt;/purchasePrice&gt;</span>
+<span class="output">                 &lt;condition&gt;9&lt;/condition&gt;</span>
+<span class="output">               &lt;/cctherm&gt;</span>
+
+  scala&gt; fromXML(node)
+<span class="output">  res17: CCTherm = hot dog #5</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec7"></a>28.7 Loading and saving</h3>
+
+  <pre><hr>
+// In file <a href="../working-with-xml/Misc.scala">working-with-xml/Misc.scala</a>
+
+  scala.xml.XML.save("therm1.xml", node)
+
+<hr>
+&lt;?xml version='1.0' encoding='UTF-8'?&gt;
+&lt;cctherm&gt;
+             &lt;description&gt;hot dog #5&lt;/description&gt;
+             &lt;yearMade&gt;1952&lt;/yearMade&gt;
+             &lt;dateObtained&gt;March 14, 2006&lt;/dateObtained&gt;
+             &lt;bookPrice&gt;2199&lt;/bookPrice&gt;
+             &lt;purchasePrice&gt;500&lt;/purchasePrice&gt;
+             &lt;condition&gt;9&lt;/condition&gt;
+           &lt;/cctherm&gt;
+
+<hr>
+// In file <a href="../working-with-xml/Misc.scala">working-with-xml/Misc.scala</a>
+
+  val loadnode = xml.XML.loadFile("therm1.xml")
+
+<hr>
+  scala&gt; val loadnode = xml.XML.loadFile("therm1.xml")
+<span class="output">  loadnode: scala.xml.Elem =</span>
+<span class="output">  &lt;cctherm&gt;</span>
+<span class="output">        &lt;description&gt;hot dog #5&lt;/description&gt;</span>
+<span class="output">        &lt;yearMade&gt;1952&lt;/yearMade&gt;</span>
+<span class="output">        &lt;dateObtained&gt;March 14, 2006&lt;/dateObtained&gt;</span>
+<span class="output">        &lt;bookPrice&gt;2199&lt;/bookPrice&gt;</span>
+<span class="output">        &lt;purchasePrice&gt;500&lt;/purchasePrice&gt;</span>
+<span class="output">        &lt;condition&gt;9&lt;/condition&gt;</span>
+<span class="output">      &lt;/cctherm&gt;</span>
+
+  scala&gt; fromXML(loadnode)
+<span class="output">  res14: CCTherm = hot dog #5</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec8"></a>28.8 Pattern matching on XML</h3>
+
+  <pre><hr>
+  def proc(node: scala.xml.Node): String =
+    node match {
+      case &lt;a&gt;{contents}&lt;/a&gt; =&gt; "It's an a: " + contents
+      case &lt;b&gt;{contents}&lt;/b&gt; =&gt; "It's a b: " + contents
+      case _ =&gt; "It's something else."
+    }
+
+<hr>
+  scala&gt; proc(&lt;a&gt;apple&lt;/a&gt;)
+<span class="output">  res18: String = It's an a: apple</span>
+  scala&gt; proc(&lt;b&gt;banana&lt;/b&gt;)
+<span class="output">  res19: String = It's a b: banana</span>
+  scala&gt; proc(&lt;c&gt;cherry&lt;/c&gt;)
+<span class="output">  res20: String = It's something else.</span>
+
+<hr>
+  scala&gt; proc(&lt;a&gt;a &lt;em&gt;red&lt;/em&gt; apple&lt;/a&gt;)
+<span class="output">  res21: String = It's something else.</span>
+  scala&gt; proc(&lt;a/&gt;)
+<span class="output">  res22: String = It's something else.</span>
+
+<hr>
+  def proc(node: scala.xml.Node): String =
+    node match {
+      case &lt;a&gt;{contents @ _*}&lt;/a&gt; =&gt; "It's an a: " + contents
+      case &lt;b&gt;{contents @ _*}&lt;/b&gt; =&gt; "It's a b: " + contents
+      case _ =&gt; "It's something else."
+    }
+
+<hr>
+  scala&gt; proc(&lt;a&gt;a &lt;em&gt;red&lt;/em&gt; apple&lt;/a&gt;)
+<span class="output">  res23: String = It's an a: ArrayBuffer(a , &lt;em&gt;red&lt;/em&gt;,  </span>
+<span class="output">  apple)</span>
+  scala&gt; proc(&lt;a/&gt;)
+<span class="output">  res24: String = It's an a: WrappedArray()</span>
+
+<hr>
+// In file <a href="../working-with-xml/CCTherm.scala">working-with-xml/CCTherm.scala</a>
+
+  val catalog =
+    &lt;catalog&gt;
+      &lt;cctherm&gt;
+        &lt;description&gt;hot dog #5&lt;/description&gt;
+        &lt;yearMade&gt;1952&lt;/yearMade&gt;
+        &lt;dateObtained&gt;March 14, 2006&lt;/dateObtained&gt;
+        &lt;bookPrice&gt;2199&lt;/bookPrice&gt;
+        &lt;purchasePrice&gt;500&lt;/purchasePrice&gt;
+        &lt;condition&gt;9&lt;/condition&gt;
+      &lt;/cctherm&gt;
+      &lt;cctherm&gt;
+        &lt;description&gt;Sprite Boy&lt;/description&gt;
+        &lt;yearMade&gt;1964&lt;/yearMade&gt;
+        &lt;dateObtained&gt;April 28, 2003&lt;/dateObtained&gt;
+        &lt;bookPrice&gt;1695&lt;/bookPrice&gt;
+        &lt;purchasePrice&gt;595&lt;/purchasePrice&gt;
+        &lt;condition&gt;5&lt;/condition&gt;
+      &lt;/cctherm&gt;
+    &lt;/catalog&gt;
+
+<hr>
+  catalog match {
+    case &lt;catalog&gt;{therms @ _*}&lt;/catalog&gt; =&gt;
+      for (therm &lt;- therms)
+        println("processing: " + 
+                (therm \ "description").text)
+  }
+
+<hr>
+<span class="output">  processing: </span>
+<span class="output">  processing: hot dog #5</span>
+<span class="output">  processing: </span>
+<span class="output">  processing: Sprite Boy</span>
+<span class="output">  processing: </span>
+
+<hr>
+  catalog match {
+    case &lt;catalog&gt;{therms @ _*}&lt;/catalog&gt; =&gt;
+      for (therm @ &lt;cctherm&gt;{_*}&lt;/cctherm&gt;  &lt;-  therms)
+        println("processing: " + 
+                (therm \ "description").text)
+  }
+
+<hr>
+<span class="output">  processing: hot dog #5</span>
+<span class="output">  processing: Sprite Boy</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec9"></a>28.9 Conclusion</h3>
+
+
+ <table>
+ <tr valign="top">
+ <td>
+ <div id="moreinfo">
+ <p>
+ For more information about <em>Programming in Scala, Fourth Edition</em> (the "Stairway Book"), please visit:
+ </p>
+ 
+ <p>
+ <a href="http://www.artima.com/shop/programming_in_scala_4ed">http://www.artima.com/shop/programming_in_scala_4ed</a>
+ </p>
+ 
+ <p>
+ and:
+ </p>
+ 
+ <p>
+ <a href="http://booksites.artima.com/programming_in_scala_4ed">http://booksites.artima.com/programming_in_scala_4ed</a>
+ </p>
+ </div>
+ </td>
+ <td>
+ <div id="license">
+ <p>
+   Copyright &copy; 2007-2019 Artima, Inc. All rights reserved.
+ </p>
+
+ <p>
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+ </p>
+
+ <p style="margin-left: 20px">
+   <a href="http://www.apache.org/licenses/LICENSE-2.0">
+     http://www.apache.org/licenses/LICENSE-2.0
+   </a>
+ </p>
+
+ <p>
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+   implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ </p>
+ </div>
+ </td>
+ </tr>
+ </table>
+
+</body>
+</html>

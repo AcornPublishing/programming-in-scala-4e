@@ -1,0 +1,210 @@
+/*
+ * Copyright (C) 2007-2019 Artima, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Automatically generated Scala interpreter transcript from:
+ *
+ * Programming in Scala (Fourth Edition)
+ * by Martin Odersky, Lex Spoon, Bill Venners
+ *
+ * http://booksites.artima.com/programming_in_scala_4ed
+ */
+
+
+scala>   trait Philosophical {
+           def philosophize() = {
+             println("I consume memory, therefore I am!")
+           }
+         }
+
+defined trait Philosophical
+
+scala>   class Frog extends Philosophical {
+           override def toString = "green"
+         }
+
+defined class Frog
+
+scala> val frog = new Frog
+frog: Frog = green
+
+scala> frog.philosophize()
+I consume memory, therefore I am!
+
+scala> val phil: Philosophical = frog  
+phil: Philosophical = green
+
+scala> phil.philosophize()
+I consume memory, therefore I am!
+
+scala>   class Point(val x: Int, val y: Int)
+       
+
+defined class Point
+
+scala>   trait Rectangular {
+           def topLeft: Point
+           def bottomRight: Point
+       
+           def left = topLeft.x
+           def right = bottomRight.x
+           def width = right - left
+           // and many more geometric methods...
+         }
+
+defined trait Rectangular
+
+scala>   class Rectangle(val topLeft: Point, val bottomRight: Point)
+             extends Rectangular {
+       
+           // other methods...
+         }
+
+defined class Rectangle
+
+scala> val rect = new Rectangle(new Point(1, 1),
+           new Point(10, 10))
+rect: Rectangle = Rectangle@aca594d
+
+scala> rect.left
+res2: Int = 1
+
+scala> rect.right
+res3: Int = 10
+
+scala> rect.width
+res4: Int = 9
+
+scala>    class Rational(n: Int, d: Int) extends Ordered[Rational] {
+           def compare(that: Rational) =
+             (this.numer * that.denom) - (that.numer * this.denom)
+
+        private val g = gcd(n.abs, d.abs)
+        val numer = n / g
+        val denom = d / g
+        private def gcd(a: Int, b: Int): Int = 
+          if (b == 0) a else gcd(b, a % b)
+        override def toString = s"$numer/$denom"
+        }
+defined class Rational
+
+scala> val half = new Rational(1, 2)
+half: Rational = 1/2
+
+scala> val third = new Rational(1, 3)
+third: Rational = 1/3
+
+scala> half < third
+res5: Boolean = false
+
+scala> half > third
+res6: Boolean = true
+
+scala>   abstract class IntQueue {
+           def get(): Int
+           def put(x: Int): Unit
+         }
+
+defined class IntQueue
+
+scala>   import scala.collection.mutable.ArrayBuffer
+       
+         class BasicIntQueue extends IntQueue {
+           private val buf = new ArrayBuffer[Int]
+           def get() = buf.remove(0)
+           def put(x: Int) = { buf += x }
+         }
+
+import scala.collection.mutable.ArrayBuffer
+defined class BasicIntQueue
+
+scala> val queue = new BasicIntQueue
+queue: BasicIntQueue = BasicIntQueue@57e74053
+
+scala> queue.put(10)
+
+scala> queue.put(20)
+
+scala> queue.get()
+res9: Int = 10
+
+scala> queue.get()
+res10: Int = 20
+
+scala>   trait Doubling extends IntQueue {
+           abstract override def put(x: Int) = { super.put(2 * x) }
+         }
+
+defined trait Doubling
+
+scala> class MyQueue extends BasicIntQueue with Doubling
+defined class MyQueue
+
+scala> val queue = new MyQueue
+queue: MyQueue = MyQueue@7843efc5
+
+scala> queue.put(10)
+
+scala> queue.get()
+res12: Int = 20
+
+scala> val queue = new BasicIntQueue with Doubling
+queue: BasicIntQueue with Doubling = $anon$1@1f55bb2
+
+scala> queue.put(10)
+
+scala> queue.get()
+res14: Int = 20
+
+scala>   trait Incrementing extends IntQueue {
+           abstract override def put(x: Int) = { super.put(x + 1) }
+         }
+
+defined trait Incrementing
+
+scala>   trait Filtering extends IntQueue {
+           abstract override def put(x: Int) = {
+             if (x >= 0) super.put(x)
+           }
+         }
+
+defined trait Filtering
+
+scala> val queue = (new BasicIntQueue
+           with Incrementing with Filtering)
+queue: BasicIntQueue with Incrementing with Filtering = $anon$1@74c4ea35
+
+scala> queue.put(-1); queue.put(0); queue.put(1)
+
+scala> queue.get()
+res16: Int = 1
+
+scala> queue.get()
+res17: Int = 2
+
+scala> val queue = (new BasicIntQueue
+           with Filtering with Incrementing)
+queue: BasicIntQueue with Filtering with Incrementing = $anon$1@61ffe4cf
+
+scala> queue.put(-1); queue.put(0); queue.put(1)
+
+scala> queue.get()
+res19: Int = 0
+
+scala> queue.get()
+res20: Int = 1
+
+scala> queue.get()
+res21: Int = 2
+

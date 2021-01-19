@@ -1,0 +1,122 @@
+/*
+ * Copyright (C) 2007-2019 Artima, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Automatically generated Scala interpreter transcript from:
+ *
+ * Programming in Scala (Fourth Edition)
+ * by Martin Odersky, Lex Spoon, Bill Venners
+ *
+ * http://booksites.artima.com/programming_in_scala_4ed
+ */
+
+
+scala> RNA1.fromSeq(List(A, G, U, A))
+       ^
+       error: not found: value RNA1
+                         ^
+       error: not found: value A
+                            ^
+       error: not found: value G
+                               ^
+       error: not found: value U
+                                  ^
+       error: not found: value A
+
+scala> val rna1 = RNA1(A, U, G, G, C)
+                  ^
+       error: not found: value RNA1
+                       ^
+       error: not found: value A
+                          ^
+       error: not found: value U
+                             ^
+       error: not found: value G
+                                ^
+       error: not found: value G
+                                   ^
+       error: not found: value C
+
+scala> rna1.take(3)
+       ^
+       error: not found: value rna1
+
+scala> rna1.filter(_ != U)
+       ^
+       error: not found: value rna1
+
+scala> rna1.map(base => base)
+       ^
+       error: not found: value rna1
+
+scala> rna1 ++ rna1
+       ^
+       error: not found: value rna1
+               ^
+       error: not found: value rna1
+
+scala> val rna2 = RNA2(A, U, G, G, C)
+                  ^
+       error: not found: value RNA2
+                       ^
+       error: not found: value A
+                          ^
+       error: not found: value U
+                             ^
+       error: not found: value G
+                                ^
+       error: not found: value G
+                                   ^
+       error: not found: value C
+
+scala> rna1.map(base => base)
+       ^
+       error: not found: value rna1
+
+scala> rna1 ++ rna1
+       ^
+       error: not found: value rna1
+               ^
+       error: not found: value rna1
+
+scala> val bases: Iterable[Base] = List(A, U, C, C)
+                           ^
+       error: not found: type Base
+                                        ^
+       error: not found: value A
+                                           ^
+       error: not found: value U
+                                              ^
+       error: not found: value C
+                                                 ^
+       error: not found: value C
+
+scala> bases.to(RNA2)
+       ^
+       error: not found: value bases
+                ^
+       error: not found: value RNA2
+
+scala> List(U, A, G, C).to(RNA)
+            ^
+       error: not found: value U
+               ^
+       error: not found: value A
+                  ^
+       error: not found: value G
+                     ^
+       error: not found: value C
+                           ^
+       error: not found: value RNA
+

@@ -1,0 +1,495 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/2002/REC-xhtml1-20020801/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type"
+        content="text/html; charset=ISO-8859-1" />
+  <title>Code Examples for Programming in Scala, Fourth Edition</title>
+  <link rel="stylesheet" href="style.css" type="text/css"/>
+</head>
+<body>
+
+<div id="mainTitles"><h3>Code Examples for</h3><h2>Programming in Scala, Fourth Edition</h2></div>  <p><a href="../index.html">
+    Return to chapter index
+  </a></p>
+  <h2>19 Type Parameterization</h2>
+
+  <p><a href="../type-parameterization/transcript.txt">
+    Sample run of chapter's interpreter examples
+  </a></p>
+
+  <ul>
+
+    <li>19.1 <a href="#sec1">Functional queues</a></li>
+    <li>19.2 <a href="#sec2">Information hiding</a></li>
+    <li>19.3 <a href="#sec3">Variance annotations</a></li>
+    <li>19.4 <a href="#sec4">Checking variance annotations</a></li>
+    <li>19.5 <a href="#sec5">Lower bounds</a></li>
+    <li>19.6 <a href="#sec6">Contravariance</a></li>
+    <li>19.7 <a href="#sec7">Object private data</a></li>
+    <li>19.8 <a href="#sec8">Upper bounds</a></li>
+    <li>19.9 <a href="#sec9">Conclusion</a></li>
+  </ul>
+
+  <h3><a name="sec1"></a>19.1 Functional queues</h3>
+
+  <pre><hr>
+  scala&gt; val q = Queue(1, 2, 3)
+<span class="output">  q: Queue[Int] = Queue(1, 2, 3)</span>
+
+  scala&gt; val q1 = q enqueue 4
+<span class="output">  q1: Queue[Int] = Queue(1, 2, 3, 4)</span>
+
+  scala&gt; q
+<span class="output">  res0: Queue[Int] = Queue(1, 2, 3)</span>
+
+<hr>
+// In file <a href="../type-parameterization/Queues1.scala">type-parameterization/Queues1.scala</a>
+
+  class SlowAppendQueue[T](elems: List[T]) { // Not efficient
+    def head = elems.head
+    def tail = new SlowAppendQueue(elems.tail)
+    def enqueue(x: T) = new SlowAppendQueue(elems ::: List(x))
+  }
+
+<hr>
+// In file <a href="../type-parameterization/Queues2.scala">type-parameterization/Queues2.scala</a>
+
+  class SlowHeadQueue[T](smele: List[T]) { // Not efficient
+    // smele is elems reversed
+    def head = smele.last
+    def tail = new SlowHeadQueue(smele.init)
+    def enqueue(x: T) = new SlowHeadQueue(x :: smele)
+  }
+
+<hr>
+// In file <a href="../type-parameterization/Queues3.scala">type-parameterization/Queues3.scala</a>
+
+  class Queue[T](
+    private val leading: List[T], 
+    private val trailing: List[T] 
+  ) {
+    private def mirror = 
+      if (leading.isEmpty)
+        new Queue(trailing.reverse, Nil)
+      else
+        this
+
+    def head = mirror.leading.head
+
+    def tail = { 
+      val q = mirror 
+      new Queue(q.leading.tail, q.trailing) 
+    }
+
+    def enqueue(x: T) = 
+      new Queue(leading, x :: trailing)
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec2"></a>19.2 Information hiding</h3>
+
+  <pre><hr>
+// In file <a href="../type-parameterization/Queues4.scala">type-parameterization/Queues4.scala</a>
+
+  class Queue[T] private (
+    private val leading: List[T],
+    private val trailing: List[T]
+  ) 
+
+<hr>
+  scala&gt; new Queue(List(1, 2), List(3))
+<span class="output">         ^</span>
+<span class="output">         error: constructor Queue in class Queue cannot be </span>
+<span class="output">  accessed in object $iw</span>
+
+<hr>
+  def this() = this(Nil, Nil) 
+
+<hr>
+  def this(elems: T*) = this(elems.toList, Nil)
+
+<hr>
+// In file <a href="../type-parameterization/Queues4.scala">type-parameterization/Queues4.scala</a>
+
+  object Queue {
+    // constructs a queue with initial elements `xs'
+    def apply[T](xs: T*) = new Queue[T](xs.toList, Nil)
+  }
+
+<hr>
+// In file <a href="../type-parameterization/Queues5.scala">type-parameterization/Queues5.scala</a>
+
+  trait Queue[T] {
+    def head: T
+    def tail: Queue[T]
+    def enqueue(x: T): Queue[T]
+  }
+
+  object Queue {
+
+    def apply[T](xs: T*): Queue[T] = 
+      new QueueImpl[T](xs.toList, Nil)
+
+    private class QueueImpl[T](
+      private val leading: List[T],
+      private val trailing: List[T]
+    ) extends Queue[T] {
+
+      def mirror = 
+        if (leading.isEmpty)
+          new QueueImpl(trailing.reverse, Nil)
+        else 
+          this
+
+      def head: T = mirror.leading.head
+
+      def tail: QueueImpl[T] = {
+        val q = mirror
+        new QueueImpl(q.leading.tail, q.trailing)
+      }
+
+      def enqueue(x: T) = 
+        new QueueImpl(leading, x :: trailing)
+    }
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec3"></a>19.3 Variance annotations</h3>
+
+  <pre><hr>
+  scala&gt; def doesNotCompile(q: Queue) = {}
+<span class="output">                               ^</span>
+<span class="output">         error: class Queue takes type parameters</span>
+
+<hr>
+  scala&gt; def doesCompile(q: Queue[AnyRef]) = {}
+<span class="output">  doesCompile: (q: Queue[AnyRef])Unit</span>
+
+<hr>
+  trait Queue[+T] { ... }
+
+<hr>
+  trait Queue[-T] { ... } 
+
+<hr>
+// In file <a href="../type-parameterization/Misc.scala">type-parameterization/Misc.scala</a>
+
+  class Cell[T](init: T) {
+    private[this] var current = init
+    def get = current
+    def set(x: T) = { current = x }
+  }
+
+<hr>
+  val c1 = new Cell[String]("abc")
+  val c2: Cell[Any] = c1
+  c2.set(1)
+  val s: String = c1.get 
+
+<hr>
+<span class="output">  Cell.scala:7: error: covariant type T occurs in</span>
+<span class="output">  contravariant position in type T of value x</span>
+<span class="output">     def set(x: T) = current = x</span>
+<span class="output">                ^</span>
+
+<hr>
+// In file <a href="../type-parameterization/JavaArrays.java">type-parameterization/JavaArrays.java</a>
+
+  // this is Java
+  String[] a1 = { "abc" };
+  Object[] a2 = a1;
+  a2[0] = new Integer(17);
+  String s = a1[0];
+
+<hr>
+<span class="output">  Exception in thread "main" java.lang.ArrayStoreException: </span>
+<span class="output">  java.lang.Integer</span>
+<span class="output">          at JavaArrays.main(JavaArrays.java:8)</span>
+
+<hr>
+  void sort(Object[] a, Comparator cmp) { ... }
+
+<hr>
+  scala&gt; val a1 = Array("abc")
+<span class="output">  a1: Array[String] = Array(abc)</span>
+
+  scala&gt; val a2: Array[Any] = a1
+<span class="output">                              ^</span>
+<span class="output">   error: type mismatch;</span>
+<span class="output">    found   : Array[String]</span>
+<span class="output">    required: Array[Any]</span>
+<span class="output">   Note: String &lt;: Any, but class Array is invariant in type T.</span>
+<span class="output"></span>
+
+<hr>
+  scala&gt; val a2: Array[Object] =
+       |   a1.asInstanceOf[Array[Object]]
+<span class="output">  a2: Array[Object] = Array(abc)</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec4"></a>19.4 Checking variance annotations</h3>
+
+  <pre><hr>
+  class StrangeIntQueue extends Queue[Int] {
+    override def enqueue(x: Int) = {
+      println(math.sqrt(x))
+      super.enqueue(x)
+    }
+  }
+
+<hr>
+  val x: Queue[Any] = new StrangeIntQueue
+  x.enqueue("abc")
+
+<hr>
+  class Queue[+T] {
+    def enqueue(x: T) = 
+     ...
+  }
+
+<hr>
+<span class="output">  Queues.scala:11: error: covariant type T occurs in</span>
+<span class="output">  contravariant position in type T of value x</span>
+<span class="output">    def enqueue(x: T) = </span>
+<span class="output">               ^</span>
+
+<hr>
+  abstract class Cat[-T, +U] {
+    def meow[W<sup>-</sup>](volume: T<sup>-</sup>, listener: Cat[U<sup>+</sup>, T<sup>-</sup>]<sup>-</sup>)
+      : Cat[Cat[U<sup>+</sup>, T<sup>-</sup>]<sup>-</sup>, U<sup>+</sup>]<sup>+</sup>
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec5"></a>19.5 Lower bounds</h3>
+
+  <pre><hr>
+  class Queue[+T] (private val leading: List[T],
+      private val trailing: List[T] ) {
+    def enqueue[U &gt;: T](x: U) = 
+      new Queue[U](leading, x :: trailing) // ...
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec6"></a>19.6 Contravariance</h3>
+
+  <pre><hr>
+// In file <a href="../type-parameterization/Misc.scala">type-parameterization/Misc.scala</a>
+
+  trait OutputChannel[-T] {
+    def write(x: T): Unit
+  }
+
+<hr>
+// In file <a href="../type-parameterization/Misc.scala">type-parameterization/Misc.scala</a>
+
+  trait Function1[-S, +T] {
+    def apply(x: S): T
+  }
+
+<hr>
+// In file <a href="../type-parameterization/Customer.scala">type-parameterization/Customer.scala</a>
+
+class Publication(val title: String)
+class Book(title: String) extends Publication(title)
+
+object Library {
+ val books: Set[Book] =
+   Set(
+     new Book("Programming in Scala"),
+     new Book("Walden")
+   )
+ def printBookList(info: Book =&gt; AnyRef) = {
+   for (book &lt;- books) println(info(book))
+ }
+}
+
+object Customer extends App {
+ def getTitle(p: Publication): String = p.title
+ Library.printBookList(getTitle)
+}
+
+<hr>
+  Library.printBookList(getTitle)
+
+<hr>
+ class Queue[+T] private (
+   private[this] var leading: List[T], 
+   private[this] var trailing: List[T]
+ ) {
+
+   private def mirror() = 
+     if (leading.isEmpty) {
+       while (!trailing.isEmpty) {
+         leading = trailing.head :: leading
+         trailing = trailing.tail
+       }
+     }
+
+   def head: T = { 
+     mirror()
+     leading.head 
+   }
+
+   def tail: Queue[T] = { 
+     mirror()
+     new Queue(leading.tail, trailing) 
+   }
+
+   def enqueue[U &gt;: T](x: U) = 
+     new Queue[U](leading, x :: trailing)
+ }
+
+<hr>
+  </pre>
+  <h3><a name="sec7"></a>19.7 Object private data</h3>
+
+  <pre><hr>
+<span class="output">  Queues.scala:1: error: covariant type T occurs in </span>
+<span class="output">  contravariant position in type List[T] of parameter of</span>
+<span class="output">  setter leading_=</span>
+<span class="output">  class Queue[+T] private (private var leading: List[T],</span>
+<span class="output">                                       ^</span>
+<span class="output">  Queues.scala:1: error: covariant type T occurs in </span>
+<span class="output">  contravariant position in type List[T] of parameter of</span>
+<span class="output">  setter trailing_=</span>
+<span class="output">                           private var trailing: List[T]) {</span>
+<span class="output">                                       ^</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec8"></a>19.8 Upper bounds</h3>
+
+  <pre><hr>
+  scala&gt; val robert = new Person("Robert", "Jones")
+<span class="output">  robert: Person = Robert Jones</span>
+
+  scala&gt; val sally = new Person("Sally", "Smith")
+<span class="output">  sally: Person = Sally Smith</span>
+
+  scala&gt; robert &lt; sally
+<span class="output">  res0: Boolean = true</span>
+
+<hr>
+  class Person(val firstName: String, val lastName: String)
+      extends Ordered[Person] {
+
+    def compare(that: Person) = {
+      val lastNameComparison =
+        lastName.compareToIgnoreCase(that.lastName)
+      if (lastNameComparison != 0)
+        lastNameComparison
+      else
+        firstName.compareToIgnoreCase(that.firstName)
+    }
+
+    override def toString = firstName + " " + lastName
+  }
+
+<hr>
+  def orderedMergeSort[T &lt;: Ordered[T]](xs: List[T]): List[T] = {
+    def merge(xs: List[T], ys: List[T]): List[T] =
+      (xs, ys) match {
+        case (Nil, _) =&gt; ys
+        case (_, Nil) =&gt; xs
+        case (x :: xs1, y :: ys1) =&gt;
+          if (x &lt; y) x :: merge(xs1, ys)
+          else y :: merge(xs, ys1)
+      }
+    val n = xs.length / 2
+    if (n == 0) xs
+    else {
+      val (ys, zs) = xs splitAt n
+      merge(orderedMergeSort(ys), orderedMergeSort(zs))
+    }
+  }
+
+<hr>
+  scala&gt; val people = List(
+       |   new Person("Larry", "Wall"),
+       |   new Person("Anders", "Hejlsberg"),
+       |   new Person("Guido", "van Rossum"),
+       |   new Person("Alan", "Kay"),
+       |   new Person("Yukihiro", "Matsumoto")
+       | )
+<span class="output">  people: List[Person] = List(Larry Wall, Anders Hejlsberg,</span>
+<span class="output">    Guido van Rossum, Alan Kay, Yukihiro Matsumoto)</span>
+
+<hr>
+  scala&gt; val sortedPeople = orderedMergeSort(people)
+<span class="output">  sortedPeople: List[Person] = List(Anders Hejlsberg, Alan Kay,</span>
+<span class="output">    Yukihiro Matsumoto, Guido van Rossum, Larry Wall)</span>
+
+<hr>
+  scala&gt; val wontCompile = orderedMergeSort(List(3, 2, 1))
+<span class="output">  &lt;console&gt;:5: error: inferred type arguments [Int] do</span>
+<span class="output">     not conform to method orderedMergeSort's type</span>
+<span class="output">       parameter bounds [T &lt;: Ordered[T]]</span>
+<span class="output">         val wontCompile = orderedMergeSort(List(3, 2, 1))</span>
+<span class="output">                           ^</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec9"></a>19.9 Conclusion</h3>
+
+
+ <table>
+ <tr valign="top">
+ <td>
+ <div id="moreinfo">
+ <p>
+ For more information about <em>Programming in Scala, Fourth Edition</em> (the "Stairway Book"), please visit:
+ </p>
+ 
+ <p>
+ <a href="http://www.artima.com/shop/programming_in_scala_4ed">http://www.artima.com/shop/programming_in_scala_4ed</a>
+ </p>
+ 
+ <p>
+ and:
+ </p>
+ 
+ <p>
+ <a href="http://booksites.artima.com/programming_in_scala_4ed">http://booksites.artima.com/programming_in_scala_4ed</a>
+ </p>
+ </div>
+ </td>
+ <td>
+ <div id="license">
+ <p>
+   Copyright &copy; 2007-2019 Artima, Inc. All rights reserved.
+ </p>
+
+ <p>
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+ </p>
+
+ <p style="margin-left: 20px">
+   <a href="http://www.apache.org/licenses/LICENSE-2.0">
+     http://www.apache.org/licenses/LICENSE-2.0
+   </a>
+ </p>
+
+ <p>
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+   implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ </p>
+ </div>
+ </td>
+ </tr>
+ </table>
+
+</body>
+</html>

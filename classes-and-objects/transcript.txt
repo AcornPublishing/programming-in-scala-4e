@@ -1,0 +1,74 @@
+/*
+ * Copyright (C) 2007-2019 Artima, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Automatically generated Scala interpreter transcript from:
+ *
+ * Programming in Scala (Fourth Edition)
+ * by Martin Odersky, Lex Spoon, Bill Venners
+ *
+ * http://booksites.artima.com/programming_in_scala_4ed
+ */
+
+
+scala>   // In file ChecksumAccumulator.scala
+         class ChecksumAccumulator {
+           private var sum = 0
+           def add(b: Byte): Unit = { sum += b }
+           def checksum(): Int = ~(sum & 0xFF) + 1
+         }
+
+defined class ChecksumAccumulator
+
+scala>   // In file ChecksumAccumulator.scala
+         import scala.collection.mutable
+       
+         object ChecksumAccumulator {
+       
+           private val cache = mutable.Map.empty[String, Int]
+       
+           def calculate(s: String): Int = 
+             if (cache.contains(s))
+               cache(s)
+             else {
+               val acc = new ChecksumAccumulator
+               for (c <- s)
+                 acc.add(c.toByte)
+               val cs = acc.checksum()
+               cache += (s -> cs)
+               cs
+             }
+         }
+
+import scala.collection.mutable
+defined object ChecksumAccumulator
+warning: previously defined class ChecksumAccumulator is not a companion to object ChecksumAccumulator.
+Companions must be defined together; you may wish to use :paste mode for this.
+
+scala>   import ChecksumAccumulator.calculate
+       
+         object Summer {
+           def main(args: Array[String]) = {
+             for (arg <- args)
+               println(arg + ": " + calculate(arg))
+           }
+         }
+
+import ChecksumAccumulator.calculate
+defined object Summer
+
+scala> Summer.main(Array("of", "love"))
+of: -213
+love: -182
+

@@ -1,0 +1,159 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/2002/REC-xhtml1-20020801/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type"
+        content="text/html; charset=ISO-8859-1" />
+  <title>Code Examples for Programming in Scala, Fourth Edition</title>
+  <link rel="stylesheet" href="style.css" type="text/css"/>
+</head>
+<body>
+
+<div id="mainTitles"><h3>Code Examples for</h3><h2>Programming in Scala, Fourth Edition</h2></div>  <p><a href="../index.html">
+    Return to chapter index
+  </a></p>
+  <h2>27 Annotations</h2>
+
+  <p><a href="../annotations/transcript.txt">
+    Sample run of chapter's interpreter examples
+  </a></p>
+
+  <ul>
+
+    <li>27.1 <a href="#sec1">Why have annotations?</a></li>
+    <li>27.2 <a href="#sec2">Syntax of annotations</a></li>
+    <li>27.3 <a href="#sec3">Standard annotations</a></li>
+    <li>27.4 <a href="#sec4">Conclusion</a></li>
+  </ul>
+
+  <h3><a name="sec1"></a>27.1 Why have annotations?</h3>
+
+  <h3><a name="sec2"></a>27.2 Syntax of annotations</h3>
+
+  <pre><hr>
+// In file <a href="../annotations/Deprecation1.scala">annotations/Deprecation1.scala</a>
+
+  @deprecated def bigMistake() = //...
+
+<hr>
+// In file <a href="../annotations/Misc.scala">annotations/Misc.scala</a>
+
+  @deprecated class QuickAndDirty {
+    //...
+  }
+
+<hr>
+// In file <a href="../annotations/Misc.scala">annotations/Misc.scala</a>
+
+  (e: @unchecked) match {
+    // non-exhaustive cases...
+  }
+
+<hr>
+  @cool val normal = "Hello"
+  @coolerThan(normal) val fonzy = "Heeyyy"
+
+<hr>
+  scala&gt; import annotation._
+<span class="output">  import annotation._</span>
+
+  scala&gt; class strategy(arg: Annotation) extends Annotation
+<span class="output">  defined class strategy</span>
+
+  scala&gt; class delayed extends Annotation
+<span class="output">  defined class delayed</span>
+
+  scala&gt; @strategy(@delayed) def f() = {} 
+<span class="output">                   ^</span>
+<span class="output">         error: illegal start of simple expression</span>
+<span class="output"></span>
+  scala&gt; @strategy(new delayed) def f() = {}
+<span class="output">  f: ()Unit</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec3"></a>27.3 Standard annotations</h3>
+
+  <pre><hr>
+  @deprecated def bigMistake() =  //...
+
+<hr>
+// In file <a href="../annotations/Deprecation2.scala">annotations/Deprecation2.scala</a>
+
+  @deprecated("use newShinyMethod() instead")
+  def bigMistake() =  //...
+
+<hr>
+  $ scalac -deprecation Deprecation2.scala 
+<span class="output">  Deprecation2.scala:33: warning: method bigMistake in object</span>
+<span class="output">  Deprecation2 is deprecated: use newShinyMethod() instead</span>
+<span class="output">      bigMistake()</span>
+<span class="output">      ^</span>
+<span class="output">  one warning found</span>
+
+<hr>
+// In file <a href="../annotations/Native.scala">annotations/Native.scala</a>
+
+  @native
+  def beginCountdown() = {}
+
+<hr>
+  </pre>
+  <h3><a name="sec4"></a>27.4 Conclusion</h3>
+
+
+ <table>
+ <tr valign="top">
+ <td>
+ <div id="moreinfo">
+ <p>
+ For more information about <em>Programming in Scala, Fourth Edition</em> (the "Stairway Book"), please visit:
+ </p>
+ 
+ <p>
+ <a href="http://www.artima.com/shop/programming_in_scala_4ed">http://www.artima.com/shop/programming_in_scala_4ed</a>
+ </p>
+ 
+ <p>
+ and:
+ </p>
+ 
+ <p>
+ <a href="http://booksites.artima.com/programming_in_scala_4ed">http://booksites.artima.com/programming_in_scala_4ed</a>
+ </p>
+ </div>
+ </td>
+ <td>
+ <div id="license">
+ <p>
+   Copyright &copy; 2007-2019 Artima, Inc. All rights reserved.
+ </p>
+
+ <p>
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+ </p>
+
+ <p style="margin-left: 20px">
+   <a href="http://www.apache.org/licenses/LICENSE-2.0">
+     http://www.apache.org/licenses/LICENSE-2.0
+   </a>
+ </p>
+
+ <p>
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+   implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ </p>
+ </div>
+ </td>
+ </tr>
+ </table>
+
+</body>
+</html>

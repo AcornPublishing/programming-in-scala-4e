@@ -1,0 +1,162 @@
+/*
+ * Copyright (C) 2007-2019 Artima, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Automatically generated Scala interpreter transcript from:
+ *
+ * Programming in Scala (Fourth Edition)
+ * by Martin Odersky, Lex Spoon, Bill Venners
+ *
+ * http://booksites.artima.com/programming_in_scala_4ed
+ */
+
+
+scala>  
+         abstract class Food(val name: String) {
+           override def toString = name
+         }
+
+        
+         class Recipe(
+           val name: String,
+           val ingredients: List[Food],
+           val instructions: String
+         ) {
+           override def toString = name
+         }
+
+        
+         object Apple extends Food("Apple")
+         object Orange extends Food("Orange")
+         object Cream extends Food("Cream")
+         object Sugar extends Food("Sugar")
+       
+         object FruitSalad extends Recipe(
+           "fruit salad",
+           List(Apple, Orange, Cream, Sugar),
+           "Stir it all together."
+         )
+
+        
+         object SimpleDatabase {
+           def allFoods = List(Apple, Orange, Cream, Sugar)
+       
+           def foodNamed(name: String): Option[Food] =
+             allFoods.find(_.name == name)
+       
+           def allRecipes: List[Recipe] = List(FruitSalad)
+         }
+       
+         object SimpleBrowser {
+           def recipesUsing(food: Food) =
+             SimpleDatabase.allRecipes.filter(recipe =>
+               recipe.ingredients.contains(food))
+         }
+
+defined class Food
+defined class Recipe
+defined object Apple
+defined object Orange
+defined object Cream
+defined object Sugar
+defined object FruitSalad
+defined object SimpleDatabase
+defined object SimpleBrowser
+
+scala> val apple = SimpleDatabase.foodNamed("Apple").get
+apple: Food = Apple
+
+scala> SimpleBrowser.recipesUsing(apple)
+res0: List[Recipe] = List(fruit salad)
+
+scala>   abstract class Database {
+           def allFoods: List[Food]
+           def allRecipes: List[Recipe]
+        
+           def foodNamed(name: String) =
+             allFoods.find(f => f.name == name)
+       
+           case class FoodCategory(name: String, foods: List[Food])
+           def allCategories: List[FoodCategory]
+         }
+
+         object SimpleDatabase extends Database {
+           def allFoods = List(Apple, Orange, Cream, Sugar)
+       
+           def allRecipes: List[Recipe] = List(FruitSalad)
+       
+           private var categories = List(
+             FoodCategory("fruits", List(Apple, Orange)),
+             FoodCategory("misc", List(Cream, Sugar)))
+       
+           def allCategories = categories
+         }
+
+         abstract class Browser {
+           val database: Database
+       
+           def recipesUsing(food: Food) =
+             database.allRecipes.filter(recipe =>
+               recipe.ingredients.contains(food))
+       
+           def displayCategory(category: database.FoodCategory) = { 
+             println(category)
+           }
+         }
+
+         object SimpleBrowser extends Browser {
+           val database = SimpleDatabase
+         }
+
+defined class Database
+defined object SimpleDatabase
+defined class Browser
+defined object SimpleBrowser
+
+scala> val apple = SimpleDatabase.foodNamed("Apple").get
+apple: Food = Apple
+
+scala> SimpleBrowser.recipesUsing(apple)
+res1: List[Recipe] = List(fruit salad)
+
+scala>     object StudentDatabase extends Database {
+           object FrozenFood extends Food("FrozenFood")
+       
+           object HeatItUp extends Recipe(
+             "heat it up",
+             List(FrozenFood),
+             "Microwave the 'food' for 10 minutes.")
+       
+           def allFoods = List(FrozenFood)
+           def allRecipes = List(HeatItUp)
+           def allCategories = List(
+             FoodCategory("edible", List(FrozenFood)))
+         }
+       
+         object StudentBrowser extends Browser {
+           val database = StudentDatabase
+         }
+
+defined object StudentDatabase
+defined object StudentBrowser
+
+scala> val category = StudentDatabase.allCategories.head
+category: StudentDatabase.FoodCategory = FoodCategory(edible,List(FrozenFood))
+
+scala> SimpleBrowser.displayCategory(category)
+                                     ^
+       error: type mismatch;
+        found   : StudentDatabase.FoodCategory
+        required: SimpleBrowser.database.FoodCategory
+

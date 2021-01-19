@@ -1,0 +1,217 @@
+/*
+ * Copyright (C) 2007-2019 Artima, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Automatically generated Scala interpreter transcript from:
+ *
+ * Programming in Scala (Fourth Edition)
+ * by Martin Odersky, Lex Spoon, Bill Venners
+ *
+ * http://booksites.artima.com/programming_in_scala_4ed
+ */
+
+
+scala> var increase = (x: Int) => x + 1
+increase: Int => Int = $$Lambda$740/277155095@34451ed8
+
+scala> increase(10)
+res0: Int = 11
+
+scala> increase = (x: Int) => x + 9999
+mutated increase
+
+scala> increase(10)
+res1: Int = 10009
+
+scala> increase = (x: Int) => {
+         println("We")
+         println("are")
+         println("here!")
+         x + 1
+       }
+mutated increase
+
+scala> increase(10)
+We
+are
+here!
+res2: Int = 11
+
+scala> val someNumbers = List(-11, -10, -5, 0, 5, 10)
+someNumbers: List[Int] = List(-11, -10, -5, 0, 5, 10)
+
+scala> someNumbers.foreach((x: Int) => println(x))
+-11
+-10
+-5
+0
+5
+10
+
+scala> someNumbers.filter((x: Int) => x > 0)
+res4: List[Int] = List(5, 10)
+
+scala> someNumbers.filter((x) => x > 0)
+res5: List[Int] = List(5, 10)
+
+scala> someNumbers.filter(x => x > 0)
+res6: List[Int] = List(5, 10)
+
+scala> someNumbers.filter(_ > 0)
+res7: List[Int] = List(5, 10)
+
+scala> someNumbers.filter(x => x > 0)
+res8: List[Int] = List(5, 10)
+
+scala> val f = _ + _
+               ^
+       error: missing parameter type for expanded function ((<x$1: error>, x$2) => x$1.$plus(x$2))
+                   ^
+       error: missing parameter type for expanded function ((<x$1: error>, <x$2: error>) => x$1.$plus(x$2))
+
+scala> val f = (_: Int) + (_: Int)
+f: (Int, Int) => Int = $$Lambda$806/1880726960@274b0c2a
+
+scala> f(5, 10)
+res9: Int = 15
+
+scala> def sum(a: Int, b: Int, c: Int) = a + b + c
+sum: (a: Int, b: Int, c: Int)Int
+
+scala> sum(1, 2, 3)
+res10: Int = 6
+
+scala> val a = sum _
+a: (Int, Int, Int) => Int = $$Lambda$815/1469492757@123372f4
+
+scala> a(1, 2, 3)
+res11: Int = 6
+
+scala> a.apply(1, 2, 3)
+res12: Int = 6
+
+scala> val b = sum(1, _: Int, 3)
+b: Int => Int = $$Lambda$816/1278632956@64f248ea
+
+scala> b(2)
+res13: Int = 6
+
+scala> val c = sum
+               ^
+       error: missing argument list for method sum
+       Unapplied methods are only converted to functions when a function type is expected.
+       You can make this conversion explicit by writing `sum _` or `sum(_,_,_)` instead of `sum`.
+
+scala> val d = sum _
+d: (Int, Int, Int) => Int = $$Lambda$817/489693281@7a4729e6
+
+scala> d(10, 20, 30)
+res14: Int = 60
+
+scala> (x: Int) => x + more
+                       ^
+       error: not found: value more
+
+scala> var more = 1
+more: Int = 1
+
+scala> val addMore = (x: Int) => x + more
+addMore: Int => Int = $$Lambda$823/1244142304@55c445e5
+
+scala> addMore(10)
+res16: Int = 11
+
+scala> more = 9999
+mutated more
+
+scala> addMore(10)
+res17: Int = 10009
+
+scala> val someNumbers = List(-11, -10, -5, 0, 5, 10)
+someNumbers: List[Int] = List(-11, -10, -5, 0, 5, 10)
+
+scala> var sum = 0
+sum: Int = 0
+
+scala> sum
+res19: Int = -11
+
+scala>   def makeIncreaser(more: Int) = (x: Int) => x + more
+
+makeIncreaser: (more: Int)Int => Int
+
+scala> val inc1 = makeIncreaser(1)
+inc1: Int => Int = $$Lambda$841/33422693@403d9a5b
+
+scala> val inc9999 = makeIncreaser(9999)
+inc9999: Int => Int = $$Lambda$841/33422693@10359f3
+
+scala> inc1(10)
+res20: Int = 11
+
+scala> inc9999(10)
+res21: Int = 10009
+
+scala> def echo(args: String*) = 
+         for (arg <- args) println(arg)
+echo: (args: String*)Unit
+
+scala> echo()
+
+scala> echo("one")
+one
+
+scala> echo("hello", "world!")
+hello
+world!
+
+scala> val seq = Seq("What's", "up", "doc?")
+seq: Seq[String] = List(What's, up, doc?)
+
+scala> echo(seq)
+            ^
+       error: type mismatch;
+        found   : Seq[String]
+        required: String
+
+scala> echo(seq: _*)
+What's
+up
+doc?
+
+scala> def speed(distance: Float, time: Float): Float =
+         distance / time
+speed: (distance: Float, time: Float)Float
+
+scala> speed(100, 10)
+res27: Float = 10.0
+
+scala> speed(distance = 100, time = 10)
+res28: Float = 10.0
+
+scala> speed(time = 10, distance = 100)
+res29: Float = 10.0
+
+scala>   def boom(x: Int): Int = 
+           if (x == 0) throw new Exception("boom!")
+           else boom(x - 1) + 1
+
+boom: (x: Int)Int
+
+scala>  def bang(x: Int): Int = 
+          if (x == 0) throw new Exception("bang!")
+          else bang(x - 1)
+
+bang: (x: Int)Int
+

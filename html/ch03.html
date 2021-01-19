@@ -1,0 +1,403 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/2002/REC-xhtml1-20020801/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type"
+        content="text/html; charset=ISO-8859-1" />
+  <title>Code Examples for Programming in Scala, Fourth Edition</title>
+  <link rel="stylesheet" href="style.css" type="text/css"/>
+</head>
+<body>
+
+<div id="mainTitles"><h3>Code Examples for</h3><h2>Programming in Scala, Fourth Edition</h2></div>  <p><a href="../index.html">
+    Return to chapter index
+  </a></p>
+  <h2>3 Next Steps in Scala</h2>
+
+    <li>Step 1. <a href="#sec1">Use lists</a></li>
+    <li>Step 2. <a href="#sec2">Use tuples</a></li>
+    <li>Step 3. <a href="#sec3">Use sets and maps</a></li>
+    <li>Step 4. <a href="#sec4">Learn to recognize the functional style</a></li>
+    <li>Step 5. <a href="#sec5">Read lines from a file</a></li>
+  </ul>
+
+  <pre><hr>
+// In file <a href="../next-steps-in-scala/Ex1.scala">next-steps-in-scala/Ex1.scala</a>
+
+  val big = new java.math.BigInteger("12345")
+
+<hr>
+// In file <a href="../next-steps-in-scala/Ex1.scala">next-steps-in-scala/Ex1.scala</a>
+
+  val greetStrings = new Array[String](3)
+  
+  greetStrings(0) = "Hello"
+  greetStrings(1) = ", "
+  greetStrings(2) = "world!\n"
+
+  for (i &lt;- 0 to 2)
+    print(greetStrings(i))
+
+<hr>
+// In file <a href="../next-steps-in-scala/Ex2.scala">next-steps-in-scala/Ex2.scala</a>
+
+  val greetStrings: Array[String] = new Array[String](3)
+
+<hr>
+// In file <a href="../next-steps-in-scala/Ex2.scala">next-steps-in-scala/Ex2.scala</a>
+
+  greetStrings(0) = "Hello"
+  greetStrings(1) = ", "
+  greetStrings(2) = "world!\n"
+
+<hr>
+// In file <a href="../next-steps-in-scala/Ex2.scala">next-steps-in-scala/Ex2.scala</a>
+
+  for (i &lt;- 0 to 2)
+    print(greetStrings(i))
+
+<hr>
+  greetStrings(0) = "Hello" 
+
+<hr>
+  greetStrings.update(0, "Hello")
+
+<hr>
+// In file <a href="../next-steps-in-scala/Ex3.scala">next-steps-in-scala/Ex3.scala</a>
+
+  val greetStrings = new Array[String](3)
+
+  greetStrings.update(0, "Hello")
+  greetStrings.update(1, ", ")
+  greetStrings.update(2, "world!\n")
+
+  for (i &lt;- 0.to(2))
+    print(greetStrings.apply(i))
+
+<hr>
+// In file <a href="../next-steps-in-scala/Ex3.scala">next-steps-in-scala/Ex3.scala</a>
+
+  val numNames = Array("zero", "one", "two")
+
+<hr>
+// In file <a href="../next-steps-in-scala/Ex3.scala">next-steps-in-scala/Ex3.scala</a>
+
+  val numNames2 = Array.apply("zero", "one", "two")
+
+<hr>
+  </pre>
+  <h3><a name="sec1"></a>Step 1. Use lists</h3>
+
+  <pre><hr>
+// In file <a href="../next-steps-in-scala/Ex3.scala">next-steps-in-scala/Ex3.scala</a>
+
+  val oneTwoThree = List(1, 2, 3)
+
+<hr>
+// In file <a href="../next-steps-in-scala/Ex3.scala">next-steps-in-scala/Ex3.scala</a>
+
+  val oneTwo = List(1, 2)
+  val threeFour = List(3, 4)
+  val oneTwoThreeFour = oneTwo ::: threeFour
+  println(oneTwo + " and " + threeFour + " were not mutated.")
+  println("Thus, " + oneTwoThreeFour + " is a new list.")
+
+<hr>
+<span class="output">  List(1, 2) and List(3, 4) were not mutated.</span>
+<span class="output">  Thus, List(1, 2, 3, 4) is a new list.</span>
+
+<hr>
+// In file <a href="../next-steps-in-scala/Ex3.scala">next-steps-in-scala/Ex3.scala</a>
+
+  val twoThree = List(2, 3)
+  val oneTwoThree = 1 :: twoThree
+  println(oneTwoThree)
+
+<hr>
+<span class="output">  List(1, 2, 3)</span>
+
+<hr>
+// In file <a href="../next-steps-in-scala/Ex3.scala">next-steps-in-scala/Ex3.scala</a>
+
+  val oneTwoThree = 1 :: 2 :: 3 :: Nil
+  println(oneTwoThree)
+
+<hr>
+  </pre>
+  <h3><a name="sec2"></a>Step 2. Use tuples</h3>
+
+  <pre><hr>
+// In file <a href="../next-steps-in-scala/Ex3.scala">next-steps-in-scala/Ex3.scala</a>
+
+  val pair = (99, "Luftballons")
+  println(pair._1)
+  println(pair._2)
+
+<hr>
+<span class="output">  99</span>
+<span class="output">  Luftballons</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec3"></a>Step 3. Use sets and maps</h3>
+
+  <pre><hr>
+// In file <a href="../next-steps-in-scala/Ex3.scala">next-steps-in-scala/Ex3.scala</a>
+
+  var jetSet = Set("Boeing", "Airbus")
+  jetSet += "Lear"
+  println(jetSet.contains("Cessna"))
+
+<hr>
+// In file <a href="../next-steps-in-scala/Ex3.scala">next-steps-in-scala/Ex3.scala</a>
+
+  jetSet = jetSet + "Lear"
+
+<hr>
+// In file <a href="../next-steps-in-scala/Ex3.scala">next-steps-in-scala/Ex3.scala</a>
+
+  import scala.collection.mutable
+
+  val movieSet = mutable.Set("Hitch", "Poltergeist")
+  movieSet += "Shrek"
+  println(movieSet) 
+
+<hr>
+// In file <a href="../next-steps-in-scala/Ex3.scala">next-steps-in-scala/Ex3.scala</a>
+
+  import scala.collection.immutable.HashSet
+
+  val hashSet = HashSet("Tomatoes", "Chilies")
+  println(hashSet + "Coriander")
+
+<hr>
+// In file <a href="../next-steps-in-scala/Ex3.scala">next-steps-in-scala/Ex3.scala</a>
+
+  import scala.collection.mutable
+
+  val treasureMap = mutable.Map[Int, String]()
+  treasureMap += (1 -&gt; "Go to island.")
+  treasureMap += (2 -&gt; "Find big X on ground.")
+  treasureMap += (3 -&gt; "Dig.")
+  println(treasureMap(2))
+
+<hr>
+  Find big X on ground.
+
+<hr>
+// In file <a href="../next-steps-in-scala/Ex3.scala">next-steps-in-scala/Ex3.scala</a>
+
+  val romanNumeral = Map(
+    1 -&gt; "I", 2 -&gt; "II", 3 -&gt; "III", 4 -&gt; "IV", 5 -&gt; "V"
+  )
+  println(romanNumeral(4))
+
+<hr>
+  </pre>
+  <h3><a name="sec4"></a>Step 4. Learn to recognize the functional style</h3>
+
+  <pre><hr>
+// In file <a href="../next-steps-in-scala/Ex3.scala">next-steps-in-scala/Ex3.scala</a>
+
+  def printArgs(args: Array[String]): Unit = {
+    var i = 0
+    while (i &lt; args.length) {
+      println(args(i))
+      i += 1
+    }
+  }
+
+<hr>
+// In file <a href="../next-steps-in-scala/Ex3.scala">next-steps-in-scala/Ex3.scala</a>
+
+  def printArgs(args: Array[String]): Unit = {
+    for (arg &lt;- args)
+      println(arg)
+  }
+
+<hr>
+// In file <a href="../next-steps-in-scala/Ex3.scala">next-steps-in-scala/Ex3.scala</a>
+
+  def printArgs(args: Array[String]): Unit = {
+    args.foreach(println)
+  }
+
+<hr>
+// In file <a href="../next-steps-in-scala/Ex3.scala">next-steps-in-scala/Ex3.scala</a>
+
+  def formatArgs(args: Array[String]) = args.mkString("\n")
+
+<hr>
+// In file <a href="../next-steps-in-scala/Ex3.scala">next-steps-in-scala/Ex3.scala</a>
+
+  println(formatArgs(args))
+
+<hr>
+// In file <a href="../next-steps-in-scala/Ex3.scala">next-steps-in-scala/Ex3.scala</a>
+
+  val res = formatArgs(Array("zero", "one", "two"))
+  assert(res == "zero\none\ntwo")
+
+<hr>
+  </pre>
+  <h3><a name="sec5"></a>Step 5. Read lines from a file</h3>
+
+  <pre><hr>
+// In file <a href="../next-steps-in-scala/countchars1.scala">next-steps-in-scala/countchars1.scala</a>
+
+  import scala.io.Source
+
+  if (args.length &gt; 0) {
+
+    for (line &lt;- Source.fromFile(args(0)).getLines())
+      println(line.length.toString + " " + line)
+  }
+  else
+    Console.err.println("Please enter filename")
+
+<hr>
+  $ scala countchars1.scala countchars1.scala
+
+<hr>
+  22 import scala.io.Source
+  0 
+  22 if (args.length &gt; 0) {
+  0 
+  51   for (line &lt;- Source.fromFile(args(0)).getLines())
+  37     println(line.length + " " + line)
+  1 }
+  4 else
+  46   Console.err.println("Please enter filename")
+
+<hr>
+  22 | import scala.io.Source
+   0 | 
+  22 | if (args.length &gt; 0) {
+   0 | 
+  51 |   for (line &lt;- Source.fromFile(args(0)).getLines())
+  37 |     println(line.length + " " + line)
+   1 | }
+   4 | else
+  46 |   Console.err.println("Please enter filename")
+
+<hr>
+// In file <a href="../next-steps-in-scala/Ex4.scala">next-steps-in-scala/Ex4.scala</a>
+
+  val lines = Source.fromFile(args(0)).getLines().toList
+
+<hr>
+// In file <a href="../next-steps-in-scala/Ex4.scala">next-steps-in-scala/Ex4.scala</a>
+
+  def widthOfLength(s: String) = s.length.toString.length
+
+<hr>
+// In file <a href="../next-steps-in-scala/Ex4.scala">next-steps-in-scala/Ex4.scala</a>
+
+  var maxWidth = 0
+  for (line &lt;- lines)
+    maxWidth = maxWidth.max(widthOfLength(line))
+
+<hr>
+// In file <a href="../next-steps-in-scala/Ex5.scala">next-steps-in-scala/Ex5.scala</a>
+
+  val longestLine = lines.reduceLeft(
+    (a, b) =&gt; if (a.length &gt; b.length) a else b 
+  ) 
+
+<hr>
+// In file <a href="../next-steps-in-scala/Ex5.scala">next-steps-in-scala/Ex5.scala</a>
+
+  val maxWidth = widthOfLength(longestLine)
+
+<hr>
+// In file <a href="../next-steps-in-scala/Ex5.scala">next-steps-in-scala/Ex5.scala</a>
+
+  for (line &lt;- lines) {
+    val numSpaces = maxWidth - widthOfLength(line)
+    val padding = " " * numSpaces
+    println(padding + line.length + " | " + line)
+  }
+
+<hr>
+// In file <a href="../next-steps-in-scala/Ex6.scala">next-steps-in-scala/Ex6.scala</a>
+
+  import scala.io.Source
+
+  def widthOfLength(s: String) = s.length.toString.length
+
+  if (args.length &gt; 0) {
+
+    val lines = Source.fromFile(args(0)).getLines().toList
+
+    val longestLine = lines.reduceLeft(
+      (a, b) =&gt; if (a.length &gt; b.length) a else b 
+    ) 
+    val maxWidth = widthOfLength(longestLine)
+
+    for (line &lt;- lines) {
+      val numSpaces = maxWidth - widthOfLength(line)
+      val padding = " " * numSpaces
+      println(padding + line.length + " | " + line)
+    }
+  }
+  else
+    Console.err.println("Please enter filename")
+
+<hr>
+  </pre>
+
+ <table>
+ <tr valign="top">
+ <td>
+ <div id="moreinfo">
+ <p>
+ For more information about <em>Programming in Scala, Fourth Edition</em> (the "Stairway Book"), please visit:
+ </p>
+ 
+ <p>
+ <a href="http://www.artima.com/shop/programming_in_scala_4ed">http://www.artima.com/shop/programming_in_scala_4ed</a>
+ </p>
+ 
+ <p>
+ and:
+ </p>
+ 
+ <p>
+ <a href="http://booksites.artima.com/programming_in_scala_4ed">http://booksites.artima.com/programming_in_scala_4ed</a>
+ </p>
+ </div>
+ </td>
+ <td>
+ <div id="license">
+ <p>
+   Copyright &copy; 2007-2019 Artima, Inc. All rights reserved.
+ </p>
+
+ <p>
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+ </p>
+
+ <p style="margin-left: 20px">
+   <a href="http://www.apache.org/licenses/LICENSE-2.0">
+     http://www.apache.org/licenses/LICENSE-2.0
+   </a>
+ </p>
+
+ <p>
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+   implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ </p>
+ </div>
+ </td>
+ </tr>
+ </table>
+
+</body>
+</html>

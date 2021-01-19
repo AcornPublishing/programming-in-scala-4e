@@ -1,0 +1,824 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/2002/REC-xhtml1-20020801/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type"
+        content="text/html; charset=ISO-8859-1" />
+  <title>Code Examples for Programming in Scala, Fourth Edition</title>
+  <link rel="stylesheet" href="style.css" type="text/css"/>
+</head>
+<body>
+
+<div id="mainTitles"><h3>Code Examples for</h3><h2>Programming in Scala, Fourth Edition</h2></div>  <p><a href="../index.html">
+    Return to chapter index
+  </a></p>
+  <h2>24 Collections in Depth</h2>
+
+  <p><a href="../collections-in-depth/transcript.txt">
+    Sample run of chapter's interpreter examples
+  </a></p>
+
+  <ul>
+
+    <li>24.1 <a href="#sec1">Mutable and immutable collections</a></li>
+    <li>24.2 <a href="#sec2">Collections consistency</a></li>
+    <li>24.3 <a href="#sec3">Trait <span class="mono">Iterable</span></a></li>
+    <li>24.4 <a href="#sec4">Sets</a></li>
+    <li>24.5 <a href="#sec5">Maps</a></li>
+    <li>24.6 <a href="#sec6">Concrete immutable collection classes</a></li>
+    <li>24.7 <a href="#sec7">Concrete mutable collection classes</a></li>
+    <li>24.8 <a href="#sec8">Arrays</a></li>
+    <li>24.9 <a href="#sec9">Strings</a></li>
+    <li>24.10 <a href="#sec10">Performance characteristics</a></li>
+    <li>24.11 <a href="#sec11">Equality</a></li>
+    <li>24.12 <a href="#sec12">Views</a></li>
+    <li>24.13 <a href="#sec13">Iterators</a></li>
+    <li>24.14 <a href="#sec14">Creating collections from scratch</a></li>
+    <li>24.15 <a href="#sec15">Conversions between Java and Scala collections</a></li>
+    <li>24.16 <a href="#sec16">Conclusion</a></li>
+  </ul>
+
+  <h3><a name="sec1"></a>24.1 Mutable and immutable collections</h3>
+
+  <h3><a name="sec2"></a>24.2 Collections consistency</h3>
+
+  <pre><hr>
+    Iterable("x", "y", "z")
+    Map("x" -&gt; 24, "y" -&gt; 25, "z" -&gt; 26)
+    Set(Color.Red, Color.Green, Color.Blue)
+    SortedSet("hello", "world")
+    Buffer(x, y, z)
+    IndexedSeq(1.0, 2.0)
+    LinearSeq(a, b, c)
+
+<hr>
+    List(1, 2, 3)
+    HashMap("x" -&gt; 24, "y" -&gt; 25, "z" -&gt; 26)
+
+<hr>
+  scala&gt; List(1, 2, 3) map (_ + 1)
+<span class="output">  res0: List[Int] = List(2, 3, 4)</span>
+
+  scala&gt; Set(1, 2, 3) map (_ * 2)
+<span class="output">  res1: scala.collection.immutable.Set[Int] = Set(2, 4, 6)</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec3"></a>24.3 Trait <span class="mono">Iterable</span></h3>
+
+  <pre><hr>
+    def iterator: Iterator[A] 
+
+<hr>
+  scala&gt; val xs = List(1, 2, 3, 4, 5)
+<span class="output">  xs: List[Int] = List(1, 2, 3, 4, 5)</span>
+
+  scala&gt; val git = xs grouped 3
+<span class="output">  git: Iterator[List[Int]] = non-empty iterator</span>
+
+  scala&gt; git.next()
+<span class="output">  res2: List[Int] = List(1, 2, 3)</span>
+
+  scala&gt; git.next()
+<span class="output">  res3: List[Int] = List(4, 5)</span>
+
+  scala&gt; val sit = xs sliding 3
+<span class="output">  sit: Iterator[List[Int]] = non-empty iterator</span>
+
+  scala&gt; sit.next()
+<span class="output">  res4: List[Int] = List(1, 2, 3)</span>
+
+  scala&gt; sit.next()
+<span class="output">  res5: List[Int] = List(2, 3, 4)</span>
+
+  scala&gt; sit.next()
+<span class="output">  res6: List[Int] = List(3, 4, 5)</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec4"></a>24.4 Sets</h3>
+
+  <pre><hr>
+  scala&gt; val fruit = Set("apple", "orange", "peach",
+       |   "banana")
+<span class="output">  fruit: scala.collection.immutable.Set[String] =</span>
+<span class="output">    Set(apple, orange, peach, banana)</span>
+
+  scala&gt; fruit("peach")
+<span class="output">  res7: Boolean = true</span>
+
+  scala&gt; fruit("potato")
+<span class="output">  res8: Boolean = false</span>
+
+<hr>
+  scala&gt; var s = Set(1, 2, 3)
+<span class="output">  s: scala.collection.immutable.Set[Int] = Set(1, 2, 3)</span>
+
+  scala&gt; s += 4; s -= 2
+
+  scala&gt; s
+<span class="output">  res10: scala.collection.immutable.Set[Int] = Set(1, 3, 4)</span>
+
+<hr>
+  scala&gt; val s = collection.mutable.Set(1, 2, 3)
+<span class="output">  s: scala.collection.mutable.Set[Int] = Set(1, 2, 3)</span>
+
+  scala&gt; s += 4
+<span class="output">  res11: s.type = Set(1, 2, 3, 4)</span>
+
+  scala&gt; s -= 2
+<span class="output">  res12: s.type = Set(1, 3, 4)</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec5"></a>24.5 Maps</h3>
+
+  <pre><hr>
+    def get(key): Option[Value] 
+
+<hr>
+  scala&gt; def f(x: String) = { 
+       | println("taking my time."); Thread.sleep(100)
+       | x.reverse }
+<span class="output">  f: (x: String)String</span>
+
+<hr>
+  scala&gt; val cache = collection.mutable.Map[String, String]()
+<span class="output">  cache: scala.collection.mutable.Map[String,String] = Map()</span>
+
+<hr>
+  scala&gt; def cachedF(s: String) = cache.getOrElseUpdate(s, f(s))
+<span class="output">  cachedF: (s: String)String</span>
+
+  scala&gt; cachedF("abc")
+<span class="output">  taking my time.</span>
+<span class="output">  res16: String = cba</span>
+
+  scala&gt; cachedF("abc")
+<span class="output">  res17: String = cba</span>
+
+<hr>
+  def cachedF(arg: String) = cache get arg match {
+    case Some(result) =&gt; result
+    case None =&gt; 
+      val result = f(arg)
+      cache(arg) = result
+      result
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec6"></a>24.6 Concrete immutable collection classes</h3>
+
+  <pre><hr>
+  scala&gt; val str = 1 #:: 2 #:: 3 #:: LazyList.empty
+<span class="output">  str: scala.collection.immutable.LazyList[Int] =</span>
+<span class="output">    LazyList(&lt;not computed&gt;)</span>
+
+<hr>
+  scala&gt; def fibFrom(a: Int, b: Int): LazyList[Int] =
+       |   a #:: fibFrom(b, a + b)
+<span class="output">  fibFrom: (a: Int, b: Int)LazyList[Int]</span>
+
+<hr>
+  scala&gt; val fibs = fibFrom(1, 1).take(7)
+<span class="output">  fibs: scala.collection.immutable.LazyList[Int] =</span>
+<span class="output">    LazyList(&lt;not computed&gt;)</span>
+
+  scala&gt; fibs.toList
+<span class="output">  res23: List[Int] = List(1, 1, 2, 3, 5, 8, 13)</span>
+
+<hr>
+  scala&gt; val vec = scala.collection.immutable.Vector.empty
+<span class="output">  vec: scala.collection.immutable.Vector[Nothing] = Vector()</span>
+
+  scala&gt; val vec2 = vec :+ 1 :+ 2
+<span class="output">  vec2: scala.collection.immutable.Vector[Int] = Vector(1, 2)</span>
+
+  scala&gt; val vec3 = 100 +: vec2
+<span class="output">  vec3: scala.collection.immutable.Vector[Int]</span>
+<span class="output">    = Vector(100, 1, 2)</span>
+
+  scala&gt; vec3(0)
+<span class="output">  res24: Int = 100</span>
+
+<hr>
+  scala&gt; val vec = Vector(1, 2, 3)
+<span class="output">  vec: scala.collection.immutable.Vector[Int] = Vector(1, 2, 3)</span>
+
+  scala&gt; vec updated (2, 4)
+<span class="output">  res25: scala.collection.immutable.Vector[Int] = Vector(1, 2, 4)</span>
+
+  scala&gt; vec
+<span class="output">  res26: scala.collection.immutable.Vector[Int] = Vector(1, 2, 3)</span>
+
+<hr>
+  scala&gt; collection.immutable.IndexedSeq(1, 2, 3)
+<span class="output">  res27: scala.collection.immutable.IndexedSeq[Int]</span>
+<span class="output">    = Vector(1, 2, 3)</span>
+
+<hr>
+  scala&gt; val empty = scala.collection.immutable.Queue[Int]()
+<span class="output">  empty: scala.collection.immutable.Queue[Int] = Queue()</span>
+
+<hr>
+  scala&gt; val has1 = empty.enqueue(1)
+<span class="output">  has1: scala.collection.immutable.Queue[Int] = Queue(1)</span>
+
+<hr>
+  scala&gt; val has123 = has1.enqueueAll(List(2, 3))
+<span class="output">  has123: scala.collection.immutable.Queue[Int] = Queue(1, 2, </span>
+<span class="output">  3)</span>
+
+<hr>
+  scala&gt; val (element, has23) = has123.dequeue
+<span class="output">  element: Int = 1</span>
+<span class="output">  has23: scala.collection.immutable.Queue[Int] = Queue(2, 3)</span>
+
+<hr>
+  scala&gt; 1 to 3
+<span class="output">  res31: scala.collection.immutable.Range.Inclusive</span>
+<span class="output">    = Range(1, 2, 3)</span>
+
+  scala&gt; 5 to 14 by 3
+<span class="output">  res32: scala.collection.immutable.Range = Range(5, 8, 11, 14)</span>
+
+<hr>
+  scala&gt; 1 until 3
+<span class="output">  res33: scala.collection.immutable.Range = Range(1, 2)</span>
+
+<hr>
+  scala&gt; val set = collection.immutable.TreeSet.empty[Int]
+<span class="output">  set: scala.collection.immutable.TreeSet[Int] = TreeSet()</span>
+
+  scala&gt; set + 1 + 3 + 3
+<span class="output">  res34: scala.collection.immutable.TreeSet[Int] = TreeSet(1, 3)</span>
+
+<hr>
+  scala&gt; val bits = scala.collection.immutable.BitSet.empty
+<span class="output">  bits: scala.collection.immutable.BitSet = BitSet()</span>
+
+  scala&gt; val moreBits = bits + 3 + 4 + 4
+<span class="output">  moreBits: scala.collection.immutable.BitSet = BitSet(3, 4)</span>
+
+  scala&gt; moreBits(3)
+<span class="output">  res35: Boolean = true</span>
+
+  scala&gt; moreBits(0)
+<span class="output">  res36: Boolean = false</span>
+
+<hr>
+  scala&gt; val vm = scala.collection.immutable.VectorMap.
+    empty[Int, String]
+<span class="output">  vm: scala.collection.immutable.VectorMap[Int,String] =</span>
+<span class="output">    VectorMap()</span>
+
+  scala&gt; val vm1 = vm + (1 -&gt; "one")
+<span class="output">  vm1: scala.collection.immutable.VectorMap[Int,String] =</span>
+<span class="output">    VectorMap(1 -&gt; one)</span>
+
+  scala&gt; val vm2 = vm1 + (2 -&gt; "two")
+<span class="output">  vm2: scala.collection.immutable.VectorMap[Int,String] =</span>
+<span class="output">    VectorMap(1 -&gt; one, 2 -&gt; two)</span>
+
+  scala&gt; vm2 == Map(2 -&gt; "two", 1 -&gt; "one")
+<span class="output">  res29: Boolean = true</span>
+
+<hr>
+  scala&gt; val map = collection.immutable.ListMap(
+       |   1 -&gt; "one", 2 -&gt; "two")
+<span class="output">  map: scala.collection.immutable.ListMap[Int,String] = Map(1 </span>
+<span class="output">  -&gt; one, 2 -&gt; two)</span>
+
+  scala&gt; map(2)
+<span class="output">  res37: String = "two"</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec7"></a>24.7 Concrete mutable collection classes</h3>
+
+  <pre><hr>
+  scala&gt; val buf = collection.mutable.ArrayBuffer.empty[Int]
+<span class="output">  buf: scala.collection.mutable.ArrayBuffer[Int]</span>
+<span class="output">    = ArrayBuffer()</span>
+
+  scala&gt; buf += 1
+<span class="output">  res38: buf.type = ArrayBuffer(1)</span>
+
+  scala&gt; buf += 10
+<span class="output">  res39: buf.type = ArrayBuffer(1, 10)</span>
+
+  scala&gt; buf.toArray
+<span class="output">  res40: Array[Int] = Array(1, 10)</span>
+
+<hr>
+  scala&gt; val buf = collection.mutable.ListBuffer.empty[Int]
+<span class="output">  buf: scala.collection.mutable.ListBuffer[Int]</span>
+<span class="output">    = ListBuffer()</span>
+
+  scala&gt; buf += 1
+<span class="output">  res41: buf.type = ListBuffer(1)</span>
+
+  scala&gt; buf += 10
+<span class="output">  res42: buf.type = ListBuffer(1, 10)</span>
+
+  scala&gt; buf.toList
+<span class="output">  res43: List[Int] = List(1, 10)</span>
+
+<hr>
+  scala&gt; val buf = new StringBuilder
+<span class="output">  buf: StringBuilder =</span>
+
+  scala&gt; buf += 'a'
+<span class="output">  res44: buf.type = a</span>
+
+  scala&gt; buf ++= "bcdef"
+<span class="output">  res45: buf.type = abcdef</span>
+
+  scala&gt; buf.toString
+<span class="output">  res46: String = abcdef</span>
+
+<hr>
+  scala&gt; val queue = new scala.collection.mutable.Queue[String]
+<span class="output">  queue: scala.collection.mutable.Queue[String] = Queue()</span>
+
+  scala&gt; queue += "a"
+<span class="output">  res47: queue.type = Queue(a)</span>
+
+  scala&gt; queue ++= List("b", "c")
+<span class="output">  res48: queue.type = Queue(a, b, c)</span>
+
+  scala&gt; queue
+<span class="output">  res49: scala.collection.mutable.Queue[String] = Queue(a, b, c)</span>
+
+  scala&gt; queue.dequeue
+<span class="output">  res50: String = a</span>
+
+  scala&gt; queue
+<span class="output">  res51: scala.collection.mutable.Queue[String] = Queue(b, c)</span>
+
+<hr>
+  scala&gt; val stack = new scala.collection.mutable.Stack[Int]           
+<span class="output">  stack: scala.collection.mutable.Stack[Int] = Stack()</span>
+
+  scala&gt; stack.push(1)
+<span class="output">  res52: stack.type = Stack(1)</span>
+
+  scala&gt; stack
+<span class="output">  res53: scala.collection.mutable.Stack[Int] = Stack(1)</span>
+
+  scala&gt; stack.push(2)
+<span class="output">  res54: stack.type = Stack(2, 1)</span>
+
+  scala&gt; stack
+<span class="output">  res55: scala.collection.mutable.Stack[Int] = Stack(2, 1)</span>
+
+  scala&gt; stack.top
+<span class="output">  res56: Int = 2</span>
+
+  scala&gt; stack
+<span class="output">  res57: scala.collection.mutable.Stack[Int] = Stack(2, 1)</span>
+
+  scala&gt; stack.pop
+<span class="output">  res58: Int = 2</span>
+
+  scala&gt; stack    
+<span class="output">  res59: scala.collection.mutable.Stack[Int] = Stack(1)</span>
+
+<hr>
+  scala&gt; val map = collection.mutable.HashMap.empty[Int,String]
+<span class="output">  map: scala.collection.mutable.HashMap[Int,String] = Map()</span>
+
+  scala&gt; map += (1 -&gt; "make a web site")
+<span class="output">  res60: map.type = Map(1 -&gt; make a web site)</span>
+
+  scala&gt; map += (3 -&gt; "profit!")
+<span class="output">  res61: map.type = Map(1 -&gt; make a web site, 3 -&gt; profit!)</span>
+
+  scala&gt; map(1)
+<span class="output">  res62: String = make a web site</span>
+
+  scala&gt; map contains 2
+<span class="output">  res63: Boolean = false</span>
+
+<hr>
+  scala&gt; val bits = scala.collection.mutable.BitSet.empty
+<span class="output">  bits: scala.collection.mutable.BitSet = BitSet()</span>
+
+  scala&gt; bits += 1
+<span class="output">  res64: bits.type = BitSet(1)</span>
+
+  scala&gt; bits += 3
+<span class="output">  res65: bits.type = BitSet(1, 3)</span>
+
+  scala&gt; bits
+<span class="output">  res66: scala.collection.mutable.BitSet = BitSet(1, 3)</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec8"></a>24.8 Arrays</h3>
+
+  <pre><hr>
+  scala&gt; val a1 = Array(1, 2, 3)
+<span class="output">  a1: Array[Int] = Array(1, 2, 3)</span>
+
+  scala&gt; val a2 = a1 map (_ * 3)
+<span class="output">  a2: Array[Int] = Array(3, 6, 9)</span>
+
+  scala&gt; val a3 = a2 filter (_ % 2 != 0)
+<span class="output">  a3: Array[Int] = Array(3, 9)</span>
+
+  scala&gt; a3.reverse
+<span class="output">  res1: Array[Int] = Array(9, 3)</span>
+
+<hr>
+  scala&gt; val seq: collection.Seq[Int] = a1
+  seq: scala.collection.Seq[Int] = ArraySeq(1, 2, 3)
+
+  scala&gt; val a4: Array[Int] = seq.toArray
+  a4: Array[Int] = Array(1, 2, 3)
+
+  scala&gt; a1 eq a4
+  res2: Boolean = false
+
+<hr>
+  scala&gt; val seq: collection.Seq[Int] = a1
+<span class="output">  seq: scala.collection.Seq[Int] = ArraySeq(1, 2, 3)</span>
+
+  scala&gt; seq.reverse
+<span class="output">  res2: scala.collection.Seq[Int] = ArraySeq(3, 2, 1)</span>
+
+  scala&gt; val ops: collection.ArrayOps[Int] = a1
+<span class="output">  ops: scala.collection.ArrayOps[Int] = ...</span>
+
+  scala&gt; ops.reverse
+<span class="output">  res3: Array[Int] = Array(3, 2, 1)</span>
+
+<hr>
+  scala&gt; a1.reverse
+<span class="output">  res4: Array[Int] = Array(3, 2, 1)</span>
+
+<hr>
+  scala&gt; intArrayOps(a1).reverse
+<span class="output">  res5: Array[Int] = Array(3, 2, 1)</span>
+
+<hr>
+  // This is wrong!
+  def evenElems[T](xs: Vector[T]): Array[T] = {
+    val arr = new Array[T]((xs.length + 1) / 2)
+    for (i &lt;- 0 until xs.length by 2)
+      arr(i / 2) = xs(i)
+    arr
+  }
+
+<hr>
+  error: cannot find class tag for element type T
+    val arr = new Array[T]((arr.length + 1) / 2)
+              ^
+
+<hr>
+  // This works
+  import scala.reflect.ClassTag
+  def evenElems[T: ClassTag](xs: Vector[T]): Array[T] = {
+    val arr = new Array[T]((xs.length + 1) / 2)
+    for (i &lt;- 0 until xs.length by 2)
+      arr(i / 2) = xs(i)
+    arr
+  }
+
+<hr>
+  scala&gt; evenElems(Vector(1, 2, 3, 4, 5))
+<span class="output">  res6: Array[Int] = Array(1, 3, 5)</span>
+
+  scala&gt; evenElems(Vector("this", "is", "a", "test", "run"))
+<span class="output">  res7: Array[java.lang.String] = Array(this, a, run)</span>
+
+<hr>
+  scala&gt; def wrap[U](xs: Vector[U]) = evenElems(xs)
+<span class="output">  &lt;console&gt;:9: error: No ClassTag available for U</span>
+<span class="output">       def wrap[U](xs: Vector[U]) = evenElems(xs)</span>
+<span class="output">                                             ^</span>
+
+<hr>
+  scala&gt; def wrap[U: ClassTag](xs: Vector[U]) = evenElems(xs)
+<span class="output">  wrap: [U](xs: Vector[U])(implicit evidence$1:</span>
+<span class="output">       scala.reflect.ClassTag[U])Array[U]</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec9"></a>24.9 Strings</h3>
+
+  <pre><hr>
+  scala&gt; val str = "hello"
+<span class="output">  str: java.lang.String = hello</span>
+        
+  scala&gt; str.reverse
+<span class="output">  res6: String = olleh</span>
+
+  scala&gt; str.map(_.toUpper)
+<span class="output">  res7: String = HELLO</span>
+
+  scala&gt; str drop 3 
+<span class="output">  res8: String = lo</span>
+
+  scala&gt; str.slice(1, 4)
+<span class="output">  res9: String = ell</span>
+
+  scala&gt; val s: Seq[Char] = str
+<span class="output">  s: Seq[Char] = hello</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec10"></a>24.10 Performance characteristics</h3>
+
+  <h3><a name="sec11"></a>24.11 Equality</h3>
+
+  <pre><hr>
+  scala&gt; import collection.mutable.{HashMap, ArrayBuffer}
+<span class="output">  import collection.mutable.{HashMap, ArrayBuffer}</span>
+
+  scala&gt; val buf = ArrayBuffer(1, 2, 3)
+<span class="output">  buf: scala.collection.mutable.ArrayBuffer[Int] = </span>
+<span class="output">  ArrayBuffer(1, 2, 3)</span>
+
+  scala&gt; val map = HashMap(buf -&gt; 3)
+<span class="output">  map: scala.collection.mutable.HashMap[scala.collection.</span>
+<span class="output">  mutable.ArrayBuffer[Int],Int] = Map((ArrayBuffer(1, 2, 3),3))</span>
+
+  scala&gt; map(buf)
+<span class="output">  res13: Int = 3</span>
+
+  scala&gt; buf(0) += 1
+
+  scala&gt; map(buf)
+<span class="output">  java.util.NoSuchElementException: key not found: </span>
+<span class="output">    ArrayBuffer(2, 2, 3) </span>
+
+<hr>
+  </pre>
+  <h3><a name="sec12"></a>24.12 Views</h3>
+
+  <pre><hr>
+  def lazyMap[T, U](coll: Iterable[T], f: T =&gt; U) =
+    new Iterable[U] {
+      def iterator = coll.iterator map f
+    }
+
+<hr>
+  scala&gt; val v = Vector(1 to 10: _*)
+<span class="output">  v: scala.collection.immutable.Vector[Int] =</span>
+<span class="output">    Vector(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)</span>
+
+  scala&gt; v map (_ + 1) map (_ * 2)
+<span class="output">  res5: scala.collection.immutable.Vector[Int] = </span>
+<span class="output">    Vector(4, 6, 8, 10, 12, 14, 16, 18, 20, 22)</span>
+
+<hr>
+  scala&gt; (v.view map (_ + 1) map (_ * 2)).to(Vector)
+<span class="output">  res12: Seq[Int] = Vector(4, 6, 8, 10, 12, 14, 16, 18, 20, 22)  </span>
+
+<hr>
+  scala&gt; val vv = v.view
+<span class="output">  vv: scala.collection.IndexedSeqView[Int] =</span>
+<span class="output">    IndexedSeqView(&lt;not computed&gt;)</span>
+
+<hr>
+  scala&gt; vv map (_ + 1)
+<span class="output">  res13: scala.collection.IndexedSeqView[Int] =</span>
+<span class="output">    IndexedSeqView(&lt;not computed&gt;)</span>
+
+<hr>
+  scala&gt; res13 map (_ * 2)
+<span class="output">  res14: scala.collection.IndexedSeqView[Int] =</span>
+<span class="output">    IndexedSeqView(&lt;not computed&gt;)</span>
+
+<hr>
+  scala&gt; res14.to(Vector)
+<span class="output">  res15: Seq[Int] = Vector(4, 6, 8, 10, 12, 14, 16, 18, 20, 22)</span>
+
+<hr>
+  def isPalindrome(x: String) = x == x.reverse
+  def findPalindrome(s: Iterable[String]) = s find isPalindrome
+
+<hr>
+  findPalindrome(words take 1000000)
+
+<hr>
+  findPalindrome(words.view take 1000000)
+
+<hr>
+  val actors = for (i &lt;- 1 to 10) yield actor { ... }
+
+<hr>
+  val actors = (1 to 10) map (i =&gt; actor { ... })
+
+<hr>
+  val actors = for (i &lt;- (1 to 10).view) yield actor { ... }
+
+<hr>
+  </pre>
+  <h3><a name="sec13"></a>24.13 Iterators</h3>
+
+  <pre><hr>
+  while (it.hasNext) 
+    println(it.next())
+
+<hr>
+  it foreach println
+
+<hr>
+  for (elem &lt;- it) println(elem)
+
+<hr>
+  scala&gt; val it = Iterator("a", "number", "of", "words")
+<span class="output">  it: Iterator[java.lang.String] = &lt;iterator&gt;</span>
+
+  scala&gt; it.map(_.length)
+<span class="output">  res1: Iterator[Int] = &lt;iterator&gt;</span>
+
+  scala&gt; it.hasNext
+<span class="output">  res2: Boolean = true</span>
+
+  scala&gt; res1 foreach println
+<span class="output">  1</span>
+<span class="output">  6</span>
+<span class="output">  2</span>
+<span class="output">  5</span>
+
+  scala&gt; it.hasNext
+<span class="output">  res4: Boolean = false</span>
+
+<hr>
+  scala&gt; val it = Iterator("a", "number", "of", "words")
+<span class="output">  it: Iterator[java.lang.String] = &lt;iterator&gt;</span>
+
+  scala&gt; it dropWhile (_.length &lt; 2)
+<span class="output">  res4: Iterator[java.lang.String] = &lt;iterator&gt;</span>
+
+  scala&gt; it.next()
+<span class="output">  res5: java.lang.String = number</span>
+
+<hr>
+  val (it1, it2) = it.duplicate
+
+<hr>
+  // This won't work
+  def skipEmptyWordsNOT(it: Iterator[String]) = {
+    while (it.next().isEmpty) {}
+  }
+
+<hr>
+  def skipEmptyWords(it: BufferedIterator[String]) =
+    while (it.head.isEmpty) { it.next() }
+
+<hr>
+  scala&gt; val it = Iterator(1, 2, 3, 4)
+<span class="output">  it: Iterator[Int] = &lt;iterator&gt;</span>
+
+  scala&gt; val bit = it.buffered
+<span class="output">  bit: java.lang.Object with scala.collection.</span>
+<span class="output">    BufferedIterator[Int] = &lt;iterator&gt;</span>
+
+  scala&gt; bit.head
+<span class="output">  res10: Int = 1</span>
+
+  scala&gt; bit.next()
+<span class="output">  res11: Int = 1</span>
+
+  scala&gt; bit.next()
+<span class="output">  res11: Int = 2</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec14"></a>24.14 Creating collections from scratch</h3>
+
+  <pre><hr>
+    Iterable()                // An empty collection
+    List()                    // The empty list
+    List(1.0, 2.0)            // A list with elements 1.0, 2.0
+    Vector(1.0, 2.0)          // A vector with elements 1.0, 2.0
+    Iterator(1, 2, 3)         // An iterator returning three integers.
+    Set(dog, cat, bird)       // A set of three animals
+    HashSet(dog, cat, bird)   // A hash set of the same animals
+    Map('a' -&gt; 7, 'b' -&gt; 0)   // A map from characters to integers
+
+<hr>
+  List.apply(1.0, 2.0)
+
+<hr>
+  scala&gt; List(1, 2, 3)
+<span class="output">  res17: List[Int] = List(1, 2, 3)</span>
+
+<hr>
+  scala&gt; Iterable(1, 2, 3)
+<span class="output">  res18: Iterable[Int] = List(1, 2, 3)</span>
+
+  scala&gt; mutable.Iterable(1, 2, 3)
+<span class="output">  res19: scala.collection.mutable.Iterable[Int] =</span>
+<span class="output">    ArrayBuffer(1, 2, 3)</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec15"></a>24.15 Conversions between Java and Scala collections</h3>
+
+  <pre><hr>
+  Iterator         <em>\Leftrightarrow</em>    java.util.Iterator
+  Iterator         <em>\Leftrightarrow</em>    java.util.Enumeration
+  Iterable         <em>\Leftrightarrow</em>    java.lang.Iterable
+  Iterable         <em>\Leftrightarrow</em>    java.util.Collection
+  mutable.Buffer   <em>\Leftrightarrow</em>    java.util.List
+  mutable.Set      <em>\Leftrightarrow</em>    java.util.Set
+  mutable.Map      <em>\Leftrightarrow</em>    java.util.Map
+
+<hr>
+  scala&gt; import collection.JavaConverters._
+  import collection.JavaConverters._
+
+<hr>
+  scala&gt; import collection.mutable._
+<span class="output">  import collection.mutable._</span>
+
+  scala&gt; val jul: java.util.List[Int] = ArrayBuffer(1, 2, 3).asJava
+<span class="output">  jul: java.util.List[Int] = [1, 2, 3]</span>
+
+  scala&gt; val buf: Seq[Int] = jul.asScala
+<span class="output">  buf: scala.collection.mutable.Seq[Int] = ArrayBuffer(1, 2, 3)</span>
+
+  scala&gt; val m: java.util.Map[String, Int] =
+            HashMap("abc" -&gt; 1, "hello" -&gt; 2).asJava
+<span class="output">  m: java.util.Map[String,Int] = {hello=2, abc=1}</span>
+
+<hr>
+   Seq          <em>\Rightarrow</em>   java.util.List 
+   mutable.Seq  <em>\Rightarrow</em>   java.util.List
+   Set          <em>\Rightarrow</em>   java.util.Set 
+   Map          <em>\Rightarrow</em>   java.util.Map 
+
+<hr>
+  scala&gt; val jul: java.util.List[Int] = List(1, 2, 3)
+<span class="output">  jul: java.util.List[Int] = [1, 2, 3]</span>
+
+  scala&gt; jul.add(7)
+<span class="output">  java.lang.UnsupportedOperationException</span>
+<span class="output">          at java.util.AbstractList.add(AbstractList.java:131)</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec16"></a>24.16 Conclusion</h3>
+
+
+ <table>
+ <tr valign="top">
+ <td>
+ <div id="moreinfo">
+ <p>
+ For more information about <em>Programming in Scala, Fourth Edition</em> (the "Stairway Book"), please visit:
+ </p>
+ 
+ <p>
+ <a href="http://www.artima.com/shop/programming_in_scala_4ed">http://www.artima.com/shop/programming_in_scala_4ed</a>
+ </p>
+ 
+ <p>
+ and:
+ </p>
+ 
+ <p>
+ <a href="http://booksites.artima.com/programming_in_scala_4ed">http://booksites.artima.com/programming_in_scala_4ed</a>
+ </p>
+ </div>
+ </td>
+ <td>
+ <div id="license">
+ <p>
+   Copyright &copy; 2007-2019 Artima, Inc. All rights reserved.
+ </p>
+
+ <p>
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+ </p>
+
+ <p style="margin-left: 20px">
+   <a href="http://www.apache.org/licenses/LICENSE-2.0">
+     http://www.apache.org/licenses/LICENSE-2.0
+   </a>
+ </p>
+
+ <p>
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+   implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ </p>
+ </div>
+ </td>
+ </tr>
+ </table>
+
+</body>
+</html>

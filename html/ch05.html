@@ -1,0 +1,497 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/2002/REC-xhtml1-20020801/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type"
+        content="text/html; charset=ISO-8859-1" />
+  <title>Code Examples for Programming in Scala, Fourth Edition</title>
+  <link rel="stylesheet" href="style.css" type="text/css"/>
+</head>
+<body>
+
+<div id="mainTitles"><h3>Code Examples for</h3><h2>Programming in Scala, Fourth Edition</h2></div>  <p><a href="../index.html">
+    Return to chapter index
+  </a></p>
+  <h2>5 Basic Types and Operations</h2>
+
+  <p><a href="../basic-types-and-operations/transcript.txt">
+    Sample run of chapter's interpreter examples
+  </a></p>
+
+  <ul>
+
+    <li>5.1 <a href="#sec1">Some basic types</a></li>
+    <li>5.2 <a href="#sec2">Literals</a></li>
+    <li>5.3 <a href="#sec3">String interpolation</a></li>
+    <li>5.4 <a href="#sec4">Operators are methods</a></li>
+    <li>5.5 <a href="#sec5">Arithmetic operations</a></li>
+    <li>5.6 <a href="#sec6">Relational and logical  operations</a></li>
+    <li>5.7 <a href="#sec7">Bitwise operations</a></li>
+    <li>5.8 <a href="#sec8">Object equality</a></li>
+    <li>5.9 <a href="#sec9">Operator precedence and associativity</a></li>
+    <li>5.10 <a href="#sec10">Rich wrappers</a></li>
+    <li>5.11 <a href="#sec11">Conclusion</a></li>
+  </ul>
+
+  <h3><a name="sec1"></a>5.1 Some basic types</h3>
+
+  <h3><a name="sec2"></a>5.2 Literals</h3>
+
+  <pre><hr>
+  scala&gt; val hex = 0x5
+<span class="output">  hex: Int = 5</span>
+
+  scala&gt; val hex2 = 0x00FF
+<span class="output">  hex2: Int = 255</span>
+
+  scala&gt; val magic = 0xcafebabe
+<span class="output">  magic: Int = -889275714</span>
+
+<hr>
+  scala&gt; val dec1 = 31
+<span class="output">  dec1: Int = 31</span>
+
+  scala&gt; val dec2 = 255
+<span class="output">  dec2: Int = 255</span>
+
+  scala&gt; val dec3 = 20
+<span class="output">  dec3: Int = 20</span>
+
+<hr>
+  scala&gt; val prog = 0XCAFEBABEL
+<span class="output">  prog: Long = 3405691582</span>
+
+  scala&gt; val tower = 35L
+<span class="output">  tower: Long = 35</span>
+
+  scala&gt; val of = 31l
+<span class="output">  of: Long = 31</span>
+
+<hr>
+  scala&gt; val little: Short = 367
+<span class="output">  little: Short = 367</span>
+
+  scala&gt; val littler: Byte = 38
+<span class="output">  littler: Byte = 38</span>
+
+<hr>
+  scala&gt; val big = 1.2345
+<span class="output">  big: Double = 1.2345</span>
+
+  scala&gt; val bigger = 1.2345e1
+<span class="output">  bigger: Double = 12.345</span>
+
+  scala&gt; val biggerStill = 123E45
+<span class="output">  biggerStill: Double = 1.23E47</span>
+
+<hr>
+  scala&gt; val little = 1.2345F
+<span class="output">  little: Float = 1.2345</span>
+
+  scala&gt; val littleBigger = 3e5f
+<span class="output">  littleBigger: Float = 300000.0</span>
+
+<hr>
+  scala&gt; val anotherDouble = 3e5
+<span class="output">  anotherDouble: Double = 300000.0</span>
+
+  scala&gt; val yetAnother = 3e5D
+<span class="output">  yetAnother: Double = 300000.0</span>
+
+<hr>
+  scala&gt; val a = 'A'
+<span class="output">  a: Char = A</span>
+
+<hr>
+  scala&gt; val d = '\u0041'
+<span class="output">  d: Char = A</span>
+
+  scala&gt; val f = '\u0044'
+<span class="output">  f: Char = D</span>
+
+<hr>
+  scala&gt; val B\u0041\u0044 = 1
+<span class="output">  BAD: Int = 1</span>
+
+<hr>
+  scala&gt; val backslash = '\\'
+<span class="output">  backslash: Char = \</span>
+
+<hr>
+  scala&gt; val hello = "hello"
+<span class="output">  hello: String = hello</span>
+
+<hr>
+  scala&gt; val escapes = "\\\"\'"
+<span class="output">  escapes: String = \"'</span>
+
+<hr>
+// In file <a href="../basic-types-and-operations/help1.scala">basic-types-and-operations/help1.scala</a>
+
+  println("""Welcome to Ultamix 3000.
+             Type "HELP" for help.""")
+
+<hr>
+<span class="output">  Welcome to Ultamix 3000.</span>
+<span class="output">             Type "HELP" for help.</span>
+
+<hr>
+// In file <a href="../basic-types-and-operations/help2.scala">basic-types-and-operations/help2.scala</a>
+
+  println("""|Welcome to Ultamix 3000.
+             |Type "HELP" for help.""".stripMargin)
+
+<hr>
+<span class="output">  Welcome to Ultamix 3000.</span>
+<span class="output">  Type "HELP" for help.</span>
+
+<hr>
+  scala&gt; def updateRecordByName(r: Symbol, value: Any) = {
+       |   // code goes here
+       | }
+<span class="output">  updateRecordByName: (Symbol,Any)Unit</span>
+
+<hr>
+  scala&gt; updateRecordByName(favoriteAlbum, "OK Computer")
+<span class="output">  &lt;console&gt;:6: error: not found: value favoriteAlbum</span>
+<span class="output">         updateRecordByName(favoriteAlbum, "OK Computer")</span>
+<span class="output">                           ^  </span>
+
+<hr>
+  scala&gt; updateRecordByName('favoriteAlbum, "OK Computer")
+
+<hr>
+  scala&gt; val s = 'aSymbol
+<span class="output">  s: Symbol = 'aSymbol</span>
+
+  scala&gt; val nm = s.name
+<span class="output">  nm: String = aSymbol</span>
+
+<hr>
+  scala&gt; val bool = true 
+<span class="output">  bool: Boolean = true</span>
+
+  scala&gt; val fool = false
+<span class="output">  fool: Boolean = false</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec3"></a>5.3 String interpolation</h3>
+
+  <pre><hr>
+val name = "reader"
+println(s"Hello, $name!")
+
+<hr>
+  scala&gt; s"The answer is ${6 * 7}."
+<span class="output">  res0: String = The answer is 42.</span>
+
+<hr>
+println(raw"No\\\\escape!") // prints: No\z\z\z{\z}escape!
+
+<hr>
+  scala&gt; f"${math.Pi}%.5f"
+<span class="output">  res1: String = 3.14159</span>
+
+<hr>
+  scala&gt; val pi = "Pi"
+<span class="output">  pi: String = Pi</span>
+
+  scala&gt; f"<em>pi is approximately </em>{math.Pi}%.8f."
+<span class="output">  res2: String = Pi is approximately 3.14159265.</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec4"></a>5.4 Operators are methods</h3>
+
+  <pre><hr>
+  scala&gt; val sum = 1 + 2    // Scala invokes 1.+(2)
+<span class="output">  sum: Int = 3</span>
+
+<hr>
+  scala&gt; val sumMore = 1.+(2) 
+<span class="output">  sumMore: Int = 3</span>
+
+<hr>
+  scala&gt; val longSum = 1 + 2L    // Scala invokes 1.+(2L)
+<span class="output">  longSum: Long = 3</span>
+
+<hr>
+  scala&gt; val s = "Hello, world!" 
+<span class="output">  s: String = Hello, world!</span>
+
+  scala&gt; s indexOf 'o'     // Scala invokes s.indexOf('o')
+<span class="output">  res0: Int = 4</span>
+
+<hr>
+  scala&gt; s indexOf ('o', 5) // Scala invokes s.indexOf('o', 5)
+<span class="output">  res1: Int = 8</span>
+
+<hr>
+  scala&gt; -2.0                  // Scala invokes (2.0).unary_-
+<span class="output">  res2: Double = -2.0</span>
+
+  scala&gt; (2.0).unary_-
+<span class="output">  res3: Double = -2.0</span>
+
+<hr>
+  scala&gt; val s = "Hello, world!"
+<span class="output">  s: String = Hello, world!</span>
+
+  scala&gt; s.toLowerCase 
+<span class="output">  res4: String = hello, world!</span>
+
+<hr>
+  scala&gt; s toLowerCase
+<span class="output">  res5: String = hello, world!</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec5"></a>5.5 Arithmetic operations</h3>
+
+  <pre><hr>
+  scala&gt; 1.2 + 2.3
+<span class="output">  res6: Double = 3.5</span>
+
+  scala&gt; 3 - 1
+<span class="output">  res7: Int = 2</span>
+
+  scala&gt; 'b' - 'a'
+<span class="output">  res8: Int = 1</span>
+
+  scala&gt; 2L * 3L  
+<span class="output">  res9: Long = 6</span>
+
+  scala&gt; 11 / 4   
+<span class="output">  res10: Int = 2</span>
+
+  scala&gt; 11 % 4   
+<span class="output">  res11: Int = 3</span>
+
+  scala&gt; 11.0f / 4.0f
+<span class="output">  res12: Float = 2.75</span>
+
+  scala&gt; 11.0 % 4.0  
+<span class="output">  res13: Double = 3.0</span>
+
+<hr>
+  scala&gt; math.IEEEremainder(11.0, 4.0)
+<span class="output">  res14: Double = -1.0</span>
+
+<hr>
+  scala&gt; val neg = 1 + -3
+<span class="output">  neg: Int = -2</span>
+
+  scala&gt; val y = +3
+<span class="output">  y: Int = 3</span>
+
+  scala&gt; -neg
+<span class="output">  res15: Int = 2</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec6"></a>5.6 Relational and logical  operations</h3>
+
+  <pre><hr>
+  scala&gt; 1 &gt; 2 
+<span class="output">  res16: Boolean = false</span>
+
+  scala&gt; 1 &lt; 2 
+<span class="output">  res17: Boolean = true</span>
+
+  scala&gt; 1.0 &lt;= 1.0  
+<span class="output">  res18: Boolean = true</span>
+
+  scala&gt; 3.5f &gt;= 3.6f  
+<span class="output">  res19: Boolean = false</span>
+
+  scala&gt; 'a' &gt;= 'A' 
+<span class="output">  res20: Boolean = true</span>
+
+  scala&gt; val untrue = !true 
+<span class="output">  untrue: Boolean = false</span>
+
+<hr>
+  scala&gt; val toBe = true
+<span class="output">  toBe: Boolean = true</span>
+
+  scala&gt; val question = toBe || !toBe
+<span class="output">  question: Boolean = true</span>
+
+  scala&gt; val paradox = toBe &amp;&amp; !toBe
+<span class="output">  paradox: Boolean = false</span>
+
+<hr>
+  scala&gt; def salt() = { println("salt"); false }
+<span class="output">  salt: ()Boolean</span>
+
+  scala&gt; def pepper() = { println("pepper"); true }
+<span class="output">  pepper: ()Boolean</span>
+
+  scala&gt; pepper() &amp;&amp; salt() 
+<span class="output">  pepper</span>
+<span class="output">  salt</span>
+<span class="output">  res21: Boolean = false</span>
+
+  scala&gt; salt() &amp;&amp; pepper() 
+<span class="output">  salt</span>
+<span class="output">  res22: Boolean = false</span>
+
+<hr>
+  scala&gt; salt() &amp; pepper() 
+<span class="output">  salt</span>
+<span class="output">  pepper</span>
+<span class="output">  res23: Boolean = false</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec7"></a>5.7 Bitwise operations</h3>
+
+  <pre><hr>
+  scala&gt; 1 &amp; 2  
+<span class="output">  res24: Int = 0</span>
+
+  scala&gt; 1 | 2  
+<span class="output">  res25: Int = 3</span>
+
+  scala&gt; 1 ^ 3  
+<span class="output">  res26: Int = 2</span>
+
+  scala&gt; ~1     
+<span class="output">  res27: Int = -2</span>
+
+<hr>
+  scala&gt; -1 &gt;&gt; 31 
+<span class="output">  res28: Int = -1</span>
+
+  scala&gt; -1 &gt;&gt;&gt; 31
+<span class="output">  res29: Int = 1</span>
+
+  scala&gt; 1 &lt;&lt; 2   
+<span class="output">  res30: Int = 4</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec8"></a>5.8 Object equality</h3>
+
+  <pre><hr>
+  scala&gt; 1 == 2 
+<span class="output">  res31: Boolean = false</span>
+
+  scala&gt; 1 != 2 
+<span class="output">  res32: Boolean = true</span>
+
+  scala&gt; 2 == 2 
+<span class="output">  res33: Boolean = true</span>
+
+<hr>
+  scala&gt; List(1, 2, 3) == List(1, 2, 3)
+<span class="output">  res34: Boolean = true</span>
+
+  scala&gt; List(1, 2, 3) == List(4, 5, 6)
+<span class="output">  res35: Boolean = false</span>
+
+<hr>
+  scala&gt; 1 == 1.0
+<span class="output">  res36: Boolean = true</span>
+
+  scala&gt; List(1, 2, 3) == "hello"
+<span class="output">  res37: Boolean = false</span>
+
+<hr>
+  scala&gt; List(1, 2, 3) == null
+<span class="output">  res38: Boolean = false</span>
+
+  scala&gt; null == List(1, 2, 3)
+<span class="output">  res39: Boolean = false</span>
+
+<hr>
+  scala&gt; ("he" + "llo") == "hello"
+<span class="output">  res40: Boolean = true</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec9"></a>5.9 Operator precedence and associativity</h3>
+
+  <pre><hr>
+  (2 + 2) * 7
+
+<hr>
+  scala&gt; 2 &lt;&lt; 2 + 2
+<span class="output">  res41: Int = 32</span>
+
+<hr>
+  scala&gt; 2 + 2 &lt;&lt; 2
+<span class="output">  res42: Int = 16</span>
+
+<hr>
+  x *= y + 1
+
+<hr>
+  x *= (y + 1)
+
+<hr>
+  { val x = a; b.:::(x) }
+
+<hr>
+  </pre>
+  <h3><a name="sec10"></a>5.10 Rich wrappers</h3>
+
+  <h3><a name="sec11"></a>5.11 Conclusion</h3>
+
+
+ <table>
+ <tr valign="top">
+ <td>
+ <div id="moreinfo">
+ <p>
+ For more information about <em>Programming in Scala, Fourth Edition</em> (the "Stairway Book"), please visit:
+ </p>
+ 
+ <p>
+ <a href="http://www.artima.com/shop/programming_in_scala_4ed">http://www.artima.com/shop/programming_in_scala_4ed</a>
+ </p>
+ 
+ <p>
+ and:
+ </p>
+ 
+ <p>
+ <a href="http://booksites.artima.com/programming_in_scala_4ed">http://booksites.artima.com/programming_in_scala_4ed</a>
+ </p>
+ </div>
+ </td>
+ <td>
+ <div id="license">
+ <p>
+   Copyright &copy; 2007-2019 Artima, Inc. All rights reserved.
+ </p>
+
+ <p>
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+ </p>
+
+ <p style="margin-left: 20px">
+   <a href="http://www.apache.org/licenses/LICENSE-2.0">
+     http://www.apache.org/licenses/LICENSE-2.0
+   </a>
+ </p>
+
+ <p>
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+   implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ </p>
+ </div>
+ </td>
+ </tr>
+ </table>
+
+</body>
+</html>

@@ -1,0 +1,44 @@
+/*
+ * Copyright (C) 2007-2019 Artima, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Automatically generated Scala interpreter transcript from:
+ *
+ * Programming in Scala (Fourth Edition)
+ * by Martin Odersky, Lex Spoon, Bill Venners
+ *
+ * http://booksites.artima.com/programming_in_scala_4ed
+ */
+
+
+scala> val xs = List(1, 2, 3)
+xs: List[Int] = List(1, 2, 3)
+
+scala> var ys: List[Any] = xs
+ys: List[Any] = List(1, 2, 3)
+
+scala>   abstract class Fruit 
+         class Apple extends Fruit
+         class Orange extends Fruit
+
+defined class Fruit
+defined class Apple
+defined class Orange
+
+scala> val apples = new Apple :: Nil
+apples: List[Apple] = List(Apple@7eae55)
+
+scala> val fruits = new Orange :: apples
+fruits: List[Fruit] = List(Orange@77856cc5, Apple@7eae55)
+

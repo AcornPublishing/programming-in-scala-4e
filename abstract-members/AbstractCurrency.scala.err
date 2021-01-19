@@ -1,0 +1,13 @@
+
+object AbstractCurrencyObj {
+  // A second (still imperfect) design of the Currency class
+  abstract class AbstractCurrency {
+    type Currency <: AbstractCurrency
+    val amount: Long
+    def designation: String 
+    override def toString = s"$amount $designation"
+    def + (that: Currency): Currency = new Currency {
+      val amount = this.amount + that.amount
+    }
+  }
+}

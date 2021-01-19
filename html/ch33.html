@@ -1,0 +1,522 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/2002/REC-xhtml1-20020801/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type"
+        content="text/html; charset=ISO-8859-1" />
+  <title>Code Examples for Programming in Scala, Fourth Edition</title>
+  <link rel="stylesheet" href="style.css" type="text/css"/>
+</head>
+<body>
+
+<div id="mainTitles"><h3>Code Examples for</h3><h2>Programming in Scala, Fourth Edition</h2></div>  <p><a href="../index.html">
+    Return to chapter index
+  </a></p>
+  <h2>33 Combinator Parsing</h2>
+
+  <p><a href="../combinator-parsing/transcript.txt">
+    Sample run of chapter's interpreter examples
+  </a></p>
+
+  <ul>
+
+    <li>33.1 <a href="#sec1">Example: Arithmetic expressions</a></li>
+    <li>33.2 <a href="#sec2">Running your parser</a></li>
+    <li>33.3 <a href="#sec3">Basic regular expression parsers</a></li>
+    <li>33.4 <a href="#sec4">Another example: JSON</a></li>
+    <li>33.5 <a href="#sec5">Parser output</a></li>
+    <li>33.6 <a href="#sec6">Implementing combinator parsers</a></li>
+    <li>33.7 <a href="#sec7">String literals and regular expressions</a></li>
+    <li>33.8 <a href="#sec8">Lexing and parsing</a></li>
+    <li>33.9 <a href="#sec9">Error reporting</a></li>
+    <li>33.10 <a href="#sec10">Backtracking versus LL(1)</a></li>
+    <li>33.11 <a href="#sec11">Conclusion</a></li>
+  </ul>
+
+  <h3><a name="sec1"></a>33.1 Example: Arithmetic expressions</h3>
+
+  <pre><hr>
+// In file <a href="../combinator-parsing/Arith.scala">combinator-parsing/Arith.scala</a>
+
+  import scala.util.parsing.combinator._
+
+  class Arith extends JavaTokenParsers {   
+    def expr: Parser[Any] = term~rep("+"~term | "-"~term)
+    def term: Parser[Any] = factor~rep("*"~factor | "/"~factor)
+    def factor: Parser[Any] = floatingPointNumber | "("~expr~")"
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec2"></a>33.2 Running your parser</h3>
+
+  <pre><hr>
+// In file <a href="../combinator-parsing/Arith.scala">combinator-parsing/Arith.scala</a>
+
+  object ParseExpr extends Arith {
+    def main(args: Array[String]) = {
+      println("input : " + args(0))
+      println(parseAll(expr, args(0)))
+    }
+  }
+
+<hr>
+  parseAll(expr, input)
+
+<hr>
+  $ scala ParseExpr "2 * (3 + 7)"
+<span class="output">  input: 2 * (3 + 7)</span>
+<span class="output">  [1.12] parsed: ((2~List((*~(((~((3~List())~List((+</span>
+<span class="output">  ~(7~List())))))~)))))~List())</span>
+
+<hr>
+  $ scala ParseExpr "2 * (3 + 7))"
+<span class="output">  input: 2 * (3 + 7))</span>
+<span class="output">  [1.12] failure: `-' expected but `)' found</span>
+<span class="output">  </span>
+<span class="output">  2 * (3 + 7))</span>
+<span class="output">             ^</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec3"></a>33.3 Basic regular expression parsers</h3>
+
+  <pre><hr>
+  object MyParsers extends RegexParsers {
+    val ident: Parser[String] = """[a-zA-Z_]\w*""".r
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec4"></a>33.4 Another example: JSON</h3>
+
+  <pre><hr>
+// In file <a href="../combinator-parsing/address-book.json">combinator-parsing/address-book.json</a>
+
+  {
+    "address book": {
+      "name": "John Smith",
+      "address": {
+        "street": "10 Market Street",
+        "city"  : "San Francisco, CA",
+        "zip"   : 94111
+      },
+      "phone numbers": [
+        "408 338-4238",
+        "408 111-6892"
+      ]
+    }
+  }
+
+<hr>
+// In file <a href="../combinator-parsing/JSON.scala">combinator-parsing/JSON.scala</a>
+
+import scala.util.parsing.combinator._
+
+class JSON extends JavaTokenParsers {   
+
+  def value : Parser[Any] = obj | arr | 
+                            stringLiteral | 
+                            floatingPointNumber | 
+                            "null" | "true" | "false"
+
+  def obj   : Parser[Any] = "{"~repsep(member, ",")~"}"
+
+  def arr   : Parser[Any] = "["~repsep(value, ",")~"]"
+
+  def member: Parser[Any] = stringLiteral~":"~value
+}
+
+<hr>
+// In file <a href="../combinator-parsing/JSON.scala">combinator-parsing/JSON.scala</a>
+
+  import java.io.FileReader
+
+  object ParseJSON extends JSON {
+    def main(args: Array[String]) = {
+      val reader = new FileReader(args(0))
+      println(parseAll(value, reader))
+    }
+  }
+
+<hr>
+  $ scala ParseJSON address-book.json
+<span class="output">  [13.4] parsed: (({~List((("address book"~:)~(({~List(((</span>
+<span class="output">  "name"~:)~"John Smith"), (("address"~:)~(({~List(((</span>
+<span class="output">  "street"~:)~"10 Market Street"), (("city"~:)~"San Francisco</span>
+<span class="output">  ,CA"), (("zip"~:)~94111)))~})), (("phone numbers"~:)~(([~</span>
+<span class="output">  List("408 338-4238", "408 111-6892"))~]))))~}))))~})</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec5"></a>33.5 Parser output</h3>
+
+  <pre><hr>
+  floatingPointNumber ^^ (_.toDouble)
+
+<hr>
+  "true" ^^ (x =&gt; true)
+
+<hr>
+  def obj: Parser[Map[String, Any]] = // Can be improved
+    "{"~repsep(member, ",")~"}" ^^ 
+      { case "{"~ms~"}" =&gt; Map() ++ ms }
+
+<hr>
+  case class ~[+A, +B](x: A, y: B) {
+    override def toString = "(" + x + "~" + y + ")"
+  }
+
+<hr>
+  def obj: Parser[Map[String, Any]] =
+    "{"~&gt; repsep(member, ",") &lt;~"}" ^^ (Map() ++ _)
+
+<hr>
+  $ scala JSON1Test address-book.json
+  [14.1] parsed: Map(
+    address book -&gt; Map(
+      name -&gt; John Smith, 
+      address -&gt; Map(
+        street -&gt; 10 Market Street, 
+        city -&gt; San Francisco, CA, 
+        zip -&gt; 94111), 
+      phone numbers -&gt; List(408 338-4238, 408 111-6892)
+    )
+  )
+
+<hr>
+// In file <a href="../combinator-parsing/JSON1.scala">combinator-parsing/JSON1.scala</a>
+
+  import scala.util.parsing.combinator._
+
+  class JSON1 extends JavaTokenParsers {   
+
+    def obj: Parser[Map[String, Any]] = 
+      "{"~&gt; repsep(member, ",") &lt;~"}" ^^ (Map() ++ _)
+
+    def arr: Parser[List[Any]] =
+      "["~&gt; repsep(value, ",") &lt;~"]" 
+
+    def member: Parser[(String, Any)] = 
+      stringLiteral~":"~value ^^ 
+        { case name~":"~value =&gt; (name, value) }
+
+    def value: Parser[Any] = (
+      obj
+    | arr 
+    | stringLiteral
+    | floatingPointNumber ^^ (_.toDouble) 
+    | "null"  ^^ (x =&gt; null) 
+    | "true"  ^^ (x =&gt; true) 
+    | "false" ^^ (x =&gt; false)
+    )
+  }
+
+<hr>
+  def value: Parser[Any] = 
+    obj |
+    arr |
+    stringLiteral |
+    ...
+
+<hr>
+    obj;  // semicolon implicitly inserted
+  | arr
+
+<hr>
+  class ArithHypothetical extends JavaTokenParsers {   
+    def expr: Parser[Any]   = 
+      term andThen rep(("+" andThen term) orElse 
+                       ("-" andThen term))
+    def term: Parser[Any]   = 
+      factor andThen rep(("*" andThen factor) orElse 
+                         ("/" andThen factor))
+    def factor: Parser[Any] = 
+      floatingPointNumber orElse 
+      ("(" andThen expr andThen ")")
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec6"></a>33.6 Implementing combinator parsers</h3>
+
+  <pre><hr>
+  package scala.util.parsing.combinator
+  trait Parsers {
+    ... // code goes here unless otherwise stated
+  }
+
+<hr>
+  type Parser[T] = Input =&gt; ParseResult[T]
+
+<hr>
+  type Input = Reader[Elem]   
+
+<hr>
+  type Elem
+
+<hr>
+  sealed abstract class ParseResult[+T] 
+  case class Success[T](result: T, in: Input) 
+    extends ParseResult[T]
+  case class Failure(msg: String, in: Input) 
+    extends ParseResult[Nothing]
+
+<hr>
+  abstract class Parser[+T] extends (Input =&gt; ParseResult[T]) 
+  { p =&gt;
+    // An unspecified method that defines 
+    // the behavior of this parser.
+    def apply(in: Input): ParseResult[T]
+
+    def ~ ...
+    def | ...
+    ...
+  }
+
+<hr>
+  abstract class Parser[+T] extends ... { p =&gt;
+
+<hr>
+  val id = this
+
+<hr>
+  class Outer { outer =&gt;
+    class Inner {
+      println(Outer.this eq outer) // prints: true
+    }
+  }
+
+<hr>
+  def elem(kind: String, p: Elem =&gt; Boolean) = 
+    new Parser[Elem] {
+      def apply(in: Input) =
+        if (p(in.first)) Success(in.first, in.rest)
+        else Failure(kind + " expected", in)
+    }
+
+<hr>
+  abstract class Parser[+T] ... { p =&gt;
+    ...
+    def ~ [U](q: =&gt; Parser[U]) = new Parser[T~U] {
+      def apply(in: Input) = p(in) match {
+        case Success(x, in1) =&gt; 
+          q(in1) match {
+            case Success(y, in2) =&gt; Success(new ~(x, y), in2)
+            case failure =&gt; failure
+          }
+        case failure =&gt; failure
+      }
+    }
+
+<hr>
+    def &lt;~ [U](q: =&gt; Parser[U]): Parser[T] = 
+      (p~q) ^^ { case x~y =&gt; x }
+    def ~&gt; [U](q: =&gt; Parser[U]): Parser[U] = 
+      (p~q) ^^ { case x~y =&gt; y }
+
+<hr>
+    def | (q: =&gt; Parser[T]) = new Parser[T] {
+      def apply(in: Input) = p(in) match {
+        case s1 @ Success(_, _) =&gt; s1
+        case failure =&gt; q(in) 
+      }
+    }
+
+<hr>
+    def parens = floatingPointNumber | "("~parens~")" 
+
+<hr>
+    def ^^ [U](f: T =&gt; U): Parser[U] = new Parser[U] {
+      def apply(in: Input) = p(in) match {
+        case Success(x, in1) =&gt; Success(f(x), in1)
+        case failure =&gt; failure
+      }
+    }
+  } // end Parser
+
+<hr>
+  def success[T](v: T) = new Parser[T] {
+    def apply(in: Input) = Success(v, in)
+  }
+  def failure(msg: String) = new Parser[Nothing] {
+    def apply(in: Input) = Failure(msg, in)
+  }
+
+<hr>
+  def opt[T](p: =&gt; Parser[T]): Parser[Option[T]] = (
+    p ^^ Some(_)  
+  | success(None)
+  )
+
+  def rep[T](p: =&gt; Parser[T]): Parser[List[T]] = (
+    p~rep(p) ^^ { case x~xs =&gt; x :: xs }  
+  | success(List())
+  )
+  
+  def repsep[T](p: =&gt; Parser[T],
+      q: =&gt; Parser[Any]): Parser[List[T]] = (
+
+    p~rep(q~&gt; p) ^^ { case r~rs =&gt; r :: rs }  
+  | success(List())
+  )
+
+} // end Parsers
+
+<hr>
+  </pre>
+  <h3><a name="sec7"></a>33.7 String literals and regular expressions</h3>
+
+  <pre><hr>
+  trait RegexParsers extends Parsers { 
+
+<hr>
+    type Elem = Char
+
+<hr>
+    implicit def literal(s: String): Parser[String] = ...
+    implicit def regex(r: Regex): Parser[String] = ...
+
+<hr>
+    protected val whiteSpace = """\s+""".r
+  } // end RegexParsers
+
+<hr>
+  object MyParsers extends RegexParsers {
+    override val whiteSpace = "".r
+    ...
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec8"></a>33.8 Lexing and parsing</h3>
+
+  <pre><hr>
+  scala.util.parsing.combinator.lexical       
+  scala.util.parsing.combinator.syntactical   
+
+<hr>
+  </pre>
+  <h3><a name="sec9"></a>33.9 Error reporting</h3>
+
+  <pre><hr>
+  { "name": John,
+
+<hr>
+  [1.13] failure: "false" expected but identifier John found
+
+    { "name": John,
+              ^
+
+<hr>
+  def value: Parser[Any] =
+    obj | arr | stringLit | floatingPointNumber | "null" |
+    "true" | "false" | failure("illegal start of value")
+
+<hr>
+  [1.13] failure: illegal start of value
+
+    { "name": John,
+              ^
+
+<hr>
+  var lastFailure: Option[Failure] = None
+
+<hr>
+  case class Failure(msg: String, in: Input) 
+      extends ParseResult[Nothing] {
+
+    if (lastFailure.isDefined &amp;&amp; 
+        lastFailure.get.in.pos &lt;= in.pos)
+      lastFailure = Some(this)
+  }
+
+<hr>
+  def phrase[T](p: Parser[T]) = new Parser[T] {
+    lastFailure = None
+    def apply(in: Input) = p(in) match {
+      case s @ Success(out, in1) =&gt;
+        if (in1.atEnd) s 
+        else Failure("end of input expected", in1)
+      case f : Failure =&gt; 
+        lastFailure
+    }
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec10"></a>33.10 Backtracking versus LL(1)</h3>
+
+  <pre><hr>
+  def expr  : Parser[Any] = 
+    term ~! rep("+" ~! term | "-" ~! term)
+  def term  : Parser[Any] = 
+    factor ~! rep("*" ~! factor | "/" ~! factor)
+  def factor: Parser[Any] = 
+    "(" ~! expr ~! ")" | floatingPointNumber
+
+<hr>
+  </pre>
+  <h3><a name="sec11"></a>33.11 Conclusion</h3>
+
+  <pre><hr>
+  val jsonParser = phrase(value)
+
+<hr>
+  </pre>
+
+ <table>
+ <tr valign="top">
+ <td>
+ <div id="moreinfo">
+ <p>
+ For more information about <em>Programming in Scala, Fourth Edition</em> (the "Stairway Book"), please visit:
+ </p>
+ 
+ <p>
+ <a href="http://www.artima.com/shop/programming_in_scala_4ed">http://www.artima.com/shop/programming_in_scala_4ed</a>
+ </p>
+ 
+ <p>
+ and:
+ </p>
+ 
+ <p>
+ <a href="http://booksites.artima.com/programming_in_scala_4ed">http://booksites.artima.com/programming_in_scala_4ed</a>
+ </p>
+ </div>
+ </td>
+ <td>
+ <div id="license">
+ <p>
+   Copyright &copy; 2007-2019 Artima, Inc. All rights reserved.
+ </p>
+
+ <p>
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+ </p>
+
+ <p style="margin-left: 20px">
+   <a href="http://www.apache.org/licenses/LICENSE-2.0">
+     http://www.apache.org/licenses/LICENSE-2.0
+   </a>
+ </p>
+
+ <p>
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+   implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ </p>
+ </div>
+ </td>
+ </tr>
+ </table>
+
+</body>
+</html>

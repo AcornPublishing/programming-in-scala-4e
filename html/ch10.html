@@ -1,0 +1,671 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/2002/REC-xhtml1-20020801/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type"
+        content="text/html; charset=ISO-8859-1" />
+  <title>Code Examples for Programming in Scala, Fourth Edition</title>
+  <link rel="stylesheet" href="style.css" type="text/css"/>
+</head>
+<body>
+
+<div id="mainTitles"><h3>Code Examples for</h3><h2>Programming in Scala, Fourth Edition</h2></div>  <p><a href="../index.html">
+    Return to chapter index
+  </a></p>
+  <h2>10 Composition and Inheritance</h2>
+
+  <p><a href="../composition-and-inheritance/transcript.txt">
+    Sample run of chapter's interpreter examples
+  </a></p>
+
+  <ul>
+
+    <li>10.1 <a href="#sec1">A two-dimensional layout library</a></li>
+    <li>10.2 <a href="#sec2">Abstract classes</a></li>
+    <li>10.3 <a href="#sec3">Defining parameterless methods</a></li>
+    <li>10.4 <a href="#sec4">Extending classes</a></li>
+    <li>10.5 <a href="#sec5">Overriding methods and fields</a></li>
+    <li>10.6 <a href="#sec6">Defining parametric fields</a></li>
+    <li>10.7 <a href="#sec7">Invoking superclass constructors</a></li>
+    <li>10.8 <a href="#sec8">Using <span class="mono">override</span> modifiers</a></li>
+    <li>10.9 <a href="#sec9">Polymorphism and dynamic binding</a></li>
+    <li>10.10 <a href="#sec10">Declaring final members</a></li>
+    <li>10.11 <a href="#sec11">Using composition and inheritance</a></li>
+    <li>10.12 <a href="#sec12">Implementing <span class="mono">above</span>, <span class="mono">beside</span>, and <span class="mono">toString</span></a></li>
+    <li>10.13 <a href="#sec13">Defining a factory object</a></li>
+    <li>10.14 <a href="#sec14">Heighten and widen</a></li>
+    <li>10.15 <a href="#sec15">Putting it all together</a></li>
+    <li>10.16 <a href="#sec16">Conclusion</a></li>
+  </ul>
+
+  <h3><a name="sec1"></a>10.1 A two-dimensional layout library</h3>
+
+  <pre><hr>
+  elem(s: String): Element
+
+<hr>
+// In file <a href="../composition-and-inheritance/LayoutElement.scala">composition-and-inheritance/LayoutElement.scala</a>
+
+  val column1 = elem("hello") above elem("***")
+  val column2 = elem("***") above elem("world")
+  column1 beside column2
+
+<hr>
+  hello ***  
+   *** world
+
+<hr>
+  </pre>
+  <h3><a name="sec2"></a>10.2 Abstract classes</h3>
+
+  <pre><hr>
+  abstract class Element {
+    def contents: Array[String]
+  }
+
+<hr>
+  abstract class Element ...
+
+<hr>
+  scala&gt; new Element
+<span class="output">  &lt;console&gt;:5: error: class Element is abstract;</span>
+<span class="output">      cannot be instantiated</span>
+<span class="output">         new Element</span>
+<span class="output">             ^</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec3"></a>10.3 Defining parameterless methods</h3>
+
+  <pre><hr>
+// In file <a href="../composition-and-inheritance/Ex9.scala">composition-and-inheritance/Ex9.scala</a>
+
+  abstract class Element {
+    def contents: Array[String]
+    def height: Int = contents.length
+    def width: Int = if (height == 0) 0 else contents(0).length
+  }
+
+<hr>
+  def width(): Int
+
+<hr>
+  def width: Int
+
+<hr>
+// In file <a href="../composition-and-inheritance/Ex2.scala">composition-and-inheritance/Ex2.scala</a>
+
+  abstract class Element {
+    def contents: Array[String]
+    val height = contents.length
+    val width = 
+      if (height == 0) 0 else contents(0).length
+  }
+
+<hr>
+// In file <a href="../composition-and-inheritance/Ex2.scala">composition-and-inheritance/Ex2.scala</a>
+
+  Array(1, 2, 3).toString
+  "abc".length
+
+<hr>
+// In file <a href="../composition-and-inheritance/Ex2.scala">composition-and-inheritance/Ex2.scala</a>
+
+  "hello".length  // no () because no side-effect
+  println()       // better to not drop the ()
+
+<hr>
+  </pre>
+  <h3><a name="sec4"></a>10.4 Extending classes</h3>
+
+  <pre><hr>
+// In file <a href="../composition-and-inheritance/Ex11.scala">composition-and-inheritance/Ex11.scala</a>
+
+  class ArrayElement(conts: Array[String]) extends Element {
+    def contents: Array[String] = conts
+  }
+
+<hr>
+  ... extends Element ...
+
+<hr>
+  scala&gt; val ae = new ArrayElement(Array("hello", "world"))
+<span class="output">  ae: ArrayElement = ArrayElement@5ae66c98</span>
+
+  scala&gt; ae.width
+<span class="output">  res0: Int = 5</span>
+
+<hr>
+// In file <a href="../composition-and-inheritance/Ex2.scala">composition-and-inheritance/Ex2.scala</a>
+
+  val e: Element = new ArrayElement(Array("hello"))
+
+<hr>
+  </pre>
+  <h3><a name="sec5"></a>10.5 Overriding methods and fields</h3>
+
+  <pre><hr>
+// In file <a href="../composition-and-inheritance/Ex3.scala">composition-and-inheritance/Ex3.scala</a>
+
+  class ArrayElement(conts: Array[String]) extends Element {
+    val contents: Array[String] = conts
+  }
+
+<hr>
+  // This is Java
+  class CompilesFine {
+    private int f = 0;
+    public int f() {
+      return 1;
+    }
+  }
+
+<hr>
+// In file <a href="../composition-and-inheritance/Ex4.scala.err">composition-and-inheritance/Ex4.scala.err</a>
+
+  class WontCompile {
+    private var f = 0 // Won't compile, because a field 
+    def f = 1         // and method have the same name
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec6"></a>10.6 Defining parametric fields</h3>
+
+  <pre><hr>
+// In file <a href="../composition-and-inheritance/Ex9.scala">composition-and-inheritance/Ex9.scala</a>
+
+  class ArrayElement(
+    val contents: Array[String]
+  ) extends Element
+
+<hr>
+  class ArrayElement(x123: Array[String]) extends Element { 
+    val contents: Array[String] = x123
+  }
+
+<hr>
+// In file <a href="../composition-and-inheritance/Ex8.scala">composition-and-inheritance/Ex8.scala</a>
+
+  class Cat {
+    val dangerous = false
+  }
+  class Tiger(
+    override val dangerous: Boolean,
+    private var age: Int
+  ) extends Cat
+
+<hr>
+// In file <a href="../composition-and-inheritance/Ex8.scala">composition-and-inheritance/Ex8.scala</a>
+
+  class Tiger(param1: Boolean, param2: Int) extends Cat {
+    override val dangerous = param1
+    private var age = param2
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec7"></a>10.7 Invoking superclass constructors</h3>
+
+  <pre><hr>
+// In file <a href="../composition-and-inheritance/Ex9.scala">composition-and-inheritance/Ex9.scala</a>
+
+  class LineElement(s: String) extends ArrayElement(Array(s)) {
+    override def width = s.length
+    override def height = 1
+  }
+
+<hr>
+  ... extends ArrayElement(Array(s)) ...
+
+<hr>
+  </pre>
+  <h3><a name="sec8"></a>10.8 Using <span class="mono">override</span> modifiers</h3>
+
+  <pre><hr>
+  $ scalac LineElement.scala 
+<span class="output">  .../LineElement.scala:50:</span>
+<span class="output">  error: method hight overrides nothing</span>
+<span class="output">    override def hight = 1</span>
+<span class="output">             ^ </span>
+
+<hr>
+  def hidden(): Boolean
+
+<hr>
+<span class="output">  .../Shapes.scala:6: error: error overriding method</span>
+<span class="output">      hidden in class Shape of type ()Boolean;</span>
+<span class="output">  method hidden needs `override' modifier</span>
+<span class="output">  def hidden(): Boolean = </span>
+<span class="output">  ^</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec9"></a>10.9 Polymorphism and dynamic binding</h3>
+
+  <pre><hr>
+// In file <a href="../composition-and-inheritance/Ex9.scala">composition-and-inheritance/Ex9.scala</a>
+
+  class UniformElement(
+    ch: Char, 
+    override val width: Int,
+    override val height: Int 
+  ) extends Element {
+    private val line = ch.toString * width
+    def contents = Array.fill(height)(line)
+  }
+
+<hr>
+// In file <a href="../composition-and-inheritance/Ex9.scala">composition-and-inheritance/Ex9.scala</a>
+
+  val e1: Element = new ArrayElement(Array("hello", "world"))
+  val ae: ArrayElement = new LineElement("hello")
+  val e2: Element = ae
+  val e3: Element = new UniformElement('x', 2, 3)
+
+<hr>
+  abstract class Element {
+    def demo() = {
+      println("Element's implementation invoked")
+    }
+  }
+
+  class ArrayElement extends Element {
+    override def demo() = {
+      println("ArrayElement's implementation invoked")
+    }
+  }
+
+  class LineElement extends ArrayElement {
+    override def demo() = {
+      println("LineElement's implementation invoked")
+    }
+  }
+
+  // UniformElement inherits Element's demo
+  class UniformElement extends Element 
+
+<hr>
+  def invokeDemo(e: Element) = {
+    e.demo()
+  }
+
+<hr>
+  scala&gt; invokeDemo(new ArrayElement)
+<span class="output">  ArrayElement's implementation invoked</span>
+
+<hr>
+  scala&gt; invokeDemo(new LineElement)
+<span class="output">  LineElement's implementation invoked</span>
+
+<hr>
+  scala&gt; invokeDemo(new UniformElement)
+<span class="output">  Element's implementation invoked</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec10"></a>10.10 Declaring final members</h3>
+
+  <pre><hr>
+  class ArrayElement extends Element {
+    final override def demo() = {
+      println("ArrayElement's implementation invoked")
+    }
+  }
+
+<hr>
+<span class="output">  elem.scala:18: error: error overriding method demo</span>
+<span class="output">     in class ArrayElement of type ()Unit;</span>
+<span class="output">  method demo cannot override final member</span>
+<span class="output">      override def demo() = {</span>
+<span class="output">                   ^</span>
+
+<hr>
+  final class ArrayElement extends Element {
+    override def demo() = {
+      println("ArrayElement's implementation invoked")
+    }
+  }
+
+<hr>
+<span class="output">  elem.scala: 18: error: illegal inheritance from final class</span>
+<span class="output">      ArrayElement</span>
+<span class="output">    class LineElement extends ArrayElement {</span>
+<span class="output">                              ^</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec11"></a>10.11 Using composition and inheritance</h3>
+
+  <pre><hr>
+// In file <a href="../composition-and-inheritance/Ex11.scala">composition-and-inheritance/Ex11.scala</a>
+
+  class LineElement(s: String) extends Element {
+    val contents = Array(s)
+    override def width = s.length
+    override def height = 1
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec12"></a>10.12 Implementing <span class="mono">above</span>, <span class="mono">beside</span>, and <span class="mono">toString</span></h3>
+
+  <pre><hr>
+// In file <a href="../composition-and-inheritance/Ex10.scala">composition-and-inheritance/Ex10.scala</a>
+
+  def above(that: Element): Element =
+    new ArrayElement(this.contents ++ that.contents)
+
+<hr>
+// In file <a href="../composition-and-inheritance/Ex10.scala">composition-and-inheritance/Ex10.scala</a>
+
+  def beside(that: Element): Element = {
+    val contents = new Array[String](this.contents.length)
+    for (i &lt;- 0 until this.contents.length) 
+      contents(i) = this.contents(i) + that.contents(i)
+    new ArrayElement(contents)
+  }
+
+<hr>
+// In file <a href="../composition-and-inheritance/Ex10.scala">composition-and-inheritance/Ex10.scala</a>
+
+  new ArrayElement(
+    for (
+      (line1, line2) &lt;- this.contents zip that.contents
+    ) yield line1 + line2
+  )
+
+<hr>
+// In file <a href="../composition-and-inheritance/Ex10.scala">composition-and-inheritance/Ex10.scala</a>
+
+  Array(1, 2, 3) zip Array("a", "b")
+
+<hr>
+// In file <a href="../composition-and-inheritance/Ex10.scala">composition-and-inheritance/Ex10.scala</a>
+
+  Array((1, "a"), (2, "b"))
+
+<hr>
+// In file <a href="../composition-and-inheritance/Ex10.scala">composition-and-inheritance/Ex10.scala</a>
+
+  override def toString = contents mkString "\n"
+
+<hr>
+// In file <a href="../composition-and-inheritance/Ex11.scala">composition-and-inheritance/Ex11.scala</a>
+
+  abstract class Element {
+
+    def contents: Array[String]
+
+    def width: Int =
+      if (height == 0) 0 else contents(0).length
+
+    def height: Int = contents.length
+
+    def above(that: Element): Element =
+      new ArrayElement(this.contents ++ that.contents)
+
+    def beside(that: Element): Element =
+      new ArrayElement(
+        for (
+          (line1, line2) &lt;- this.contents zip that.contents
+        ) yield line1 + line2
+      )
+
+    override def toString = contents mkString "\n"
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec13"></a>10.13 Defining a factory object</h3>
+
+  <pre><hr>
+// In file <a href="../composition-and-inheritance/Ex12.scala">composition-and-inheritance/Ex12.scala</a>
+
+  object Element {
+
+    def elem(contents: Array[String]): Element = 
+      new ArrayElement(contents)
+
+    def elem(chr: Char, width: Int, height: Int): Element = 
+      new UniformElement(chr, width, height)
+
+    def elem(line: String): Element = 
+      new LineElement(line)
+  }
+
+<hr>
+// In file <a href="../composition-and-inheritance/Ex12.scala">composition-and-inheritance/Ex12.scala</a>
+
+  import Element.elem
+
+  abstract class Element {
+
+    def contents: Array[String]
+
+    def width: Int =
+      if (height == 0) 0 else contents(0).length
+
+    def height: Int = contents.length
+
+    def above(that: Element): Element =
+      elem(this.contents ++ that.contents)
+
+    def beside(that: Element): Element =
+      elem(
+        for (
+          (line1, line2) &lt;- this.contents zip that.contents
+        ) yield line1 + line2
+      )
+
+    override def toString = contents mkString "\n"
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec14"></a>10.14 Heighten and widen</h3>
+
+  <pre><hr>
+  new ArrayElement(Array("hello")) above 
+  new ArrayElement(Array("world!"))
+
+<hr>
+  new ArrayElement(Array("one", "two")) beside 
+  new ArrayElement(Array("one"))
+
+<hr>
+// In file <a href="../composition-and-inheritance/LayoutElement.scala">composition-and-inheritance/LayoutElement.scala</a>
+
+  object Element {
+
+    private class ArrayElement(
+      val contents: Array[String]
+    ) extends Element
+
+    private class LineElement(s: String) extends Element {
+      val contents = Array(s)
+      override def width = s.length
+      override def height = 1
+    }
+
+    private class UniformElement(
+      ch: Char,
+      override val width: Int,
+      override val height: Int
+    ) extends Element {
+      private val line = ch.toString * width
+      def contents = Array.fill(height)(line)
+    }
+
+    def elem(contents:  Array[String]): Element =
+      new ArrayElement(contents)
+
+    def elem(chr: Char, width: Int, height: Int): Element =
+      new UniformElement(chr, width, height)
+
+    def elem(line: String): Element =
+      new LineElement(line)
+  }
+
+<hr>
+// In file <a href="../composition-and-inheritance/LayoutElement.scala">composition-and-inheritance/LayoutElement.scala</a>
+
+  import Element.elem
+
+  abstract class Element {
+    def contents:  Array[String]
+
+    def width: Int = contents(0).length
+    def height: Int = contents.length
+
+    def above(that: Element): Element = {
+      val this1 = this widen that.width
+      val that1 = that widen this.width
+      elem(this1.contents ++ that1.contents)
+    }
+
+    def beside(that: Element): Element = {
+      val this1 = this heighten that.height
+      val that1 = that heighten this.height
+      elem(
+        for ((line1, line2) &lt;- this1.contents zip that1.contents) 
+        yield line1 + line2)
+    }
+
+    def widen(w: Int): Element = 
+      if (w &lt;= width) this
+      else {
+        val left = elem(' ', (w - width) / 2, height) 
+        val right = elem(' ', w - width - left.width, height)
+        left beside this beside right
+      }
+
+    def heighten(h: Int): Element = 
+      if (h &lt;= height) this
+      else {
+        val top = elem(' ', width, (h - height) / 2)
+        val bot = elem(' ', width, h - height - top.height)
+        top above this above bot
+      }
+
+    override def toString = contents mkString "\n"
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec15"></a>10.15 Putting it all together</h3>
+
+  <pre><hr>
+// In file <a href="../composition-and-inheritance/Spiral.scala">composition-and-inheritance/Spiral.scala</a>
+
+  import Element.elem
+
+  object Spiral {
+
+    val space = elem(" ")
+    val corner = elem("+")
+
+    def spiral(nEdges: Int, direction: Int): Element = {
+      if (nEdges == 1)
+        elem("+")
+      else {
+        val sp = spiral(nEdges - 1, (direction + 3) % 4)
+        def verticalBar = elem('|', 1, sp.height)
+        def horizontalBar = elem('-', sp.width, 1)
+        if (direction == 0)
+          (corner beside horizontalBar) above (sp beside space)
+        else if (direction == 1)
+          (sp above space) beside (corner above verticalBar)
+        else if (direction == 2)
+          (space beside sp) above (horizontalBar beside corner)
+        else
+          (verticalBar above corner) beside (space above sp)
+      }
+    }
+
+    def main(args: Array[String]) = {
+      val nSides = args(0).toInt
+      println(spiral(nSides, 0))
+    }
+  }
+
+<hr>
+$ scala Spiral 6    $ scala Spiral 11    $ scala Spiral 17
++-----              +----------          +----------------
+|                   |                    |                
+| +-+               | +------+           | +------------+ 
+| + |               | |      |           | |            | 
+|   |               | | +--+ |           | | +--------+ | 
++---+               | | |  | |           | | |        | | 
+                    | | ++ | |           | | | +----+ | | 
+                    | |    | |           | | | |    | | | 
+                    | +----+ |           | | | | ++ | | | 
+                    |        |           | | | |  | | | | 
+                    +--------+           | | | +--+ | | | 
+                                         | | |      | | | 
+                                         | | +------+ | | 
+                                         | |          | | 
+                                         | +----------+ | 
+                                         |              | 
+                                         +--------------+ 
+
+<hr>
+  </pre>
+  <h3><a name="sec16"></a>10.16 Conclusion</h3>
+
+
+ <table>
+ <tr valign="top">
+ <td>
+ <div id="moreinfo">
+ <p>
+ For more information about <em>Programming in Scala, Fourth Edition</em> (the "Stairway Book"), please visit:
+ </p>
+ 
+ <p>
+ <a href="http://www.artima.com/shop/programming_in_scala_4ed">http://www.artima.com/shop/programming_in_scala_4ed</a>
+ </p>
+ 
+ <p>
+ and:
+ </p>
+ 
+ <p>
+ <a href="http://booksites.artima.com/programming_in_scala_4ed">http://booksites.artima.com/programming_in_scala_4ed</a>
+ </p>
+ </div>
+ </td>
+ <td>
+ <div id="license">
+ <p>
+   Copyright &copy; 2007-2019 Artima, Inc. All rights reserved.
+ </p>
+
+ <p>
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+ </p>
+
+ <p style="margin-left: 20px">
+   <a href="http://www.apache.org/licenses/LICENSE-2.0">
+     http://www.apache.org/licenses/LICENSE-2.0
+   </a>
+ </p>
+
+ <p>
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+   implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ </p>
+ </div>
+ </td>
+ </tr>
+ </table>
+
+</body>
+</html>

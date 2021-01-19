@@ -1,0 +1,282 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/2002/REC-xhtml1-20020801/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type"
+        content="text/html; charset=ISO-8859-1" />
+  <title>Code Examples for Programming in Scala, Fourth Edition</title>
+  <link rel="stylesheet" href="style.css" type="text/css"/>
+</head>
+<body>
+
+<div id="mainTitles"><h3>Code Examples for</h3><h2>Programming in Scala, Fourth Edition</h2></div>  <p><a href="../index.html">
+    Return to chapter index
+  </a></p>
+  <h2>4 Classes and Objects</h2>
+
+  <p><a href="../classes-and-objects/transcript.txt">
+    Sample run of chapter's interpreter examples
+  </a></p>
+
+  <ul>
+
+    <li>4.1 <a href="#sec1">Classes, fields, and methods</a></li>
+    <li>4.2 <a href="#sec2">Semicolon inference</a></li>
+    <li>4.3 <a href="#sec3">Singleton objects</a></li>
+    <li>4.4 <a href="#sec4">A Scala application</a></li>
+    <li>4.5 <a href="#sec5">The <span class="mono">App</span> trait</a></li>
+    <li>4.6 <a href="#sec6">Conclusion</a></li>
+  </ul>
+
+  <h3><a name="sec1"></a>4.1 Classes, fields, and methods</h3>
+
+  <pre><hr>
+  class ChecksumAccumulator {
+    // class definition goes here
+  }
+
+<hr>
+  new ChecksumAccumulator
+
+<hr>
+// In file <a href="../classes-and-objects/ChecksumCalculator1.scala">classes-and-objects/ChecksumCalculator1.scala</a>
+
+  class ChecksumAccumulator {
+    var sum = 0
+  }
+
+<hr>
+  val acc = new ChecksumAccumulator
+  val csa = new ChecksumAccumulator
+
+<hr>
+  acc.sum = 3
+
+<hr>
+  // Won't compile, because acc is a val
+  acc = new ChecksumAccumulator
+
+<hr>
+  class ChecksumAccumulator {
+    private var sum = 0
+  }
+
+<hr>
+  val acc = new ChecksumAccumulator
+  acc.sum = 5 // Won't compile, because sum is private
+
+<hr>
+// In file <a href="../classes-and-objects/ChecksumCalculator2.scala">classes-and-objects/ChecksumCalculator2.scala</a>
+
+  class ChecksumAccumulator {
+
+    private var sum = 0
+
+    def add(b: Byte): Unit = {
+      sum += b
+    }
+
+    def checksum(): Int = {
+      return ~(sum &amp; 0xFF) + 1
+    }
+  }
+
+<hr>
+  def add(b: Byte): Unit = {
+    b = 1     // This won't compile, because b is a val
+    sum += b
+  }
+
+<hr>
+// In file <a href="../classes-and-objects/ChecksumCalculator3.scala">classes-and-objects/ChecksumCalculator3.scala</a>
+
+  class ChecksumAccumulator {
+    private var sum = 0
+    def add(b: Byte) = sum += b
+    def checksum() = ~(sum &amp; 0xFF) + 1
+  }
+
+<hr>
+  // In file ChecksumAccumulator.scala
+  class ChecksumAccumulator {
+    private var sum = 0
+    def add(b: Byte): Unit = { sum += b }
+    def checksum(): Int = ~(sum &amp; 0xFF) + 1
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec2"></a>4.2 Semicolon inference</h3>
+
+  <pre><hr>
+// In file <a href="../classes-and-objects/SemiInference.scala">classes-and-objects/SemiInference.scala</a>
+
+  val s = "hello"; println(s)
+
+<hr>
+// In file <a href="../classes-and-objects/SemiInference.scala">classes-and-objects/SemiInference.scala</a>
+
+  if (x &lt; 2)
+    println("too small")
+  else
+    println("ok")
+
+<hr>
+  x
+  + y
+
+<hr>
+  (x
+  + y)
+
+<hr>
+  x +
+  y +
+  z
+
+<hr>
+  </pre>
+  <h3><a name="sec3"></a>4.3 Singleton objects</h3>
+
+  <pre><hr>
+// In file <a href="../classes-and-objects/ChecksumAccumulator.scala">classes-and-objects/ChecksumAccumulator.scala</a>
+
+  // In file ChecksumAccumulator.scala
+  import scala.collection.mutable
+
+  object ChecksumAccumulator {
+
+    private val cache = mutable.Map.empty[String, Int]
+
+    def calculate(s: String): Int = 
+      if (cache.contains(s))
+        cache(s)
+      else {
+        val acc = new ChecksumAccumulator
+        for (c &lt;- s)
+          acc.add(c.toByte)
+        val cs = acc.checksum()
+        cache += (s -&gt; cs)
+        cs
+      }
+  }
+
+<hr>
+  ChecksumAccumulator.calculate("Every value is an object.")
+
+<hr>
+  </pre>
+  <h3><a name="sec4"></a>4.4 A Scala application</h3>
+
+  <pre><hr>
+// In file <a href="../classes-and-objects/Summer.scala">classes-and-objects/Summer.scala</a>
+
+  // In file Summer.scala
+  import ChecksumAccumulator.calculate
+
+  object Summer {
+    def main(args: Array[String]) = {
+      for (arg &lt;- args)
+        println(arg + ": " + calculate(arg))
+    }
+  }
+
+<hr>
+  $ scalac ChecksumAccumulator.scala Summer.scala
+
+<hr>
+  $ fsc ChecksumAccumulator.scala Summer.scala
+
+<hr>
+  $ scala Summer of love
+
+<hr>
+<span class="output">  of: -213</span>
+<span class="output">  love: -182</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec5"></a>4.5 The <span class="mono">App</span> trait</h3>
+
+  <pre><hr>
+// In file <a href="../classes-and-objects/FallWinterSpringSummer.scala">classes-and-objects/FallWinterSpringSummer.scala</a>
+
+import ChecksumAccumulator.calculate
+
+object FallWinterSpringSummer extends App {
+
+  for (season &lt;- List("fall", "winter", "spring"))
+    println(season + ": " + calculate(season))
+}
+
+<hr>
+  </pre>
+  <h3><a name="sec6"></a>4.6 Conclusion</h3>
+
+  <pre><hr>
+object EchoArgs {
+
+  def main(args: Array[String]) = {
+    for (arg &lt;- args)
+      print(arg + " ")
+    println()
+  }
+
+<hr>
+  </pre>
+
+ <table>
+ <tr valign="top">
+ <td>
+ <div id="moreinfo">
+ <p>
+ For more information about <em>Programming in Scala, Fourth Edition</em> (the "Stairway Book"), please visit:
+ </p>
+ 
+ <p>
+ <a href="http://www.artima.com/shop/programming_in_scala_4ed">http://www.artima.com/shop/programming_in_scala_4ed</a>
+ </p>
+ 
+ <p>
+ and:
+ </p>
+ 
+ <p>
+ <a href="http://booksites.artima.com/programming_in_scala_4ed">http://booksites.artima.com/programming_in_scala_4ed</a>
+ </p>
+ </div>
+ </td>
+ <td>
+ <div id="license">
+ <p>
+   Copyright &copy; 2007-2019 Artima, Inc. All rights reserved.
+ </p>
+
+ <p>
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+ </p>
+
+ <p style="margin-left: 20px">
+   <a href="http://www.apache.org/licenses/LICENSE-2.0">
+     http://www.apache.org/licenses/LICENSE-2.0
+   </a>
+ </p>
+
+ <p>
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+   implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ </p>
+ </div>
+ </td>
+ </tr>
+ </table>
+
+</body>
+</html>

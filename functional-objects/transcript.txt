@@ -1,0 +1,238 @@
+/*
+ * Copyright (C) 2007-2019 Artima, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Automatically generated Scala interpreter transcript from:
+ *
+ * Programming in Scala (Fourth Edition)
+ * by Martin Odersky, Lex Spoon, Bill Venners
+ *
+ * http://booksites.artima.com/programming_in_scala_4ed
+ */
+
+
+scala>   class Rational(n: Int, d: Int) {
+           println("Created " + n + "/" + d)
+         }
+
+defined class Rational
+
+scala> new Rational(1, 2)
+Created 1/2
+res0: Rational = Rational@168142da
+
+scala>   class Rational(n: Int, d: Int) {
+           override def toString = s"$n/$d"
+         }
+
+defined class Rational
+
+scala> val x = new Rational(1, 3)
+x: Rational = 1/3
+
+scala> val y = new Rational(5, 7)
+y: Rational = 5/7
+
+scala> new Rational(5, 0)
+res1: Rational = 5/0
+
+scala>   class Rational(n: Int, d: Int) {
+           require(d != 0)
+           val numer: Int = n
+           val denom: Int = d
+           override def toString = s"$numer/$denom"
+           def add(that: Rational): Rational =
+             new Rational(
+               numer * that.denom + that.numer * denom,
+               denom * that.denom
+             )
+         }
+
+defined class Rational
+
+scala> val oneHalf = new Rational(1, 2)
+oneHalf: Rational = 1/2
+
+scala> val twoThirds = new Rational(2, 3)
+twoThirds: Rational = 2/3
+
+scala> oneHalf add twoThirds
+res2: Rational = 7/6
+
+scala> val r = new Rational(1, 2)
+r: Rational = 1/2
+
+scala> r.numer
+res3: Int = 1
+
+scala> r.denom
+res4: Int = 2
+
+scala> val y = new Rational(3)
+y: Rational = 3/1
+
+scala> new Rational(66, 42)
+res5: Rational = 66/42
+
+scala>   class Rational(n: Int, d: Int) {
+       
+           require(d != 0)
+       
+           private val g = gcd(n.abs, d.abs)
+           val numer = n / g
+           val denom = d / g
+       
+           def this(n: Int) = this(n, 1)
+       
+           def add(that: Rational): Rational =
+             new Rational(
+               numer * that.denom + that.numer * denom,
+               denom * that.denom
+             )
+       
+           override def toString = s"$numer/$denom"
+       
+           private def gcd(a: Int, b: Int): Int = 
+             if (b == 0) a else gcd(b, a % b)
+         }
+
+defined class Rational
+
+scala> new Rational(66, 42)
+res6: Rational = 11/7
+
+scala>   class Rational(n: Int, d: Int) {
+       
+           require(d != 0)
+       
+           private val g = gcd(n.abs, d.abs)
+           val numer = n / g
+           val denom = d / g
+       
+           def this(n: Int) = this(n, 1)
+       
+           def + (that: Rational): Rational =
+             new Rational(
+               numer * that.denom + that.numer * denom,
+               denom * that.denom
+             )
+       
+           def * (that: Rational): Rational =
+             new Rational(numer * that.numer, denom * that.denom)
+       
+           override def toString = s"$numer/$denom"
+       
+           private def gcd(a: Int, b: Int): Int = 
+             if (b == 0) a else gcd(b, a % b)
+         }
+
+defined class Rational
+
+scala> val x = new Rational(1, 2)
+x: Rational = 1/2
+
+scala> val y = new Rational(2, 3)
+y: Rational = 2/3
+
+scala> x + y
+res7: Rational = 7/6
+
+scala> x.+(y)
+res8: Rational = 7/6
+
+scala> x + x * y
+res9: Rational = 5/6
+
+scala> (x + x) * y
+res10: Rational = 2/3
+
+scala> x + (x * y)
+res11: Rational = 5/6
+
+scala>   class Rational(n: Int, d: Int) {
+       
+
+            require(d != 0)
+       
+           private val g = gcd(n.abs, d.abs)
+           val numer = n / g
+           val denom = d / g
+       
+           def this(n: Int) = this(n, 1)
+       
+           def + (that: Rational): Rational =
+             new Rational(
+               numer * that.denom + that.numer * denom,
+               denom * that.denom
+             )
+       
+           def + (i: Int): Rational =
+             new Rational(numer + i * denom, denom)
+       
+           def - (that: Rational): Rational =
+             new Rational(
+               numer * that.denom - that.numer * denom,
+               denom * that.denom
+             )
+       
+           def - (i: Int): Rational =
+             new Rational(numer - i * denom, denom)
+       
+           def * (that: Rational): Rational =
+             new Rational(numer * that.numer, denom * that.denom)
+       
+           def * (i: Int): Rational =
+             new Rational(numer * i, denom)
+       
+           def / (that: Rational): Rational =
+             new Rational(numer * that.denom, denom * that.numer)
+       
+           def / (i: Int): Rational =
+             new Rational(numer, denom * i)
+       
+           override def toString = s"$numer/$denom"
+       
+           private def gcd(a: Int, b: Int): Int = 
+             if (b == 0) a else gcd(b, a % b)
+
+       }
+defined class Rational
+
+scala> val x = new Rational(2, 3)
+x: Rational = 2/3
+
+scala> x * x
+res12: Rational = 4/9
+
+scala> x * 2
+res13: Rational = 4/3
+
+scala> 2 * r
+         ^
+       error: overloaded method value * with alternatives:
+         (x: Double)Double <and>
+         (x: Float)Float <and>
+         (x: Long)Long <and>
+         (x: Int)Int <and>
+         (x: Char)Int <and>
+         (x: Short)Int <and>
+         (x: Byte)Int
+        cannot be applied to (Rational)
+
+scala> val r = new Rational(2,3)
+r: Rational = 2/3
+
+scala> 2 * r
+res15: Rational = 4/3
+

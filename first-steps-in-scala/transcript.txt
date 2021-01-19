@@ -1,0 +1,72 @@
+/*
+ * Copyright (C) 2007-2019 Artima, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Automatically generated Scala interpreter transcript from:
+ *
+ * Programming in Scala (Fourth Edition)
+ * by Martin Odersky, Lex Spoon, Bill Venners
+ *
+ * http://booksites.artima.com/programming_in_scala_4ed
+ */
+
+
+scala> 1 + 2
+res0: Int = 3
+
+scala> res0 * 3
+res1: Int = 9
+
+scala> println("Hello, world!")
+Hello, world!
+
+scala> val msg = "Hello, world!"
+msg: String = Hello, world!
+
+scala> val msg2: java.lang.String = "Hello again, world!"
+msg2: String = Hello again, world!
+
+scala> val msg3: String = "Hello yet again, world!"
+msg3: String = Hello yet again, world!
+
+scala> println(msg)
+Hello, world!
+
+scala> msg = "Goodbye cruel world!"
+           ^
+       error: reassignment to val
+
+scala> var greeting = "Hello, world!"
+greeting: String = Hello, world!
+
+scala> greeting = "Leave me alone, world!"
+mutated greeting
+
+scala> val multiLine =
+
+scala> def max(x: Int, y: Int): Int = {
+         if (x > y) x
+         else y
+       }
+max: (x: Int, y: Int)Int
+
+scala> def max(x: Int, y: Int) = if (x > y) x else y
+max: (x: Int, y: Int)Int
+
+scala> max(3, 5)
+res4: Int = 5
+
+scala> def greet() = println("Hello, world!")
+greet: ()Unit
+

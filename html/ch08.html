@@ -1,0 +1,561 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/2002/REC-xhtml1-20020801/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type"
+        content="text/html; charset=ISO-8859-1" />
+  <title>Code Examples for Programming in Scala, Fourth Edition</title>
+  <link rel="stylesheet" href="style.css" type="text/css"/>
+</head>
+<body>
+
+<div id="mainTitles"><h3>Code Examples for</h3><h2>Programming in Scala, Fourth Edition</h2></div>  <p><a href="../index.html">
+    Return to chapter index
+  </a></p>
+  <h2>8 Functions and Closures</h2>
+
+  <p><a href="../functions-and-closures/transcript.txt">
+    Sample run of chapter's interpreter examples
+  </a></p>
+
+  <ul>
+
+    <li>8.1 <a href="#sec1">Methods</a></li>
+    <li>8.2 <a href="#sec2">Local functions</a></li>
+    <li>8.3 <a href="#sec3">First-class functions</a></li>
+    <li>8.4 <a href="#sec4">Short forms of function literals</a></li>
+    <li>8.5 <a href="#sec5">Placeholder syntax</a></li>
+    <li>8.6 <a href="#sec6">Partially applied functions</a></li>
+    <li>8.7 <a href="#sec7">Closures</a></li>
+    <li>8.8 <a href="#sec8">Special function call forms</a></li>
+    <li>8.9 <a href="#sec9">Tail recursion</a></li>
+    <li>8.10 <a href="#sec10">Conclusion</a></li>
+  </ul>
+
+  <h3><a name="sec1"></a>8.1 Methods</h3>
+
+  <pre><hr>
+// In file <a href="../functions-and-closures/LongLines.scala">functions-and-closures/LongLines.scala</a>
+
+  import scala.io.Source
+
+  object LongLines {
+
+    def processFile(filename: String, width: Int) = {
+      val source = Source.fromFile(filename)
+      for (line &lt;- source.getLines()) 
+        processLine(filename, width, line)
+    }
+
+    private def processLine(filename: String,
+        width: Int, line: String) = {
+
+      if (line.length &gt; width)
+        println(filename + ": " + line.trim)
+    }
+  }
+
+<hr>
+// In file <a href="../functions-and-closures/LongLines2.scala">functions-and-closures/LongLines2.scala</a>
+
+  object FindLongLines {
+    def main(args: Array[String]) = {
+      val width = args(0).toInt
+      for (arg &lt;- args.drop(1))
+        LongLines.processFile(arg, width)
+    } 
+  } 
+
+<hr>
+  $ scala FindLongLines 45 LongLines.scala
+<span class="output">  LongLines.scala: def processFile(filename: String, width: Int) = {</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec2"></a>8.2 Local functions</h3>
+
+  <pre><hr>
+// In file <a href="../functions-and-closures/LongLines2.scala">functions-and-closures/LongLines2.scala</a>
+
+  def processFile(filename: String, width: Int) = {
+
+    def processLine(filename: String,
+        width: Int, line: String) = {
+
+      if (line.length &gt; width)
+        println(filename + ": " + line.trim)
+    }    
+
+    val source = Source.fromFile(filename)
+    for (line &lt;- source.getLines()) {
+      processLine(filename, width, line)
+    }
+  }
+
+<hr>
+// In file <a href="../functions-and-closures/LongLines3.scala">functions-and-closures/LongLines3.scala</a>
+
+  import scala.io.Source
+
+  object LongLines {
+
+    def processFile(filename: String, width: Int) = {
+
+      def processLine(line: String) = {
+        if (line.length &gt; width)
+          println(filename + ": " + line.trim)
+      }    
+
+      val source = Source.fromFile(filename)
+      for (line &lt;- source.getLines())
+        processLine(line)
+    }
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec3"></a>8.3 First-class functions</h3>
+
+  <pre><hr>
+  (x: Int) =&gt; x + 1
+
+<hr>
+  scala&gt; var increase = (x: Int) =&gt; x + 1
+<span class="output">  increase: Int =&gt; Int = $$Lambda$988/1232424564@cf01c2e</span>
+
+  scala&gt; increase(10)
+<span class="output">  res0: Int = 11</span>
+
+<hr>
+  scala&gt; increase = (x: Int) =&gt; x + 9999
+<span class="output">  mutated increase</span>
+
+  scala&gt; increase(10)
+<span class="output">  res1: Int = 10009</span>
+
+<hr>
+  scala&gt; increase = (x: Int) =&gt; {
+       |   println("We")
+       |   println("are")
+       |   println("here!")
+       |   x + 1
+       | }
+<span class="output">  mutated increase</span>
+
+  scala&gt; increase(10)
+<span class="output">  We</span>
+<span class="output">  are</span>
+<span class="output">  here!</span>
+<span class="output">  res2: Int = 11</span>
+
+<hr>
+  scala&gt; val someNumbers = List(-11, -10, -5, 0, 5, 10)
+<span class="output">  someNumbers: List[Int] = List(-11, -10, -5, 0, 5, 10)</span>
+
+  scala&gt; someNumbers.foreach((x: Int) =&gt; println(x))
+<span class="output">  -11</span>
+<span class="output">  -10</span>
+<span class="output">  -5</span>
+<span class="output">  0</span>
+<span class="output">  5</span>
+<span class="output">  10</span>
+
+<hr>
+  scala&gt; someNumbers.filter((x: Int) =&gt; x &gt; 0)
+<span class="output">  res4: List[Int] = List(5, 10)</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec4"></a>8.4 Short forms of function literals</h3>
+
+  <pre><hr>
+  scala&gt; someNumbers.filter((x) =&gt; x &gt; 0)
+<span class="output">  res5: List[Int] = List(5, 10)</span>
+
+<hr>
+  scala&gt; someNumbers.filter(x =&gt; x &gt; 0)
+<span class="output">  res6: List[Int] = List(5, 10)</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec5"></a>8.5 Placeholder syntax</h3>
+
+  <pre><hr>
+  scala&gt; someNumbers.filter(_ &gt; 0)
+<span class="output">  res7: List[Int] = List(5, 10)</span>
+
+<hr>
+  scala&gt; someNumbers.filter(x =&gt; x &gt; 0)
+<span class="output">  res8: List[Int] = List(5, 10)</span>
+
+<hr>
+  scala&gt; val f = _ + _
+<span class="output">                 ^</span>
+<span class="output">         error: missing parameter type for expanded function </span>
+<span class="output">  ((x$1: &lt;error&gt;, x$2) =&gt; x$1.$plus(x$2))</span>
+
+<hr>
+  scala&gt; val f = (_: Int) + (_: Int)
+<span class="output">  f: (Int, Int) =&gt; Int = $$Lambda$1075/1481958694@289fff3c</span>
+
+  scala&gt; f(5, 10)
+<span class="output">  res9: Int = 15</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec6"></a>8.6 Partially applied functions</h3>
+
+  <pre><hr>
+// In file <a href="../functions-and-closures/Misc.scala">functions-and-closures/Misc.scala</a>
+
+  someNumbers.foreach(println _)
+
+<hr>
+// In file <a href="../functions-and-closures/Misc.scala">functions-and-closures/Misc.scala</a>
+
+  someNumbers.foreach(x =&gt; println(x))
+
+<hr>
+  scala&gt; def sum(a: Int, b: Int, c: Int) = a + b + c
+<span class="output">  sum: (a: Int, b: Int, c: Int)Int</span>
+
+<hr>
+  scala&gt; sum(1, 2, 3)
+<span class="output">  res10: Int = 6</span>
+
+<hr>
+  scala&gt; val a = sum _
+<span class="output">  a: (Int, Int, Int) =&gt; Int = $$Lambda$1091/1149618736@6415112c</span>
+
+<hr>
+  scala&gt; a(1, 2, 3)
+<span class="output">  res11: Int = 6</span>
+
+<hr>
+  scala&gt; a.apply(1, 2, 3)
+<span class="output">  res12: Int = 6</span>
+
+<hr>
+  scala&gt; val b = sum(1, _: Int, 3)
+<span class="output">  b: Int =&gt; Int = $$Lambda$1092/457198113@280aa1bd</span>
+
+<hr>
+  scala&gt; b(2)
+<span class="output">  res13: Int = 6</span>
+
+<hr>
+  scala&gt; b(5)
+<span class="output">  res14: Int = 9</span>
+
+<hr>
+// In file <a href="../functions-and-closures/Misc.scala">functions-and-closures/Misc.scala</a>
+
+  someNumbers.foreach(println _)
+
+<hr>
+// In file <a href="../functions-and-closures/Misc.scala">functions-and-closures/Misc.scala</a>
+
+  someNumbers.foreach(println)
+
+<hr>
+  scala&gt; val c = sum
+<span class="output">         error: missing argument list for method sum</span>
+<span class="output">         Unapplied methods are only converted to functions when</span>
+<span class="output">   a function type is expected.</span>
+<span class="output">         You can make this conversion explicit by writing `sum </span>
+<span class="output">  _` or `sum(_,_,_)` instead of `sum`.</span>
+
+  scala&gt; val d = sum _
+<span class="output">  d: (Int, Int, Int) =&gt; Int = $$Lambda$1095/598308875@12223aed</span>
+
+  scala&gt; d(10, 20, 30)
+<span class="output">  res14: Int = 60</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec7"></a>8.7 Closures</h3>
+
+  <pre><hr>
+  (x: Int) =&gt; x + more  // how much more?
+
+<hr>
+  scala&gt; (x: Int) =&gt; x + more
+<span class="output">                         ^</span>
+<span class="output">         error: not found: value more</span>
+
+<hr>
+  scala&gt; var more = 1
+<span class="output">  more: Int = 1</span>
+
+  scala&gt; val addMore = (x: Int) =&gt; x + more
+<span class="output">  addMore: Int =&gt; Int = $$Lambda$1103/2125513028@11cb348c</span>
+
+  scala&gt; addMore(10)
+<span class="output">  res16: Int = 11</span>
+
+<hr>
+  scala&gt; more = 9999
+<span class="output">  mutated more</span>
+
+  scala&gt; addMore(10)
+<span class="output">  res17: Int = 10009</span>
+
+<hr>
+  scala&gt; val someNumbers = List(-11, -10, -5, 0, 5, 10)
+<span class="output">  someNumbers: List[Int] = List(-11, -10, -5, 0, 5, 10)</span>
+
+  scala&gt; var sum = 0
+<span class="output">  sum: Int = 0</span>
+
+  scala&gt; someNumbers.foreach(sum +=  _)
+
+<hr>
+  scala&gt; sum
+<span class="output">  res19: Int = -11</span>
+
+<hr>
+  def makeIncreaser(more: Int) = (x: Int) =&gt; x + more
+
+<hr>
+  scala&gt; val inc1 = makeIncreaser(1)
+<span class="output">  inc1: Int =&gt; Int = $$Lambda$1126/1042315811@4262a8d2</span>
+
+  scala&gt; val inc9999 = makeIncreaser(9999)
+<span class="output">  inc9999: Int =&gt; Int = $$Lambda$1126/1042315811@4c8bbc5e</span>
+
+<hr>
+  scala&gt; inc1(10)
+<span class="output">  res20: Int = 11</span>
+
+  scala&gt; inc9999(10)
+<span class="output">  res21: Int = 10009</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec8"></a>8.8 Special function call forms</h3>
+
+  <pre><hr>
+  scala&gt; def echo(args: String*) = 
+       |   for (arg &lt;- args) println(arg)
+<span class="output">  echo: (args: String*)Unit</span>
+
+<hr>
+  scala&gt; echo()
+
+  scala&gt; echo("one")
+<span class="output">  one</span>
+
+  scala&gt; echo("hello", "world!")
+<span class="output">  hello</span>
+<span class="output">  world!</span>
+
+<hr>
+  scala&gt; val seq = Seq("What's", "up", "doc?")
+<span class="output">  seq: Seq[String] = Seq(What's, up, doc?)</span>
+
+  scala&gt; echo(seq)
+<span class="output">              ^</span>
+<span class="output">         error: type mismatch;</span>
+<span class="output">          found   : Seq[String]</span>
+<span class="output">          required: String</span>
+
+
+<hr>
+  scala&gt; echo(seq: _*)
+<span class="output">  What's</span>
+<span class="output">  up</span>
+<span class="output">  doc?</span>
+
+<hr>
+  scala&gt; def speed(distance: Float, time: Float): Float =
+       |   distance / time
+<span class="output">  speed: (distance: Float, time: Float)Float</span>
+
+  scala&gt; speed(100, 10)
+<span class="output">  res27: Float = 10.0</span>
+
+<hr>
+  scala&gt; speed(distance = 100, time = 10)
+<span class="output">  res28: Float = 10.0</span>
+
+<hr>
+  scala&gt; speed(time = 10, distance = 100)
+<span class="output">  res29: Float = 10.0</span>
+
+<hr>
+// In file <a href="../functions-and-closures/NamedDefault.scala">functions-and-closures/NamedDefault.scala</a>
+
+  def printTime(out: java.io.PrintStream = Console.out) =
+    out.println("time = " + System.currentTimeMillis())
+
+<hr>
+// In file <a href="../functions-and-closures/NamedDefault.scala">functions-and-closures/NamedDefault.scala</a>
+
+  def printTime2(out: java.io.PrintStream = Console.out,
+                 divisor: Int = 1) =
+    out.println("time = " + System.currentTimeMillis()/divisor)
+
+<hr>
+  printTime2(out = Console.err)
+
+<hr>
+  printTime2(divisor = 1000)
+
+<hr>
+  </pre>
+  <h3><a name="sec9"></a>8.9 Tail recursion</h3>
+
+  <pre><hr>
+// In file <a href="../functions-and-closures/Approximate.scala">functions-and-closures/Approximate.scala</a>
+
+  def approximate(guess: Double): Double = 
+    if (isGoodEnough(guess)) guess
+    else approximate(improve(guess))
+
+<hr>
+// In file <a href="../functions-and-closures/Approximate.scala">functions-and-closures/Approximate.scala</a>
+
+  def approximateLoop(initialGuess: Double): Double = {
+    var guess = initialGuess
+    while (!isGoodEnough(guess))
+      guess = improve(guess)
+    guess
+  }
+
+<hr>
+// In file <a href="../functions-and-closures/TailRecursion.scala">functions-and-closures/TailRecursion.scala</a>
+
+  def boom(x: Int): Int = 
+    if (x == 0) throw new Exception("boom!")
+    else boom(x - 1) + 1
+
+<hr>
+  scala&gt;  boom(3)
+<span class="output">  java.lang.Exception: boom!</span>
+<span class="output">  	at .boom(&lt;console&gt;:5)</span>
+<span class="output">  	at .boom(&lt;console&gt;:6)</span>
+<span class="output">  	at .boom(&lt;console&gt;:6)</span>
+<span class="output">  	at .boom(&lt;console&gt;:6)</span>
+<span class="output">  	at .&lt;init&gt;(&lt;console&gt;:6)</span>
+<span class="output">  ...</span>
+
+<hr>
+  public double approximate(double);
+    Code:
+     0:   aload_0
+     1:   astore_3
+     2:   aload_0
+     3:   dload_1
+     4:   invokevirtual   #24; //Method isGoodEnough:(D)Z
+     7:   ifeq    12
+     10:  dload_1
+     11:  dreturn
+     12:  aload_0
+     13:  dload_1
+     14:  invokevirtual   #27; //Method improve:(D)D
+     17:  dstore_1
+     18:  goto    2
+
+<hr>
+// In file <a href="../functions-and-closures/TailRecursion.scala">functions-and-closures/TailRecursion.scala</a>
+
+ def bang(x: Int): Int = 
+   if (x == 0) throw new Exception("bang!")
+   else bang(x - 1)
+
+<hr>
+  scala&gt; bang(5)
+<span class="output">  java.lang.Exception: bang!</span>
+<span class="output">  	at .bang(&lt;console&gt;:5)</span>
+<span class="output">  	at .&lt;init&gt;(&lt;console&gt;:6) ...</span>
+
+<hr>
+  -g:notailcalls
+
+<hr>
+  scala&gt; bang(5)
+<span class="output">  java.lang.Exception: bang!</span>
+<span class="output">  	at .bang(&lt;console&gt;:5)</span>
+<span class="output">  	at .bang(&lt;console&gt;:5)</span>
+<span class="output">  	at .bang(&lt;console&gt;:5)</span>
+<span class="output">  	at .bang(&lt;console&gt;:5)</span>
+<span class="output">  	at .bang(&lt;console&gt;:5)</span>
+<span class="output">  	at .bang(&lt;console&gt;:5)</span>
+<span class="output">  	at .&lt;init&gt;(&lt;console&gt;:6) ...</span>
+
+<hr>
+// In file <a href="../functions-and-closures/Misc.scala">functions-and-closures/Misc.scala</a>
+
+  def isEven(x: Int): Boolean =
+    if (x == 0) true else isOdd(x - 1)
+  def isOdd(x: Int): Boolean =
+    if (x == 0) false else isEven(x - 1)
+
+<hr>
+// In file <a href="../functions-and-closures/Misc.scala">functions-and-closures/Misc.scala</a>
+
+  val funValue = nestedFun _
+  def nestedFun(x: Int) : Unit = { 
+    if (x != 0) { println(x); funValue(x - 1) }
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec10"></a>8.10 Conclusion</h3>
+
+
+ <table>
+ <tr valign="top">
+ <td>
+ <div id="moreinfo">
+ <p>
+ For more information about <em>Programming in Scala, Fourth Edition</em> (the "Stairway Book"), please visit:
+ </p>
+ 
+ <p>
+ <a href="http://www.artima.com/shop/programming_in_scala_4ed">http://www.artima.com/shop/programming_in_scala_4ed</a>
+ </p>
+ 
+ <p>
+ and:
+ </p>
+ 
+ <p>
+ <a href="http://booksites.artima.com/programming_in_scala_4ed">http://booksites.artima.com/programming_in_scala_4ed</a>
+ </p>
+ </div>
+ </td>
+ <td>
+ <div id="license">
+ <p>
+   Copyright &copy; 2007-2019 Artima, Inc. All rights reserved.
+ </p>
+
+ <p>
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+ </p>
+
+ <p style="margin-left: 20px">
+   <a href="http://www.apache.org/licenses/LICENSE-2.0">
+     http://www.apache.org/licenses/LICENSE-2.0
+   </a>
+ </p>
+
+ <p>
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+   implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ </p>
+ </div>
+ </td>
+ </tr>
+ </table>
+
+</body>
+</html>

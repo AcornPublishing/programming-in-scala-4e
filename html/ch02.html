@@ -1,0 +1,289 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/2002/REC-xhtml1-20020801/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type"
+        content="text/html; charset=ISO-8859-1" />
+  <title>Code Examples for Programming in Scala, Fourth Edition</title>
+  <link rel="stylesheet" href="style.css" type="text/css"/>
+</head>
+<body>
+
+<div id="mainTitles"><h3>Code Examples for</h3><h2>Programming in Scala, Fourth Edition</h2></div>  <p><a href="../index.html">
+    Return to chapter index
+  </a></p>
+  <h2>2 First Steps in Scala</h2>
+
+  <p><a href="../first-steps-in-scala/transcript.txt">
+    Sample run of chapter's interpreter examples
+  </a></p>
+
+  <ul>
+
+    <li>Step 1. <a href="#sec1">Learn to use the Scala interpreter</a></li>
+    <li>Step 2. <a href="#sec2">Define some variables</a></li>
+    <li>Step 3. <a href="#sec3">Define some functions</a></li>
+    <li>Step 4. <a href="#sec4">Write some Scala scripts</a></li>
+    <li>Step 5. <a href="#sec5">Loop with <span class="mono">while</span>; decide with <span class="mono">if</span></a></li>
+    <li>Step 6. <a href="#sec6">Iterate with <span class="mono">foreach</span> and <span class="mono">for</span></a></li>
+  </ul>
+
+  <h3><a name="sec1"></a>Step 1. Learn to use the Scala interpreter</h3>
+
+  <pre><hr>
+  $ scala
+<span class="output">  Welcome to Scala version 2.11.7</span>
+<span class="output">  Type in expressions to have them evaluated.</span>
+<span class="output">  Type :help for more information.</span>
+  
+  scala&gt; 
+
+<hr>
+  scala&gt; 1 + 2
+
+<hr>
+<span class="output">  res0: Int = 3</span>
+
+<hr>
+  scala&gt; res0 * 3
+<span class="output">  res1: Int = 9</span>
+
+<hr>
+  scala&gt; println("Hello, world!")
+<span class="output">  Hello, world!</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec2"></a>Step 2. Define some variables</h3>
+
+  <pre><hr>
+  scala&gt; val msg = "Hello, world!"
+<span class="output">  msg: String = Hello, world!</span>
+
+<hr>
+  scala&gt; val msg2: java.lang.String = "Hello again, world!"
+<span class="output">  msg2: String = Hello again, world!</span>
+
+<hr>
+  scala&gt; val msg3: String = "Hello yet again, world!"
+<span class="output">  msg3: String = Hello yet again, world!</span>
+
+<hr>
+  scala&gt; println(msg)
+<span class="output">  Hello, world!</span>
+
+<hr>
+  scala&gt; msg = "Goodbye cruel world!"
+<span class="output">             ^</span>
+<span class="output">         error: reassignment to val</span>
+<span class="output"></span>
+
+<hr>
+  scala&gt; var greeting = "Hello, world!"
+<span class="output">  greeting: String = Hello, world!</span>
+
+<hr>
+  scala&gt; greeting = "Leave me alone, world!"
+<span class="output">  mutated greeting</span>
+
+<hr>
+  scala&gt; val multiLine =
+       \|   "This is the next line."
+<span class="output">  multiLine: String = This is the next line.</span>
+
+<hr>
+  scala&gt; val oops =
+       \| 
+       \| 
+<span class="output">  You typed two blank lines.  Starting a new command.</span>
+
+  scala&gt;
+
+<hr>
+  </pre>
+  <h3><a name="sec3"></a>Step 3. Define some functions</h3>
+
+  <pre><hr>
+  scala&gt; def max(x: Int, y: Int): Int = {
+       |   if (x &gt; y) x
+       |   else y
+       | }
+<span class="output">  max: (x: Int, y: Int)Int</span>
+
+<hr>
+  scala&gt; def max(x: Int, y: Int) = if (x &gt; y) x else y
+<span class="output">  max: (x: Int, y: Int)Int</span>
+
+<hr>
+  scala&gt; max(3, 5)
+<span class="output">  res4: Int = 5</span>
+
+<hr>
+  scala&gt; def greet() = println("Hello, world!")
+<span class="output">  greet: ()Unit</span>
+
+<hr>
+  scala&gt; :quit
+  $
+
+<hr>
+  </pre>
+  <h3><a name="sec4"></a>Step 4. Write some Scala scripts</h3>
+
+  <pre><hr>
+  println("Hello, world, from a script!")
+
+<hr>
+  $ scala hello.scala
+
+<hr>
+<span class="output">  Hello, world, from a script!</span>
+
+<hr>
+  // Say hello to the first argument
+  println("Hello, " + args(0) + "!")
+
+<hr>
+  $ scala helloarg.scala planet
+
+<hr>
+<span class="output">  Hello, planet!</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec5"></a>Step 5. Loop with <span class="mono">while</span>; decide with <span class="mono">if</span></h3>
+
+  <pre><hr>
+  var i = 0
+  while (i &lt; args.length) {
+    println(args(i))
+    i += 1
+  }
+
+<hr>
+  $ scala printargs.scala Scala is fun
+
+<hr>
+<span class="output">  Scala</span>
+<span class="output">  is</span>
+<span class="output">  fun</span>
+
+<hr>
+  var i = 0
+  while (i &lt; args.length) {
+    if (i != 0)
+      print(" ")
+    print(args(i))
+    i += 1
+  }
+  println()
+
+<hr>
+  $ scala echoargs.scala Scala is even more fun
+
+<hr>
+<span class="output">  Scala is even more fun</span>
+
+<hr>
+  var i = 0;
+  while (i &lt; args.length) {
+    if (i != 0) {
+      print(" ");
+    }
+    print(args(i));
+    i += 1;
+  }
+  println();
+
+<hr>
+  </pre>
+  <h3><a name="sec6"></a>Step 6. Iterate with <span class="mono">foreach</span> and <span class="mono">for</span></h3>
+
+  <pre><hr>
+  args.foreach(arg =&gt; println(arg))
+
+<hr>
+  $ scala pa.scala Concise is nice
+
+<hr>
+<span class="output">  Concise</span>
+<span class="output">  is</span>
+<span class="output">  nice</span>
+
+<hr>
+  args.foreach((arg: String) =&gt; println(arg))
+
+<hr>
+  args.foreach(println)
+
+<hr>
+  for (arg &lt;- args)
+    println(arg)
+
+<hr>
+  $ scala forargs.scala for arg in args
+
+<hr>
+<span class="output">  for</span>
+<span class="output">  arg</span>
+<span class="output">  in</span>
+<span class="output">  args</span>
+
+<hr>
+  </pre>
+
+ <table>
+ <tr valign="top">
+ <td>
+ <div id="moreinfo">
+ <p>
+ For more information about <em>Programming in Scala, Fourth Edition</em> (the "Stairway Book"), please visit:
+ </p>
+ 
+ <p>
+ <a href="http://www.artima.com/shop/programming_in_scala_4ed">http://www.artima.com/shop/programming_in_scala_4ed</a>
+ </p>
+ 
+ <p>
+ and:
+ </p>
+ 
+ <p>
+ <a href="http://booksites.artima.com/programming_in_scala_4ed">http://booksites.artima.com/programming_in_scala_4ed</a>
+ </p>
+ </div>
+ </td>
+ <td>
+ <div id="license">
+ <p>
+   Copyright &copy; 2007-2019 Artima, Inc. All rights reserved.
+ </p>
+
+ <p>
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+ </p>
+
+ <p style="margin-left: 20px">
+   <a href="http://www.apache.org/licenses/LICENSE-2.0">
+     http://www.apache.org/licenses/LICENSE-2.0
+   </a>
+ </p>
+
+ <p>
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+   implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ </p>
+ </div>
+ </td>
+ </tr>
+ </table>
+
+</body>
+</html>

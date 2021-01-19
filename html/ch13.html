@@ -1,0 +1,356 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/2002/REC-xhtml1-20020801/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type"
+        content="text/html; charset=ISO-8859-1" />
+  <title>Code Examples for Programming in Scala, Fourth Edition</title>
+  <link rel="stylesheet" href="style.css" type="text/css"/>
+</head>
+<body>
+
+<div id="mainTitles"><h3>Code Examples for</h3><h2>Programming in Scala, Fourth Edition</h2></div>  <p><a href="../index.html">
+    Return to chapter index
+  </a></p>
+  <h2>13 Packages and Imports</h2>
+
+    <li>13.1 <a href="#sec1">Putting code in packages</a></li>
+    <li>13.2 <a href="#sec2">Concise access to related code</a></li>
+    <li>13.3 <a href="#sec3">Imports</a></li>
+    <li>13.4 <a href="#sec4">Implicit imports</a></li>
+    <li>13.5 <a href="#sec5">Access modifiers</a></li>
+    <li>13.6 <a href="#sec6">Package objects</a></li>
+    <li>13.7 <a href="#sec7">Conclusion</a></li>
+  </ul>
+
+  <h3><a name="sec1"></a>13.1 Putting code in packages</h3>
+
+  <pre><hr>
+// In file <a href="../packages-and-imports/ex1/Ex1.scala">packages-and-imports/ex1/Ex1.scala</a>
+
+  package bobsrockets.navigation
+  class Navigator
+
+<hr>
+  package bobsrockets.navigation {
+    class Navigator
+  }
+
+<hr>
+  package bobsrockets {
+    package navigation {
+
+      // In package bobsrockets.navigation
+      class Navigator
+
+      package tests {
+
+        // In package bobsrockets.navigation.tests
+        class NavigatorSuite
+      }
+    }
+  }
+
+<hr>
+// In file <a href="../packages-and-imports/ex4/Ex4.scala">packages-and-imports/ex4/Ex4.scala</a>
+
+  package bobsrockets {
+    package navigation {
+      class Navigator {
+        // No need to say bobsrockets.navigation.StarMap
+        val map = new StarMap
+      }
+      class StarMap
+    }
+    class Ship {
+      // No need to say bobsrockets.navigation.Navigator
+      val nav = new navigation.Navigator
+    }
+    package fleets {
+      class Fleet {
+        // No need to say bobsrockets.Ship
+        def addShip() = { new Ship }
+      }
+    }
+  }
+
+<hr>
+  package bobsrockets {
+    class Ship
+  }
+
+  package bobsrockets.fleets {
+    class Fleet {
+      // Doesn't compile! Ship is not in scope.
+      def addShip() = { new Ship }
+    }
+  }
+
+<hr>
+// In file <a href="../packages-and-imports/launch.scala">packages-and-imports/launch.scala</a>
+
+  // In file launch.scala
+  package launch {
+    class Booster3
+  }
+
+  // In file bobsrockets.scala
+  package bobsrockets {
+    package navigation {
+      package launch {
+        class Booster1
+      }
+      class MissionControl {
+        val booster1 = new launch.Booster1
+        val booster2 = new bobsrockets.launch.Booster2
+        val booster3 = new _root_.launch.Booster3
+      }
+    }
+    package launch {
+      class Booster2
+    }
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec2"></a>13.2 Concise access to related code</h3>
+
+  <pre><hr>
+  package bobsrockets
+  package fleets
+  class Fleet {
+    // No need to say bobsrockets.Ship
+    def addShip() = { new Ship }
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec3"></a>13.3 Imports</h3>
+
+  <pre><hr>
+// In file <a href="../packages-and-imports/Fruits.scala">packages-and-imports/Fruits.scala</a>
+
+  package bobsdelights
+
+  abstract class Fruit(
+    val name: String,
+    val color: String
+  )
+
+  object Fruits {
+    object Apple extends Fruit("apple", "red")
+    object Orange extends Fruit("orange", "orange")
+    object Pear extends Fruit("pear", "yellowish")
+    val menu = List(Apple, Orange, Pear)
+  }
+
+<hr>
+// In file <a href="../packages-and-imports/Ex5.scala">packages-and-imports/Ex5.scala</a>
+
+  // easy access to Fruit
+  import bobsdelights.Fruit
+
+  // easy access to all members of bobsdelights
+  import bobsdelights._
+
+  // easy access to all members of Fruits
+  import bobsdelights.Fruits._
+
+<hr>
+// In file <a href="../packages-and-imports/Ex5.scala">packages-and-imports/Ex5.scala</a>
+
+  def showFruit(fruit: Fruit) = {
+    import fruit._
+    println(name + "s are " + color)
+  }
+
+<hr>
+// In file <a href="../packages-and-imports/Ex6.scala">packages-and-imports/Ex6.scala</a>
+
+  import java.util.regex
+
+  class AStarB {
+    // Accesses java.util.regex.Pattern
+    val pat = regex.Pattern.compile("a*b")
+  }
+
+<hr>
+// In file <a href="../packages-and-imports/Ex7.scala">packages-and-imports/Ex7.scala</a>
+
+  import Notebooks._
+  import Fruits.{Apple =&gt; _, _}
+
+<hr>
+  </pre>
+  <h3><a name="sec4"></a>13.4 Implicit imports</h3>
+
+  <pre><hr>
+  import java.lang._ // everything in the java.lang package
+  import scala._     // everything in the scala package
+  import Predef._    // everything in the Predef object
+
+<hr>
+  </pre>
+  <h3><a name="sec5"></a>13.5 Access modifiers</h3>
+
+  <pre><hr>
+// In file <a href="../packages-and-imports/Ex8.scala.err">packages-and-imports/Ex8.scala.err</a>
+
+  class Outer {
+    class Inner {
+      private def f() = { println("f") }
+      class InnerMost {
+        f() // OK
+      }
+    }
+    (new Inner).f() // error: f is not accessible
+  }
+
+<hr>
+// In file <a href="../packages-and-imports/Ex9.scala.err">packages-and-imports/Ex9.scala.err</a>
+
+  package p {
+    class Super {
+      protected def f() = { println("f") }
+    }
+    class Sub extends Super {
+      f()
+    }
+    class Other {
+      (new Super).f()  // error: f is not accessible
+    }
+  }
+
+<hr>
+// In file <a href="../packages-and-imports/ex10/Ex10.scala">packages-and-imports/ex10/Ex10.scala</a>
+
+ package bobsrockets
+
+ package navigation {
+   private[bobsrockets] class Navigator { 
+     protected[navigation] def useStarChart() = {}
+     class LegOfJourney {
+       private[Navigator] val distance = 100
+     }
+     private[this] var speed = 200
+   }
+ }
+ package launch {
+   import navigation._
+   object Vehicle { 
+     private[launch] val guide = new Navigator
+   }
+ }
+
+<hr>
+  val other = new Navigator
+  other.speed // this line would not compile
+
+<hr>
+// In file <a href="../packages-and-imports/Rocket.scala">packages-and-imports/Rocket.scala</a>
+
+  class Rocket {
+    import Rocket.fuel
+    private def canGoHomeAgain = fuel &gt; 20
+  }
+
+  object Rocket {
+    private def fuel = 10
+    def chooseStrategy(rocket: Rocket) = {
+      if (rocket.canGoHomeAgain)
+        goHome()
+      else
+        pickAStar()
+    }
+    def goHome() = {}
+    def pickAStar() = {}
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec6"></a>13.6 Package objects</h3>
+
+  <pre><hr>
+// In file <a href="../packages-and-imports/package.scala">packages-and-imports/package.scala</a>
+
+  // In file bobsdelights/package.scala
+  package object bobsdelights {
+    def showFruit(fruit: Fruit) = {
+      import fruit._
+      println(name + "s are " + color)
+    }
+  }
+
+  // In file PrintMenu.scala
+  package printmenu
+  import bobsdelights.Fruits
+  import bobsdelights.showFruit
+
+  object PrintMenu {
+    def main(args: Array[String]) = {
+      for (fruit &lt;- Fruits.menu) {
+        showFruit(fruit)
+      }
+    }
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec7"></a>13.7 Conclusion</h3>
+
+
+ <table>
+ <tr valign="top">
+ <td>
+ <div id="moreinfo">
+ <p>
+ For more information about <em>Programming in Scala, Fourth Edition</em> (the "Stairway Book"), please visit:
+ </p>
+ 
+ <p>
+ <a href="http://www.artima.com/shop/programming_in_scala_4ed">http://www.artima.com/shop/programming_in_scala_4ed</a>
+ </p>
+ 
+ <p>
+ and:
+ </p>
+ 
+ <p>
+ <a href="http://booksites.artima.com/programming_in_scala_4ed">http://booksites.artima.com/programming_in_scala_4ed</a>
+ </p>
+ </div>
+ </td>
+ <td>
+ <div id="license">
+ <p>
+   Copyright &copy; 2007-2019 Artima, Inc. All rights reserved.
+ </p>
+
+ <p>
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+ </p>
+
+ <p style="margin-left: 20px">
+   <a href="http://www.apache.org/licenses/LICENSE-2.0">
+     http://www.apache.org/licenses/LICENSE-2.0
+   </a>
+ </p>
+
+ <p>
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+   implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ </p>
+ </div>
+ </td>
+ </tr>
+ </table>
+
+</body>
+</html>

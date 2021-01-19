@@ -1,0 +1,550 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/2002/REC-xhtml1-20020801/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type"
+        content="text/html; charset=ISO-8859-1" />
+  <title>Code Examples for Programming in Scala, Fourth Edition</title>
+  <link rel="stylesheet" href="style.css" type="text/css"/>
+</head>
+<body>
+
+<div id="mainTitles"><h3>Code Examples for</h3><h2>Programming in Scala, Fourth Edition</h2></div>  <p><a href="../index.html">
+    Return to chapter index
+  </a></p>
+  <h2>7 Built-in Control Structures</h2>
+
+  <p><a href="../built-in-control-structures/transcript.txt">
+    Sample run of chapter's interpreter examples
+  </a></p>
+
+  <ul>
+
+    <li>7.1 <a href="#sec1">If expressions</a></li>
+    <li>7.2 <a href="#sec2">While loops</a></li>
+    <li>7.3 <a href="#sec3">For expressions</a></li>
+    <li>7.4 <a href="#sec4">Exception handling with <span class="mono">try</span> expressions</a></li>
+    <li>7.5 <a href="#sec5">Match expressions</a></li>
+    <li>7.6 <a href="#sec6">Living without <span class="mono">break</span> and <span class="mono">continue</span></a></li>
+    <li>7.7 <a href="#sec7">Variable scope</a></li>
+    <li>7.8 <a href="#sec8">Refactoring imperative-style code</a></li>
+    <li>7.9 <a href="#sec9">Conclusion</a></li>
+  </ul>
+
+  <h3><a name="sec1"></a>7.1 If expressions</h3>
+
+  <pre><hr>
+// In file <a href="../built-in-control-structures/Misc.scala">built-in-control-structures/Misc.scala</a>
+
+  var filename = "default.txt"
+  if (!args.isEmpty)
+    filename = args(0)
+
+<hr>
+// In file <a href="../built-in-control-structures/Misc.scala">built-in-control-structures/Misc.scala</a>
+
+  val filename =
+    if (!args.isEmpty) args(0)
+    else "default.txt"
+
+<hr>
+// In file <a href="../built-in-control-structures/Misc.scala">built-in-control-structures/Misc.scala</a>
+
+  println(if (!args.isEmpty) args(0) else "default.txt")
+
+<hr>
+  </pre>
+  <h3><a name="sec2"></a>7.2 While loops</h3>
+
+  <pre><hr>
+// In file <a href="../built-in-control-structures/Misc.scala">built-in-control-structures/Misc.scala</a>
+
+  def gcdLoop(x: Long, y: Long): Long = {
+    var a = x
+    var b = y
+    while (a != 0) {
+      val temp = a
+      a = b % a
+      b = temp
+    }
+    b
+  }
+
+<hr>
+// In file <a href="../built-in-control-structures/Misc.scala">built-in-control-structures/Misc.scala</a>
+
+  var line = ""
+  do {
+    line = readLine()
+    println("Read: " + line)
+  } while (line != "")
+
+<hr>
+  scala&gt; def greet() = { println("hi") }
+<span class="output">  greet: ()Unit</span>
+
+  scala&gt; val whatAmI = greet()
+<span class="output">  hi</span>
+<span class="output">  whatAmI: Unit = ()</span>
+
+<hr>
+  var line = ""
+  while ((line = readLine()) != "") // This doesn't work!
+    println("Read: " + line)
+
+<hr>
+// In file <a href="../built-in-control-structures/Misc.scala">built-in-control-structures/Misc.scala</a>
+
+  def gcd(x: Long, y: Long): Long =
+    if (y == 0) x else gcd(y, x % y) 
+
+<hr>
+  </pre>
+  <h3><a name="sec3"></a>7.3 For expressions</h3>
+
+  <pre><hr>
+// In file <a href="../built-in-control-structures/Files.scala">built-in-control-structures/Files.scala</a>
+
+  val filesHere = (new java.io.File(".")).listFiles
+
+  for (file &lt;- filesHere)
+    println(file)
+
+<hr>
+  scala&gt; for (i &lt;- 1 to 4)
+       |  println("Iteration " + i)
+<span class="output">  Iteration 1</span>
+<span class="output">  Iteration 2</span>
+<span class="output">  Iteration 3</span>
+<span class="output">  Iteration 4</span>
+
+<hr>
+  scala&gt; for (i &lt;- 1 until 4)
+       |  println("Iteration " + i)
+<span class="output">  Iteration 1</span>
+<span class="output">  Iteration 2</span>
+<span class="output">  Iteration 3</span>
+
+<hr>
+// In file <a href="../built-in-control-structures/Files.scala">built-in-control-structures/Files.scala</a>
+
+  // Not common in Scala...
+  for (i &lt;- 0 to filesHere.length - 1)
+    println(filesHere(i))
+
+<hr>
+// In file <a href="../built-in-control-structures/Files.scala">built-in-control-structures/Files.scala</a>
+
+  val filesHere = (new java.io.File(".")).listFiles
+
+  for (file &lt;- filesHere if file.getName.endsWith(".scala"))
+    println(file)
+
+<hr>
+// In file <a href="../built-in-control-structures/Files.scala">built-in-control-structures/Files.scala</a>
+
+  for (file &lt;- filesHere)
+    if (file.getName.endsWith(".scala"))
+      println(file)
+
+<hr>
+// In file <a href="../built-in-control-structures/Files.scala">built-in-control-structures/Files.scala</a>
+
+  for (
+    file &lt;- filesHere
+    if file.isFile
+    if file.getName.endsWith(".scala")
+  ) println(file)
+
+<hr>
+// In file <a href="../built-in-control-structures/Files.scala">built-in-control-structures/Files.scala</a>
+
+  def fileLines(file: java.io.File) = 
+    scala.io.Source.fromFile(file).getLines().toArray
+
+  def grep(pattern: String) =
+    for (
+      file &lt;- filesHere
+      if file.getName.endsWith(".scala");
+      line &lt;- fileLines(file)
+      if line.trim.matches(pattern) 
+    ) println(s"<em>file: </em>{line.trim}")
+
+  grep(".*gcd.*")
+
+<hr>
+// In file <a href="../built-in-control-structures/Files.scala">built-in-control-structures/Files.scala</a>
+
+  def grep(pattern: String) =
+    for {
+      file &lt;- filesHere
+      if file.getName.endsWith(".scala")
+      line &lt;- fileLines(file)
+      trimmed = line.trim
+      if trimmed.matches(pattern)  
+    } println(s"<em>file: </em>trimmed")
+
+  grep(".*gcd.*")
+
+<hr>
+// In file <a href="../built-in-control-structures/Files.scala">built-in-control-structures/Files.scala</a>
+
+  def scalaFiles =
+    for {
+      file &lt;- filesHere
+      if file.getName.endsWith(".scala")
+    } yield file
+
+<hr>
+  for <em>clauses</em> yield <em>body</em>
+
+<hr>
+  for (file &lt;- filesHere if file.getName.endsWith(".scala")) {
+    yield file  // Syntax error!
+  }
+
+<hr>
+// In file <a href="../built-in-control-structures/Files.scala">built-in-control-structures/Files.scala</a>
+
+  val forLineLengths =
+    for {
+      file &lt;- filesHere
+      if file.getName.endsWith(".scala")
+      line &lt;- fileLines(file)
+      trimmed = line.trim
+      if trimmed.matches(".*for.*")  
+    } yield trimmed.length
+
+<hr>
+  </pre>
+  <h3><a name="sec4"></a>7.4 Exception handling with <span class="mono">try</span> expressions</h3>
+
+  <pre><hr>
+// In file <a href="../built-in-control-structures/Exceptions.scala">built-in-control-structures/Exceptions.scala</a>
+
+  throw new IllegalArgumentException
+
+<hr>
+// In file <a href="../built-in-control-structures/Exceptions.scala">built-in-control-structures/Exceptions.scala</a>
+
+  val half =
+    if (n % 2 == 0)
+      n / 2
+    else
+      throw new RuntimeException("n must be even")
+
+<hr>
+// In file <a href="../built-in-control-structures/Exceptions.scala">built-in-control-structures/Exceptions.scala</a>
+
+  import java.io.FileReader
+  import java.io.FileNotFoundException
+  import java.io.IOException
+
+  try {
+    val f = new FileReader("input.txt")
+    // Use and close file
+  } catch {
+    case ex: FileNotFoundException =&gt; // Handle missing file
+    case ex: IOException =&gt; // Handle other I/O error
+  }
+
+<hr>
+// In file <a href="../built-in-control-structures/Exceptions.scala">built-in-control-structures/Exceptions.scala</a>
+
+  import java.io.FileReader
+
+  val file = new FileReader("input.txt")
+  try {
+    // Use the file
+  } finally {
+    file.close()  // Be sure to close the file
+  }
+
+<hr>
+// In file <a href="../built-in-control-structures/Exceptions.scala">built-in-control-structures/Exceptions.scala</a>
+
+  import java.net.URL
+  import java.net.MalformedURLException
+
+  def urlFor(path: String) =
+    try {
+      new URL(path)
+    } catch {
+      case e: MalformedURLException =&gt;
+        new URL("http://www.scala-lang.org")
+    }
+
+<hr>
+// In file <a href="../built-in-control-structures/Exceptions.scala">built-in-control-structures/Exceptions.scala</a>
+
+  def f(): Int = try return 1 finally return 2
+
+<hr>
+// In file <a href="../built-in-control-structures/Exceptions.scala">built-in-control-structures/Exceptions.scala</a>
+
+  def g(): Int = try 1 finally 2
+
+<hr>
+  </pre>
+  <h3><a name="sec5"></a>7.5 Match expressions</h3>
+
+  <pre><hr>
+// In file <a href="../built-in-control-structures/Match.scala">built-in-control-structures/Match.scala</a>
+
+  val firstArg = if (args.length &gt; 0) args(0) else ""
+
+  firstArg match {
+    case "salt" =&gt; println("pepper")
+    case "chips" =&gt; println("salsa")
+    case "eggs" =&gt; println("bacon")
+    case _ =&gt; println("huh?")
+  }           
+
+<hr>
+// In file <a href="../built-in-control-structures/Match.scala">built-in-control-structures/Match.scala</a>
+
+  val firstArg = if (!args.isEmpty) args(0) else ""
+
+  val friend =
+    firstArg match {
+      case "salt" =&gt; "pepper"
+      case "chips" =&gt; "salsa"
+      case "eggs" =&gt; "bacon"
+      case _ =&gt; "huh?"
+    }           
+
+  println(friend)
+
+<hr>
+  </pre>
+  <h3><a name="sec6"></a>7.6 Living without <span class="mono">break</span> and <span class="mono">continue</span></h3>
+
+  <pre><hr>
+// In file <a href="../built-in-control-structures/Break.java">built-in-control-structures/Break.java</a>
+
+  int i = 0;                // This is Java
+  boolean foundIt = false;
+  while (i &lt; args.length) {
+    if (args[i].startsWith("-")) {
+      i = i + 1;
+      continue;
+    }
+    if (args[i].endsWith(".scala")) {
+      foundIt = true;
+      break;
+    }
+    i = i + 1;
+  }
+
+<hr>
+// In file <a href="../built-in-control-structures/Breakless1.scala">built-in-control-structures/Breakless1.scala</a>
+
+  var i = 0
+  var foundIt = false
+
+  while (i &lt; args.length &amp;&amp; !foundIt) {
+    if (!args(i).startsWith("-")) {
+      if (args(i).endsWith(".scala"))
+        foundIt = true
+    }
+    i = i + 1
+  }
+
+<hr>
+// In file <a href="../built-in-control-structures/Breakless2.scala">built-in-control-structures/Breakless2.scala</a>
+
+  def searchFrom(i: Int): Int =
+    if (i &gt;= args.length) -1
+    else if (args(i).startsWith("-")) searchFrom(i + 1) 
+    else if (args(i).endsWith(".scala")) i
+    else searchFrom(i + 1)
+
+  val i = searchFrom(0)
+
+<hr>
+  import scala.util.control.Breaks._
+  import java.io._
+
+  val in = new BufferedReader(new InputStreamReader(System.in))
+
+  breakable {
+    while (true) {
+      println("? ")
+      if (in.readLine() == "") break
+    }
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec7"></a>7.7 Variable scope</h3>
+
+  <pre><hr>
+// In file <a href="../built-in-control-structures/MultiTable.scala">built-in-control-structures/MultiTable.scala</a>
+
+  def printMultiTable() = {
+
+    var i = 1
+    // only i in scope here
+
+    while (i &lt;= 10) {
+
+      var j = 1
+      // both i and j in scope here
+
+      while (j &lt;= 10) {
+
+        val prod = (i * j).toString
+        // i, j, and prod in scope here
+
+        var k = prod.length
+        // i, j, prod, and k in scope here
+
+        while (k &lt; 4) {
+          print(" ")
+          k += 1
+        }
+
+        print(prod)
+        j += 1
+      }
+
+      // i and j still in scope; prod and k out of scope
+
+      println()
+      i += 1
+    }
+
+    // i still in scope; j, prod, and k out of scope
+  }
+
+<hr>
+  while (i &lt;= 10) {
+
+    var j = 1
+    ...
+  }
+
+<hr>
+  val a = 1
+  val a = 2 // Does not compile
+  println(a)
+
+<hr>
+// In file <a href="../built-in-control-structures/Misc.scala">built-in-control-structures/Misc.scala</a>
+
+  val a = 1;
+  {
+    val a = 2 // Compiles just fine
+    println(a)
+  }
+  println(a)
+
+<hr>
+  scala&gt; val a = 1
+<span class="output">  a: Int = 1</span>
+
+  scala&gt; val a = 2
+<span class="output">  a: Int = 2</span>
+
+  scala&gt; println(a)
+<span class="output">  2</span>
+
+<hr>
+// In file <a href="../built-in-control-structures/Misc.scala">built-in-control-structures/Misc.scala</a>
+
+  val a = 1;
+  {
+    val a = 2;
+    {
+      println(a)
+    }
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec8"></a>7.8 Refactoring imperative-style code</h3>
+
+  <pre><hr>
+// In file <a href="../built-in-control-structures/MultiTable2.scala">built-in-control-structures/MultiTable2.scala</a>
+
+  // Returns a row as a sequence
+  def makeRowSeq(row: Int) =
+    for (col &lt;- 1 to 10) yield {
+      val prod = (row * col).toString
+      val padding = " " * (4 - prod.length)
+      padding + prod
+    }
+
+  // Returns a row as a string
+  def makeRow(row: Int) = makeRowSeq(row).mkString
+
+  // Returns table as a string with one row per line
+  def multiTable() = {
+
+    val tableSeq = // a sequence of row strings
+      for (row &lt;- 1 to 10)
+      yield makeRow(row)
+
+    tableSeq.mkString("\n")
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec9"></a>7.9 Conclusion</h3>
+
+
+ <table>
+ <tr valign="top">
+ <td>
+ <div id="moreinfo">
+ <p>
+ For more information about <em>Programming in Scala, Fourth Edition</em> (the "Stairway Book"), please visit:
+ </p>
+ 
+ <p>
+ <a href="http://www.artima.com/shop/programming_in_scala_4ed">http://www.artima.com/shop/programming_in_scala_4ed</a>
+ </p>
+ 
+ <p>
+ and:
+ </p>
+ 
+ <p>
+ <a href="http://booksites.artima.com/programming_in_scala_4ed">http://booksites.artima.com/programming_in_scala_4ed</a>
+ </p>
+ </div>
+ </td>
+ <td>
+ <div id="license">
+ <p>
+   Copyright &copy; 2007-2019 Artima, Inc. All rights reserved.
+ </p>
+
+ <p>
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+ </p>
+
+ <p style="margin-left: 20px">
+   <a href="http://www.apache.org/licenses/LICENSE-2.0">
+     http://www.apache.org/licenses/LICENSE-2.0
+   </a>
+ </p>
+
+ <p>
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+   implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ </p>
+ </div>
+ </td>
+ </tr>
+ </table>
+
+</body>
+</html>

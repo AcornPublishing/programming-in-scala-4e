@@ -1,0 +1,22 @@
+
+body               { margin:          .2in .4in; }
+#mainTitles h3     { margin-bottom:   0in;       }
+#mainTitles h2     { margin-top:      0in;       }
+ul                 { list-style-type: none;
+                     padding-left:    0in;       }
+span.syntaxtype    { color:           #66009A;   } /* purple */
+span.syntaxcomment { color:           #949494;   } /* gray */
+span.syntaxkeyword { color:           #0000E6;   } /* blue */
+span.syntaxstring  { color:           #CD7A00;   } /* orange */
+span.syntaxliteral { color:           #CD7A00;   } /* orange */
+span.output        { color:           #5A0000;   } /* red */
+span.mono          { font-family:     monospace; }
+div.codesnippet    { white-space:     pre;
+                     font-family:     monospace; }
+#license           { font-family:     monospace;
+                     border:          thin grey solid;
+                     padding:         10px;
+                     background:      #f8f8f8;      }
+#moreinfo           { 
+                     border:          thin grey solid;
+                     padding:         10px;  }

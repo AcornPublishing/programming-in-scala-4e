@@ -1,0 +1,630 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/2002/REC-xhtml1-20020801/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type"
+        content="text/html; charset=ISO-8859-1" />
+  <title>Code Examples for Programming in Scala, Fourth Edition</title>
+  <link rel="stylesheet" href="style.css" type="text/css"/>
+</head>
+<body>
+
+<div id="mainTitles"><h3>Code Examples for</h3><h2>Programming in Scala, Fourth Edition</h2></div>  <p><a href="../index.html">
+    Return to chapter index
+  </a></p>
+  <h2>32 Futures and Concurrency</h2>
+
+  <p><a href="../futures-and-concurrency/transcript.txt">
+    Sample run of chapter's interpreter examples
+  </a></p>
+
+  <ul>
+
+    <li>32.1 <a href="#sec1">Trouble in paradise</a></li>
+    <li>32.2 <a href="#sec2">Asynchronous execution and \c{Try</a></li>
+    <li>32.3 <a href="#sec3">Working with \c{Future</a></li>
+    <li>32.4 <a href="#sec4">Testing with \c{Future</a></li>
+    <li>32.5 <a href="#sec5">Conclusion</a></li>
+  </ul>
+
+  <h3><a name="sec1"></a>32.1 Trouble in paradise</h3>
+
+  <pre><hr>
+// In file <a href="../futures-and-concurrency/Synchronized.scala">futures-and-concurrency/Synchronized.scala</a>
+
+  var counter = 0
+  synchronized {
+    // One thread in here at a time
+    counter = counter + 1
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec2"></a>32.2 Asynchronous execution and \c{Try</h3>
+
+  <pre><hr>
+  scala&gt; import scala.concurrent.Future
+<span class="output">  import scala.concurrent.Future</span>
+
+  scala&gt; val fut = Future { Thread.sleep(10000); 21 + 21 }
+<span class="output">  &lt;console&gt;:11: error: Cannot find an implicit ExecutionContext.</span>
+<span class="output">      You might pass an (implicit ec: ExecutionContext)</span>
+<span class="output">      parameter to your method or import</span>
+<span class="output">      scala.concurrent.ExecutionContext.Implicits.global.</span>
+<span class="output">         val fut = Future { Thread.sleep(10000); 21 + 21 }</span>
+<span class="output">                          ^</span>
+
+<hr>
+  scala&gt; import scala.concurrent.ExecutionContext.Implicits.global
+<span class="output">  import scala.concurrent.ExecutionContext.Implicits.global</span>
+
+  scala&gt; val fut = Future { Thread.sleep(10000); 21 + 21 }
+<span class="output">  fut: scala.concurrent.Future[Int] = ...</span>
+
+<hr>
+  scala&gt; fut.isCompleted
+<span class="output">  res0: Boolean = false</span>
+
+  scala&gt; fut.value
+<span class="output">  res1: Option[scala.util.Try[Int]] = None</span>
+
+<hr>
+  scala&gt; fut.isCompleted
+<span class="output">  res2: Boolean = true</span>
+
+  scala&gt; fut.value
+<span class="output">  res3: Option[scala.util.Try[Int]] = Some(Success(42))</span>
+
+<hr>
+  scala&gt; val fut = Future { Thread.sleep(10000); 21 / 0 }
+<span class="output">  fut: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; fut.value
+<span class="output">  res4: Option[scala.util.Try[Int]] = None</span>
+
+<hr>
+  scala&gt; fut.value
+<span class="output">  res5: Option[scala.util.Try[Int]] =</span>
+<span class="output">      Some(Failure(java.lang.ArithmeticException: / by zero))</span>
+
+<hr>
+  </pre>
+  <h3><a name="sec3"></a>32.3 Working with \c{Future</h3>
+
+  <pre><hr>
+  scala&gt; val fut = Future { Thread.sleep(10000); 21 + 21 }
+<span class="output">  fut: scala.concurrent.Future[Int] = ...</span>
+
+<hr>
+  scala&gt; val result = fut.map(x =&gt; x + 1)
+<span class="output">  result: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; result.value
+<span class="output">  res5: Option[scala.util.Try[Int]] = None</span>
+
+<hr>
+  scala&gt; result.value
+<span class="output">  res6: Option[scala.util.Try[Int]] = Some(Success(43))</span>
+
+<hr>
+  scala&gt; val fut1 = Future { Thread.sleep(10000); 21 + 21 }
+<span class="output">  fut1: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; val fut2 = Future { Thread.sleep(10000); 23 + 23 }
+<span class="output">  fut2: scala.concurrent.Future[Int] = ...</span>
+
+<hr>
+  scala&gt; for {
+          x &lt;- fut1
+          y &lt;- fut2
+        } yield x + y
+<span class="output">  res7: scala.concurrent.Future[Int] = ...</span>
+
+<hr>
+  scala&gt; res7.value
+<span class="output">  res8: Option[scala.util.Try[Int]] = Some(Success(88))</span>
+
+<hr>
+  scala&gt; for {
+          x &lt;- Future { Thread.sleep(10000); 21 + 21 }
+          y &lt;- Future { Thread.sleep(10000); 23 + 23 }
+        } yield x + y
+<span class="output">  res9: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; res9.value
+<span class="output">  res27: Option[scala.util.Try[Int]] = None</span>
+
+  scala&gt; // Will need at least 20 seconds to complete
+
+  scala&gt; res9.value
+<span class="output">  res28: Option[scala.util.Try[Int]] = Some(Success(88))</span>
+
+<hr>
+scala&gt; Future.successful { 21 + 21 }
+res2: scala.concurrent.Future[Int] = ...
+
+<hr>
+scala&gt; Future.failed(new Exception("bummer!"))
+res3: scala.concurrent.Future[Nothing] = ...
+
+<hr>
+scala&gt; import scala.util.{Success,Failure}
+import scala.util.{Success, Failure}
+
+scala&gt; Future.fromTry(Success { 21 + 21 }) 
+res4: scala.concurrent.Future[Int] = ...
+
+scala&gt; Future.fromTry(Failure(new Exception("bummer!"))) 
+res5: scala.concurrent.Future[Nothing] = ...
+
+<hr>
+  scala&gt; val pro = Promise[Int]
+<span class="output">  pro: scala.concurrent.Promise[Int] = ...</span>
+
+  scala&gt; val fut = pro.future
+<span class="output">  fut: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; fut.value
+<span class="output">  res8: Option[scala.util.Try[Int]] = None</span>
+
+<hr>
+  scala&gt; pro.success(42)
+<span class="output">  res9: pro.type = ...</span>
+
+  scala&gt; fut.value
+<span class="output">  res10: Option[scala.util.Try[Int]] = Some(Success(42))</span>
+
+<hr>
+  scala&gt; val fut = Future { 42 }
+<span class="output">  fut: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; val valid = fut.filter(res =&gt; res &gt; 0)
+<span class="output">  valid: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; valid.value
+<span class="output">  res0: Option[scala.util.Try[Int]] = Some(Success(42))</span>
+
+<hr>
+  scala&gt; val invalid = fut.filter(res =&gt; res &lt; 0)
+<span class="output">  invalid: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; invalid.value
+<span class="output">  res1: Option[scala.util.Try[Int]] =</span>
+<span class="output">    Some(Failure(java.util.NoSuchElementException:</span>
+<span class="output">    Future.filter predicate is not satisfied))</span>
+
+<hr>
+  scala&gt; val valid = for (res &lt;- fut if res &gt; 0) yield res
+<span class="output">  valid: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; valid.value
+<span class="output">  res2: Option[scala.util.Try[Int]] = Some(Success(42))</span>
+
+  scala&gt; val invalid = for (res &lt;- fut if res &lt; 0) yield res
+<span class="output">  invalid: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; invalid.value
+<span class="output">  res3: Option[scala.util.Try[Int]] =</span>
+<span class="output">    Some(Failure(java.util.NoSuchElementException:</span>
+<span class="output">    Future.filter predicate is not satisfied))</span>
+
+<hr>
+  scala&gt; val valid =
+           fut collect { case res if res &gt; 0 =&gt; res + 46 }
+<span class="output">  valid: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; valid.value
+<span class="output">  res17: Option[scala.util.Try[Int]] = Some(Success(88))</span>
+
+<hr>
+  scala&gt; val invalid =
+           fut collect { case res if res &lt; 0 =&gt; res + 46 }
+<span class="output">  invalid: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; invalid.value
+<span class="output">  res18: Option[scala.util.Try[Int]] =</span>
+<span class="output">    Some(Failure(java.util.NoSuchElementException:</span>
+<span class="output">    Future.collect partial function is not defined at: 42))</span>
+
+<hr>
+  scala&gt; val failure = Future { 42 / 0 }
+<span class="output">  failure: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; failure.value
+<span class="output">  res23: Option[scala.util.Try[Int]] =</span>
+<span class="output">    Some(Failure(java.lang.ArithmeticException: / by zero))</span>
+
+  scala&gt; val expectedFailure = failure.failed
+<span class="output">  expectedFailure: scala.concurrent.Future[Throwable] = ...</span>
+
+  scala&gt; expectedFailure.value
+<span class="output">  res25: Option[scala.util.Try[Throwable]] =</span>
+<span class="output">    Some(Success(java.lang.ArithmeticException: / by zero))</span>
+
+<hr>
+  scala&gt; val success = Future { 42 / 1 }
+<span class="output">  success: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; success.value
+<span class="output">  res21: Option[scala.util.Try[Int]] = Some(Success(42))</span>
+
+  scala&gt; val unexpectedSuccess = success.failed
+<span class="output">  unexpectedSuccess: scala.concurrent.Future[Throwable] = ...</span>
+
+  scala&gt; unexpectedSuccess.value
+<span class="output">  res26: Option[scala.util.Try[Throwable]] =</span>
+<span class="output">    Some(Failure(java.util.NoSuchElementException:</span>
+<span class="output">    Future.failed not completed with a throwable.))</span>
+
+<hr>
+  scala&gt; val fallback = failure.fallbackTo(success)
+<span class="output">  fallback: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; fallback.value
+<span class="output">  res27: Option[scala.util.Try[Int]] = Some(Success(42))</span>
+
+<hr>
+  scala&gt; val failedFallback = failure.fallbackTo(
+           Future { val res = 42; require(res &lt; 0); res }
+          )
+<span class="output">  failedFallback: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; failedFallback.value
+<span class="output">  res28: Option[scala.util.Try[Int]] =</span>
+<span class="output">    Some(Failure(java.lang.ArithmeticException: / by zero))</span>
+
+<hr>
+  scala&gt; val recovered = failedFallback recover {
+           case ex: ArithmeticException =&gt; -1
+         }
+<span class="output">  recovered: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; recovered.value
+<span class="output"> res32: Option[scala.util.Try[Int]] = Some(Success(-1))</span>
+
+<hr>
+  scala&gt; val unrecovered = fallback recover {
+           case ex: ArithmeticException =&gt; -1
+         }
+<span class="output">  unrecovered: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; unrecovered.value
+<span class="output">  res33: Option[scala.util.Try[Int]] = Some(Success(42))</span>
+
+<hr>
+  scala&gt; val alsoUnrecovered = failedFallback recover {
+           case ex: IllegalArgumentException =&gt; -2
+         }
+<span class="output">  alsoUnrecovered: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; alsoUnrecovered.value
+<span class="output">  res34: Option[scala.util.Try[Int]] =</span>
+<span class="output">    Some(Failure(java.lang.ArithmeticException: / by zero))</span>
+
+<hr>
+  scala&gt; val alsoRecovered = failedFallback recoverWith {
+           case ex: ArithmeticException =&gt; Future { 42 + 46 }
+         }
+<span class="output">  alsoRecovered: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; alsoRecovered.value
+<span class="output">  res35: Option[scala.util.Try[Int]] = Some(Success(88))</span>
+
+<hr>
+  scala&gt; val first = success.transform(
+           res =&gt; res * -1,
+           ex =&gt; new Exception("see cause", ex)
+         )
+<span class="output">  first: scala.concurrent.Future[Int] = ...</span>
+
+<hr>
+  scala&gt; first.value
+<span class="output">  res42: Option[scala.util.Try[Int]] = Some(Success(-42))</span>
+
+<hr>
+  scala&gt; val second = failure.transform(
+           res =&gt; res * -1,
+           ex =&gt; new Exception("see cause", ex)
+         )
+<span class="output">  second: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; second.value
+<span class="output">  res43: Option[scala.util.Try[Int]] =</span>
+<span class="output">    Some(Failure(java.lang.Exception: see cause))</span>
+
+<hr>
+  scala&gt; val firstCase = success.transform { // Scala 2.12
+           case Success(res) =&gt; Success(res * -1)
+           case Failure(ex) =&gt;
+             Failure(new Exception("see cause", ex))
+         }
+  first: scala.concurrent.Future[Int] = ...
+
+  scala&gt; firstCase.value
+<span class="output">  res6: Option[scala.util.Try[Int]] = Some(Success(-42))</span>
+
+  scala&gt; val secondCase = failure.transform {
+           case Success(res) =&gt; Success(res * -1)
+           case Failure(ex) =&gt;
+             Failure(new Exception("see cause", ex))
+         }
+<span class="output">  secondCase: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; secondCase.value
+<span class="output">  res8: Option[scala.util.Try[Int]] =</span>
+     Some(Failure(java.lang.Exception: see cause))
+
+<hr>
+  scala&gt; val nonNegative = failure.transform { // Scala 2.12
+           case Success(res) =&gt; Success(res.abs + 1)
+           case Failure(_) =&gt; Success(0)
+         }
+<span class="output">  nonNegative: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; nonNegative.value
+<span class="output">  res11: Option[scala.util.Try[Int]] = Some(Success(0))</span>
+
+<hr>
+  scala&gt; val zippedSuccess = success zip recovered
+<span class="output">  zippedSuccess: scala.concurrent.Future[(Int, Int)] = ...</span>
+
+  scala&gt; zippedSuccess.value
+<span class="output">  res46: Option[scala.util.Try[(Int, Int)]] =</span>
+       Some(Success((42,-1)))
+
+<hr>
+  scala&gt; val zippedFailure = success zip failure
+<span class="output">  zippedFailure: scala.concurrent.Future[(Int, Int)] = ...</span>
+
+  scala&gt; zippedFailure.value
+<span class="output">  res48: Option[scala.util.Try[(Int, Int)]] =</span>
+<span class="output">    Some(Failure(java.lang.ArithmeticException: / by zero))</span>
+
+<hr>
+  scala&gt; val fortyTwo = Future { 21 + 21 }
+<span class="output">  fortyTwo: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; val fortySix = Future { 23 + 23 }
+<span class="output">  fortySix: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; val futureNums = List(fortyTwo, fortySix)
+<span class="output">  futureNums: List[scala.concurrent.Future[Int]] = ...</span>
+
+  scala&gt; val folded =
+           Future.foldLeft(futureNums)(0) { (acc, num) =&gt;
+             acc + num
+           }
+<span class="output">  folded: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; folded.value
+<span class="output">  res53: Option[scala.util.Try[Int]] = Some(Success(88))</span>
+
+<hr>
+  scala&gt; val reduced =
+           Future.reduceLeft(futureNums) { (acc, num) =&gt;
+             acc + num
+           }
+<span class="output">  reduced: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; reduced.value
+<span class="output">  res54: Option[scala.util.Try[Int]] = Some(Success(88))</span>
+
+<hr>
+  scala&gt; val futureList = Future.sequence(futureNums)
+<span class="output">  futureList: scala.concurrent.Future[List[Int]] = ...</span>
+
+  scala&gt; futureList.value
+<span class="output">  res55: Option[scala.util.Try[List[Int]]] =</span>
+<span class="output">    Some(Success(List(42, 46)))</span>
+
+<hr>
+  scala&gt; val traversed =
+<span class="output">          Future.traverse(List(1, 2, 3)) { i =&gt; Future(i) }</span>
+<span class="output">  traversed: scala.concurrent.Future[List[Int]] = ...</span>
+
+  scala&gt; traversed.value
+<span class="output">  res58: Option[scala.util.Try[List[Int]]] = </span>
+<span class="output">    Some(Success(List(1, 2, 3)))</span>
+
+<hr>
+  scala&gt; failure.foreach(ex =&gt; println(ex))
+
+  scala&gt; success.foreach(res =&gt; println(res))
+<span class="output">  42</span>
+
+<hr>
+  scala&gt; for (res &lt;- failure) println(res)
+
+  scala&gt; for (res &lt;- success) println(res)
+<span class="output">  42</span>
+
+<hr>
+  scala&gt; import scala.util.{Success, Failure}
+<span class="output">  import scala.util.{Success, Failure}</span>
+
+  scala&gt; success onComplete {
+<span class="output">          case Success(res) =&gt; println(res)</span>
+<span class="output">          case Failure(ex) =&gt; println(ex)</span>
+<span class="output">        }</span>
+<span class="output">  42</span>
+
+  scala&gt; failure onComplete {
+<span class="output">          case Success(res) =&gt; println(res)</span>
+<span class="output">          case Failure(ex) =&gt; println(ex)</span>
+<span class="output">        }</span>
+<span class="output">  java.lang.ArithmeticException: / by zero</span>
+
+<hr>
+  scala&gt; val newFuture = success andThen {
+<span class="output">          case Success(res) =&gt; println(res)</span>
+<span class="output">          case Failure(ex) =&gt; println(ex)</span>
+<span class="output">        }</span>
+<span class="output">  42</span>
+<span class="output">  newFuture: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; newFuture.value
+<span class="output">  res76: Option[scala.util.Try[Int]] = Some(Success(42))</span>
+
+<hr>
+  scala&gt; val nestedFuture = Future { Future { 42 } }
+<span class="output">  nestedFuture: Future[Future[Int]] = ...</span>
+
+  scala&gt; val flattened = nestedFuture.flatten // Scala 2.12
+<span class="output">  flattened: scala.concurrent.Future[Int] = Future(Success(42))</span>
+
+<hr>
+  scala&gt; val futNum = Future { 21 + 21 }
+<span class="output">  futNum: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; val futStr = Future { "ans" + "wer" }
+<span class="output">  futStr: scala.concurrent.Future[String] = ...</span>
+
+  scala&gt; val zipped = futNum zip futStr
+<span class="output">  zipped: scala.concurrent.Future[(Int, String)] = ...</span>
+
+  scala&gt; val mapped = zipped map {
+<span class="output">           case (num, str) =&gt; s"$num is the $str" </span>
+<span class="output">         }</span>
+<span class="output">  mapped: scala.concurrent.Future[String] = ...</span>
+
+  scala&gt; mapped.value
+<span class="output">  res2: Option[scala.util.Try[String]] =</span>
+<span class="output">      Some(Success(42 is the answer))</span>
+
+<hr>
+  scala&gt; val fut = futNum.zipWith(futStr) { // Scala 2.12
+           case (num, str) =&gt; s"<em>num is the </em>str" 
+         }
+<span class="output">  zipWithed: scala.concurrent.Future[String] = ...</span>
+
+  scala&gt; fut.value
+<span class="output">  res3: Option[scala.util.Try[String]] =</span>
+<span class="output">      Some(Success(42 is the answer))</span>
+
+<hr>
+  scala&gt; val flipped = success.transformWith { // Scala 2.12
+       |   case Success(res) =&gt;
+       |     Future { throw new Exception(res.toString) }
+       |   case Failure(ex) =&gt; Future { 21 + 21 }
+       | }
+<span class="output">  flipped: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; flipped.value
+<span class="output">  res5: Option[scala.util.Try[Int]] =</span>
+       Some(Failure(java.lang.Exception: 42))
+
+<hr>
+  </pre>
+  <h3><a name="sec4"></a>32.4 Testing with \c{Future</h3>
+
+  <pre><hr>
+  scala&gt; import scala.concurrent.Await
+<span class="output">  import scala.concurrent.Await</span>
+
+  scala&gt; import scala.concurrent.duration._
+<span class="output">  import scala.concurrent.duration._</span>
+
+  scala&gt; val fut = Future { Thread.sleep(10000); 21 + 21 }
+<span class="output">  fut: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; val x = Await.result(fut, 15.seconds) // blocks
+<span class="output">  x: Int = 42</span>
+
+<hr>
+  scala&gt; import org.scalatest.matchers.should.Matchers._
+  import org.scalatest.matchers.should.Matchers._
+
+  scala&gt; x should be (42)
+<span class="output">  res0: org.scalatest.Assertion = Succeeded</span>
+
+<hr>
+  scala&gt; import org.scalatest.concurrent.ScalaFutures._
+<span class="output">  import org.scalatest.concurrent.ScalaFutures._</span>
+
+  scala&gt; val fut = Future { Thread.sleep(10000); 21 + 21 }
+<span class="output">  fut: scala.concurrent.Future[Int] = ...</span>
+
+  scala&gt; fut.futureValue should be (42) // futureValue blocks
+<span class="output">  res1: org.scalatest.Assertion = Succeeded</span>
+
+<hr>
+// In file <a href="../futures-and-concurrency/AddSpec.scala">futures-and-concurrency/AddSpec.scala</a>
+
+  import org.scalatest.funspec.AsyncFunSpec
+  import scala.concurrent.Future
+
+  class AddSpec extends AsyncFunSpec {
+
+    def addSoon(addends: Int*): Future[Int] =
+          Future { addends.sum }
+
+    describe("addSoon") {
+      it("will eventually compute a sum of passed Ints") {
+        val futureSum: Future[Int] = addSoon(1, 2)
+        // You can map assertions onto a Future, then return
+        // the resulting Future[Assertion] to ScalaTest:
+        futureSum map { sum =&gt; assert(sum == 3) }
+      }
+    }
+  }
+
+<hr>
+  </pre>
+  <h3><a name="sec5"></a>32.5 Conclusion</h3>
+
+
+ <table>
+ <tr valign="top">
+ <td>
+ <div id="moreinfo">
+ <p>
+ For more information about <em>Programming in Scala, Fourth Edition</em> (the "Stairway Book"), please visit:
+ </p>
+ 
+ <p>
+ <a href="http://www.artima.com/shop/programming_in_scala_4ed">http://www.artima.com/shop/programming_in_scala_4ed</a>
+ </p>
+ 
+ <p>
+ and:
+ </p>
+ 
+ <p>
+ <a href="http://booksites.artima.com/programming_in_scala_4ed">http://booksites.artima.com/programming_in_scala_4ed</a>
+ </p>
+ </div>
+ </td>
+ <td>
+ <div id="license">
+ <p>
+   Copyright &copy; 2007-2019 Artima, Inc. All rights reserved.
+ </p>
+
+ <p>
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+ </p>
+
+ <p style="margin-left: 20px">
+   <a href="http://www.apache.org/licenses/LICENSE-2.0">
+     http://www.apache.org/licenses/LICENSE-2.0
+   </a>
+ </p>
+
+ <p>
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+   implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ </p>
+ </div>
+ </td>
+ </tr>
+ </table>
+
+</body>
+</html>
